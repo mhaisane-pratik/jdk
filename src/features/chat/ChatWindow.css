@@ -1,0 +1,149 @@
+/* File: video-call-main/src/features/chat/ChatWindow.css */
+
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f5f7fa;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-dark .chat-window {
+  background: #111827;
+}
+
+/* ================= MESSAGE LIST ================= */
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  
+  /* ✅ REDUCED margins - closer to header and footer */
+     /* Reduced from 80px */
+  margin-bottom: 72px; /* Keep footer space */
+}
+
+/* Mobile heights */
+@media (max-width: 768px) {
+  .message-list {
+    margin-top: 60px;   /* Reduced from 72px */
+    margin-bottom: 64px;
+  }
+}
+
+/* Scrollbar */
+.message-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.theme-dark .message-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* iOS smooth scrolling */
+.message-list {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ================= MESSAGE CONTAINER ================= */
+
+.message-container {
+  padding: 12px 16px; /* ✅ REDUCED from 20px - closer to sides */
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* ✅ REDUCED from 12px - less space between messages */
+}
+
+@media (max-width: 768px) {
+  .message-container {
+    padding: 10px 12px; /* ✅ Even tighter on mobile */
+    gap: 6px;
+  }
+}
+
+/* ================= LOADING ================= */
+
+.loading-chat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 64px; /* ✅ Match message-list margin */
+  margin-bottom: 72px;
+}
+
+.loading-chat .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(102, 126, 234, 0.1);
+  border-left-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ================= TYPING INDICATOR ================= */
+
+.typing-indicator {
+  padding: 8px 16px; /* ✅ REDUCED padding */
+  display: flex;
+  gap: 10px;
+  margin-top: 64px; /* ✅ Match message-list margin */
+  margin-bottom: 72px;
+}
+
+.typing-bubble {
+  background: white;
+  padding: 12px 16px; /* ✅ REDUCED from 14px 18px */
+  border-radius: 18px; /* ✅ Slightly smaller radius */
+}
+
+.theme-dark .typing-bubble {
+  background: #374151;
+}
+
+
+
+
+/* ================= CHAT HEADER (Fixed at top) ================= */
+.chat-header {
+  position: fixed; /* ✅ Fixed header */
+  top:0.5px;
+  /* ✅ Sidebar width offset */
+  left: 27.4%;
+  height: 64px;
+  
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

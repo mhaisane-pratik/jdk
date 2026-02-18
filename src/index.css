@@ -1,0 +1,90 @@
+/* ==========================================================================
+   GLOBAL BLUR FIX - Place at the very TOP of index.css
+   ========================================================================== */
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+
+
+
+
+/* LAYOUT */
+
+
+/* SIDEBAR */
+.sidebar {
+  width: 230px;
+  background: #ffffff;
+  padding: 20px;
+  color: #334155;
+  border-right: 1px solid #e2e8f0;
+}
+
+.sidebar h2 {
+  margin-bottom: 30px;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.sidebar a {
+  display: block;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sidebar a:hover {
+  background: #f1f5f9;
+  color: #4f46e5;
+}
+
+/* HEADER */
+.header {
+  height: 60px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+
+
+/* JOIN */
+
+
+
+
+
+
+
+.meeting-controls {
+  height: 80px;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.meeting-controls button {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #f1f5f9;
+  color: #334155;
+  cursor: pointer;
+}
+
+.meeting-controls button:hover {
+  background: #e2e8f0;
+}

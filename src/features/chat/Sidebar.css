@@ -1,0 +1,517 @@
+/* ==========================================================================
+   SIDEBAR – WhatsApp exact with proper borders
+   ========================================================================== */
+
+.sidebar {
+  width: 420px;
+  background: #ffffff;
+  border-left: 1px solid #dadada;
+  border-right: 1px solid #dadada;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 
+    inset 2px 0 4px rgba(0, 0, 0, 0.05), /* ✅ INSET left shadow */
+    2px 0 3px rgba(0, 0, 0, 0.02);       /* ✅ Regular right shadow */
+}
+
+.theme-dark .sidebar {
+  background: #111b21;
+  border-left-color: #2a3942;
+  border-right-color: #2a3942;
+  box-shadow: 
+    inset 2px 0 4px rgba(0, 0, 0, 0.3),
+    2px 0 3px rgba(0, 0, 0, 0.3);
+}
+/* --------------------------------------------------------------------------
+   TOP BAR
+   -------------------------------------------------------------------------- */
+.sidebar-top {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #f0f2f5;
+  border-bottom: 1px solid #dadada; /* ✅ Clear border */
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 30;
+  height: 60px;
+}
+
+.theme-dark .sidebar-top {
+  background: #202c33;
+  border-bottom-color: #2a3942;
+}
+
+/* Hamburger */
+.hamburger-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #54656f;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.hamburger-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.theme-dark .hamburger-btn {
+  color: #aebac1;
+}
+
+.theme-dark .hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Search bar */
+.search-bar {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #667781;
+  font-size: 15px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 16px 8px 40px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #ffffff;
+  transition: all 0.15s ease;
+  color: #111b21;
+  border: 1px solid transparent;
+}
+
+.theme-dark .search-input {
+  background: #2a3942;
+  color: #e9edef;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #25d366;
+}
+
+.search-input::placeholder {
+  color: #8696a0;
+  font-weight: 400;
+}
+
+/* Clear button */
+.clear-search {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #8696a0;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  z-index: 2;
+}
+
+.clear-search:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* New chat button */
+.new-chat-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #54656f;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.new-chat-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.theme-dark .new-chat-btn {
+  color: #aebac1;
+}
+
+.theme-dark .new-chat-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* --------------------------------------------------------------------------
+   FILTER TABS – All, Unread, Groups
+   -------------------------------------------------------------------------- */
+.filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e9edef; /* ✅ Separator border */
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.theme-dark .filter-tabs {
+  background: #111b21;
+  border-bottom-color: #2a3942;
+}
+
+.filter-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: #667781;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+
+.theme-dark .filter-tab {
+  color: #8696a0;
+}
+
+.filter-tab:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.theme-dark .filter-tab:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.filter-tab.active {
+  color: #25d366;
+  border-bottom-color: #25d366;
+  font-weight: 600;
+}
+
+.theme-dark .filter-tab.active {
+  color: #00a884;
+  border-bottom-color: #00a884;
+}
+
+/* Badge for unread count on tab */
+.filter-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #25d366;
+  color: white;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.theme-dark .filter-badge {
+  background: #00a884;
+}
+
+/* Secondary badge for groups count */
+.filter-badge-secondary {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #667781;
+  color: white;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.theme-dark .filter-badge-secondary {
+  background: #54656f;
+}
+
+/* Active tab badge colors */
+.filter-tab.active .filter-badge {
+  background: #20bd5a;
+}
+
+.filter-tab.active .filter-badge-secondary {
+  background: #25d366;
+}
+
+/* --------------------------------------------------------------------------
+   CHAT LIST – with proper borders
+   -------------------------------------------------------------------------- */
+.chat-list-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #ffffff;
+  position: relative;
+  /* ✅ Add top border to separate from tabs */
+  border-top: 1px solid transparent;
+}
+
+.theme-dark .chat-list-container {
+  background: #111b21;
+}
+
+/* ✅ Scrollbar styling - visible but subtle */
+.chat-list-container::-webkit-scrollbar {
+  width: 8px; /* ✅ Slightly wider for visibility */
+}
+
+.chat-list-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-left: 1px solid #e9edef; /* ✅ Left border on track */
+}
+
+.theme-dark .chat-list-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-left-color: #2a3942;
+}
+
+.chat-list-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box; /* ✅ Creates padding effect */
+}
+
+.theme-dark .chat-list-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  background-clip: content-box;
+}
+
+.chat-list-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+  background-clip: content-box;
+}
+
+.theme-dark .chat-list-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+  background-clip: content-box;
+}
+
+/* ✅ Add visual indicator for scroll position */
+.chat-list-container::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.08), transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.theme-dark .chat-list-container::before {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), transparent);
+}
+
+/* --------------------------------------------------------------------------
+   DROPDOWN MENU
+   -------------------------------------------------------------------------- */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 65px;
+  left: 10px;
+  width: 240px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e9edef; /* ✅ Border around menu */
+  overflow: hidden;
+  z-index: 1000;
+  animation: slideDown 0.15s ease;
+}
+
+.theme-dark .dropdown-menu {
+  background: #233138;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  border-color: #2a3942;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-menu button {
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-size: 15px;
+  color: #111b21;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid #f0f2f5; /* ✅ Separator between items */
+}
+
+.dropdown-menu button:last-child {
+  border-bottom: none; /* ✅ Remove border from last item */
+}
+
+.theme-dark .dropdown-menu button {
+  color: #e9edef;
+  border-bottom-color: #2a3942;
+}
+
+.dropdown-menu button:hover {
+  background: #f0f2f5;
+}
+
+.theme-dark .dropdown-menu button:hover {
+  background: #2a3942;
+}
+
+.dropdown-menu .logout-btn {
+  color: #ea4335;
+}
+
+.dropdown-menu .logout-btn:hover {
+  background: #fef0f0;
+}
+
+.theme-dark .dropdown-menu .logout-btn:hover {
+  background: rgba(234, 67, 53, 0.1);
+}
+
+.menu-icon {
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVE
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    border-right: none; /* ✅ No right border on mobile */
+  }
+
+  .sidebar-top {
+    padding: 8px 12px;
+    height: 56px;
+  }
+
+  .hamburger-btn,
+  .new-chat-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .search-input {
+    padding: 7px 12px 7px 36px;
+    font-size: 13px;
+  }
+
+  .filter-tabs {
+    padding: 0 8px;
+    height: 44px;
+  }
+
+  .filter-tab {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .filter-badge,
+  .filter-badge-secondary {
+    min-width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
+
+  .dropdown-menu {
+    left: 8px;
+    width: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-tab {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+}

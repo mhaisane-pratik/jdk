@@ -1,0 +1,684 @@
+/* File: video-call-main/src/features/chat/SettingsPanel.css */
+
+.settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 450px;
+  height: 100vh;
+  background: white;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s ease;
+}
+
+.theme-dark .settings-panel {
+  background: #111b21;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Header */
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #f0f2f5;
+  border-bottom: 1px solid #e9edef;
+}
+
+.theme-dark .settings-header {
+  background: #202c33;
+  border-bottom: 1px solid #2a3942;
+}
+
+.settings-header .back-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 24px;
+  color: #667781;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.settings-header .back-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.theme-dark .settings-header .back-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.settings-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111b21;
+}
+
+.theme-dark .settings-header h2 {
+  color: #e9edef;
+}
+
+/* Tabs */
+.settings-tabs {
+  display: flex;
+  background: white;
+  border-bottom: 1px solid #e9edef;
+  overflow-x: auto;
+}
+
+.theme-dark .settings-tabs {
+  background: #111b21;
+  border-bottom: 1px solid #2a3942;
+}
+
+.settings-tabs button {
+  flex: 1;
+  padding: 16px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  color: #667781;
+  white-space: nowrap;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+}
+
+.theme-dark .settings-tabs button {
+  color: #8696a0;
+}
+
+.settings-tabs button:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.theme-dark .settings-tabs button:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.settings-tabs button.active {
+  color: #25d366;
+  border-bottom-color: #25d366;
+  font-weight: 600;
+}
+
+/* Content */
+.settings-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.settings-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.tab-description {
+  margin: 8px 0 24px;
+  font-size: 14px;
+  color: #667781;
+}
+
+.theme-dark .tab-description {
+  color: #8696a0;
+}
+
+/* Profile Tab */
+.profile-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-picture {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #25d366;
+}
+
+.change-photo-btn {
+  padding: 8px 16px;
+  border: none;
+  background: #25d366;
+  color: white;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.change-photo-btn:hover {
+  background: #20bd5a;
+}
+
+.profile-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111b21;
+}
+
+.theme-dark .field-group label {
+  color: #e9edef;
+}
+
+.field-group input,
+.field-group textarea {
+  padding: 12px 16px;
+  border: 2px solid #e9edef;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: white;
+  color: #111b21;
+  font-family: inherit;
+}
+
+.theme-dark .field-group input,
+.theme-dark .field-group textarea {
+  background: #2a3942;
+  border-color: #2a3942;
+  color: #e9edef;
+}
+
+.field-group input:focus,
+.field-group textarea:focus {
+  border-color: #25d366;
+}
+
+.field-group input:disabled,
+.field-group textarea:disabled {
+  background: #f0f2f5;
+  cursor: not-allowed;
+}
+
+.theme-dark .field-group input:disabled,
+.theme-dark .field-group textarea:disabled {
+  background: #202c33;
+}
+
+.disabled-input {
+  opacity: 0.6;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.edit-btn,
+.save-btn,
+.cancel-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-btn,
+.save-btn {
+  background: #25d366;
+  color: white;
+}
+
+.edit-btn:hover,
+.save-btn:hover:not(:disabled) {
+  background: #20bd5a;
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: #f0f2f5;
+  color: #111b21;
+}
+
+.theme-dark .cancel-btn {
+  background: #2a3942;
+  color: #e9edef;
+}
+
+.cancel-btn:hover {
+  background: #e4e6e9;
+}
+
+.theme-dark .cancel-btn:hover {
+  background: #374248;
+}
+
+/* Theme Tab */
+.theme-tab h3,
+.wallpaper-tab h3,
+.notifications-tab h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #111b21;
+}
+
+.theme-dark .theme-tab h3,
+.theme-dark .wallpaper-tab h3,
+.theme-dark .notifications-tab h3 {
+  color: #e9edef;
+}
+
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.theme-option {
+  padding: 24px;
+  border: 2px solid #e9edef;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.theme-dark .theme-option {
+  border-color: #2a3942;
+}
+
+.theme-option:hover {
+  border-color: #25d366;
+  transform: translateY(-2px);
+}
+
+.theme-option.selected {
+  border-color: #25d366;
+  background: rgba(37, 211, 102, 0.1);
+}
+
+.theme-icon {
+  font-size: 48px;
+}
+
+.theme-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111b21;
+}
+
+.theme-dark .theme-label {
+  color: #e9edef;
+}
+
+.selected-check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  background: #25d366;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Wallpaper Tab */
+.wallpaper-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.wallpaper-option {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s;
+}
+
+.wallpaper-option:hover {
+  transform: translateY(-4px);
+}
+
+.wallpaper-preview {
+  width: 100%;
+  height: 150px;
+  border-radius: 12px;
+  border: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.wallpaper-option.selected .wallpaper-preview {
+  border-color: #25d366;
+}
+
+.wallpaper-label {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111b21;
+}
+
+.theme-dark .wallpaper-label {
+  color: #e9edef;
+}
+
+/* Notifications Tab */
+.notification-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #f0f2f5;
+  border-radius: 12px;
+}
+
+.theme-dark .notification-item {
+  background: #2a3942;
+}
+
+.notification-info {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.notification-icon {
+  font-size: 32px;
+}
+
+.notification-info h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: #111b21;
+}
+
+.theme-dark .notification-info h4 {
+  color: #e9edef;
+}
+
+.notification-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #667781;
+}
+
+.theme-dark .notification-info p {
+  color: #8696a0;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 26px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #25d366;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+
+.permission-btn {
+  padding: 10px 20px;
+  border: none;
+  background: #25d366;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.permission-btn:hover {
+  background: #20bd5a;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .settings-panel {
+    width: 100%;
+  }
+
+  .theme-options,
+  .wallpaper-options {
+    grid-template-columns: 1fr;
+  }
+}
+/* File: video-call-main/src/features/chat/SettingsPanel.css */
+
+/* ✅ Wallpaper Categories */
+.wallpaper-categories {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.wallpaper-categories::-webkit-scrollbar {
+  height: 4px;
+}
+
+.wallpaper-categories::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.category-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.category-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  transform: translateY(-2px);
+}
+
+.category-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* ✅ Wallpaper Grid Updates */
+.wallpaper-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.wallpaper-options::-webkit-scrollbar {
+  width: 8px;
+}
+
+.wallpaper-options::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.wallpaper-option {
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.wallpaper-option:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.wallpaper-option.selected {
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+}
+
+.wallpaper-preview {
+  width: 100%;
+  height: 70px;
+  border-radius: 8px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wallpaper-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-align: center;
+  padding: 6px 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected-check {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background: white;
+  color: #667eea;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}

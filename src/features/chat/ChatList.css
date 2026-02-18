@@ -1,0 +1,124 @@
+.chat-list {
+  flex: 1;
+  overflow-y: auto;
+  background: transparent;
+  position: relative;
+}
+
+.chat-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 3px;
+  margin: 4px 0;
+}
+
+.chat-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.chat-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+  width: 8px;
+}
+
+.theme-dark .chat-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.theme-dark .chat-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.theme-dark .chat-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Empty State */
+.empty-chat-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  min-height: 400px;
+}
+
+
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.empty-chat-list p {
+  font-size: 20px;
+  font-weight: 600;
+  color: #41525d;
+  margin: 12px 0;
+  letter-spacing: -0.2px;
+}
+
+.theme-dark .empty-chat-list p {
+  color: #e9edef;
+}
+
+.empty-chat-list span {
+  font-size: 15px;
+  color: #667781;
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+.theme-dark .empty-chat-list span {
+  color: #8696a0;
+}
+
+/* Divider between pinned and regular chats */
+.chat-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 10%,
+    rgba(0, 0, 0, 0.08) 50%,
+    transparent 90%
+  );
+  margin: 8px 20px;
+}
+
+.theme-dark .chat-divider {
+  background: linear-gradient(
+    90deg,
+    transparent 10%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 90%
+  );
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .empty-chat-list {
+    padding: 60px 20px;
+  }
+
+  .empty-icon {
+    font-size: 60px;
+  }
+
+  .empty-chat-list p {
+    font-size: 18px;
+  }
+
+  .chat-divider {
+    margin: 6px 16px;
+  }
+}
