@@ -4,7 +4,8 @@ import { useChat } from "../contexts/ChatContext";
 import { socket } from "../api/socket";
 import "./Login.css";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+const API_URL = "https://bac-fa0o.onrender.com";
 
 export default function ChatLogin() {
   const navigate = useNavigate();
