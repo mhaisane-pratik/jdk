@@ -3,13 +3,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useChat } from "../../contexts/ChatContext";
 import { socket } from "../../api/socket";
-import { getWallpaperById } from "./wallpapers"; // ✅ Import wallpaper helper
+import { getWallpaperById } from "./wallpapers";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import InputArea from "./InputArea";
 import MediaViewer from "./MediaViewer";
 import "./ChatWindow.css";
- const API_URL = import.meta.env.VITE_API_URL as string;
+
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 export interface Message {
   id: string;
@@ -33,23 +34,16 @@ export interface Message {
   created_at: string;
 }
 
-// ✅ Updated wallpaper style getter
 const getWallpaperStyle = (wallpaperId: string): React.CSSProperties => {
   const wallpaperConfig = getWallpaperById(wallpaperId);
-  
   if (wallpaperConfig) {
-    return {
-      background: wallpaperConfig.css
-    };
+    return { background: wallpaperConfig.css };
   }
-  
-  // Fallback to default
-  return {
-    background: "#efeae2"
-  };
+  return { background: "#efeae2" };
 };
 
-export default function ChatWindow() {
+// ✅ Accept onBack prop
+export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const { currentUser, selectedRoom, chatRooms, wallpaper } = useChat();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,16 +56,6 @@ export default function ChatWindow() {
   const room = chatRooms.find((r) => r.id === selectedRoom);
   const hasJoinedRoom = useRef(false);
   const isLoadingRef = useRef(false);
-
-  console.log("🔍 ChatWindow rendered:", {
-    selectedRoom,
-    currentUser: currentUser?.username,
-    wallpaper,
-    messagesCount: messages.length,
-    showMedia,
-  });
-
-  // ... (rest of your existing code stays exactly the same)
 
   // Determine receiver
   useEffect(() => {
@@ -94,20 +78,17 @@ export default function ChatWindow() {
     if (receiverName) {
       setReceiver(receiverName);
       localStorage.setItem(`room_${selectedRoom}_receiver`, receiverName);
-      console.log("✅ Receiver set:", receiverName);
     }
   }, [selectedRoom, currentUser, room]);
 
   // Load messages when room changes
   useEffect(() => {
     if (!selectedRoom || !currentUser) {
-      console.log("⚠️ Cannot load - missing room or user");
       setMessages([]);
       setLoading(false);
       return;
     }
 
-    console.log("📥 Loading messages for room:", selectedRoom);
     setMessages([]);
     setError(null);
     setReplyingTo(null);
@@ -117,14 +98,12 @@ export default function ChatWindow() {
     if (!hasJoinedRoom.current && socket.connected) {
       socket.emit("join_room", selectedRoom);
       hasJoinedRoom.current = true;
-      console.log("✅ Joined room via socket");
     }
 
     return () => {
       if (hasJoinedRoom.current) {
         socket.emit("leave_room", selectedRoom);
         hasJoinedRoom.current = false;
-        console.log("👋 Left room");
       }
     };
   }, [selectedRoom, currentUser]);
@@ -133,31 +112,15 @@ export default function ChatWindow() {
   useEffect(() => {
     if (!selectedRoom || !currentUser) return;
 
-    console.log("🎧 Setting up socket listeners for:", selectedRoom);
-
     const handleReceiveMessage = (msg: Message) => {
-      console.log("📨 RECEIVED MESSAGE:", msg.id);
-
-      if (msg.room_id !== selectedRoom) {
-        console.log("⚠️ Message for different room, ignoring");
-        return;
-      }
+      if (msg.room_id !== selectedRoom) return;
 
       setMessages((prev) => {
-        if (prev.some((m) => m.id === msg.id)) {
-          console.log("⚠️ Duplicate message, skipping");
-          return prev;
-        }
-        
+        if (prev.some((m) => m.id === msg.id)) return prev;
         if (msg.reply_to_id && !msg.reply_to) {
-          const replyToMsg = prev.find(m => m.id === msg.reply_to_id);
-          if (replyToMsg) {
-            msg.reply_to = replyToMsg;
-            console.log("✅ Linked reply_to message");
-          }
+          const replyToMsg = prev.find((m) => m.id === msg.reply_to_id);
+          if (replyToMsg) msg.reply_to = replyToMsg;
         }
-        
-        console.log("✅ Adding message to UI");
         return [...prev, msg];
       });
 
@@ -173,42 +136,30 @@ export default function ChatWindow() {
     };
 
     const handleMessageDelivered = ({ messageId }: { messageId: string }) => {
-      console.log("✓ Message delivered:", messageId);
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, is_delivered: true } : m))
       );
     };
 
     const handleMessageSeen = ({ messageIds }: { messageIds: string[] }) => {
-      console.log("✓✓ Messages seen:", messageIds.length);
       setMessages((prev) =>
         prev.map((m) =>
-          messageIds.includes(m.id)
-            ? { ...m, is_seen: true, is_delivered: true }
-            : m
+          messageIds.includes(m.id) ? { ...m, is_seen: true, is_delivered: true } : m
         )
       );
     };
 
     const handleTyping = ({ sender }: { sender: string }) => {
-      if (sender !== currentUser.username) {
-        setTypingUser(sender);
-      }
+      if (sender !== currentUser.username) setTypingUser(sender);
     };
 
-    const handleStopTyping = () => {
-      setTypingUser(null);
-    };
+    const handleStopTyping = () => setTypingUser(null);
 
     const handleMessageDeleted = ({ messageId, deletedFor }: any) => {
-      console.log("🗑️ Message deleted:", messageId, "for:", deletedFor);
-      
       if (deletedFor === "everyone") {
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === messageId
-              ? { ...m, is_deleted: true, deleted_for: "everyone" }
-              : m
+            m.id === messageId ? { ...m, is_deleted: true, deleted_for: "everyone" } : m
           )
         );
       } else {
@@ -235,7 +186,6 @@ export default function ChatWindow() {
 
   const loadMessages = async () => {
     if (isLoadingRef.current || !selectedRoom || !currentUser) {
-      console.log("⚠️ Cannot load messages");
       setLoading(false);
       return;
     }
@@ -246,37 +196,23 @@ export default function ChatWindow() {
 
     try {
       const url = `${API_URL}/api/v1/chats/history/${selectedRoom}?username=${currentUser.username}`;
-      console.log("📡 Fetching from:", url);
-
       const res = await fetch(url);
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
       const data: Message[] = await res.json();
-      console.log("📦 Received", data.length, "messages");
-
-      const processedMessages = data.map(msg => {
+      const processedMessages = data.map((msg) => {
         if (msg.reply_to_id) {
-          const replyToMsg = data.find(m => m.id === msg.reply_to_id);
-          if (replyToMsg) {
-            msg.reply_to = replyToMsg;
-          }
+          const replyToMsg = data.find((m) => m.id === msg.reply_to_id);
+          if (replyToMsg) msg.reply_to = replyToMsg;
         }
         return msg;
       });
-
       const sortedMessages = processedMessages.sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
-
       setMessages(sortedMessages);
-      console.log("✅ Messages loaded into state");
 
-      if (sortedMessages.length > 0) {
-        markAsRead();
-      }
+      if (sortedMessages.length > 0) markAsRead();
     } catch (err: any) {
       console.error("❌ Failed to load messages:", err);
       setError("Failed to load messages. Please try again.");
@@ -289,42 +225,21 @@ export default function ChatWindow() {
 
   const markAsRead = async () => {
     if (!selectedRoom || !currentUser) return;
-
     try {
       await fetch(
         `${API_URL}/api/v1/chats/mark-read/${selectedRoom}/${currentUser.username}`,
         { method: "POST" }
       );
-      console.log("✅ Messages marked as read");
     } catch (err) {
       console.error("❌ Mark as read failed:", err);
     }
   };
 
-  const handleReply = (message: Message) => {
-    console.log("↩️ Setting reply to:", message.id);
-    setReplyingTo(message);
-  };
-
-  const handleCancelReply = () => {
-    console.log("✖️ Canceling reply");
-    setReplyingTo(null);
-  };
-
-  const handleDeleteRefresh = () => {
-    console.log("🔄 Refreshing messages after delete");
-    setTimeout(() => loadMessages(), 500);
-  };
-
-  const handleMediaClick = () => {
-    console.log("📷 Opening media viewer");
-    setShowMedia(true);
-  };
-
-  const handleMediaClose = () => {
-    console.log("✖️ Closing media viewer");
-    setShowMedia(false);
-  };
+  const handleReply = (message: Message) => setReplyingTo(message);
+  const handleCancelReply = () => setReplyingTo(null);
+  const handleDeleteRefresh = () => setTimeout(() => loadMessages(), 500);
+  const handleMediaClick = () => setShowMedia(true);
+  const handleMediaClose = () => setShowMedia(false);
 
   // Loading state
   if (loading) {
@@ -367,13 +282,14 @@ export default function ChatWindow() {
     );
   }
 
-  // Main chat window
+  // Main chat window – pass onBack to ChatHeader
   return (
     <div className="chat-window" style={getWallpaperStyle(wallpaper)}>
-      <ChatHeader 
-        receiver={receiver} 
-        roomId={selectedRoom || ""} 
+      <ChatHeader
+        receiver={receiver}
+        roomId={selectedRoom || ""}
         onMediaClick={handleMediaClick}
+        onBack={onBack} // ✅ pass the back handler
       />
 
       <MessageList
@@ -405,10 +321,7 @@ export default function ChatWindow() {
       />
 
       {showMedia && (
-        <MediaViewer 
-          roomId={selectedRoom || ""} 
-          onClose={handleMediaClose} 
-        />
+        <MediaViewer roomId={selectedRoom || ""} onClose={handleMediaClose} />
       )}
     </div>
   );

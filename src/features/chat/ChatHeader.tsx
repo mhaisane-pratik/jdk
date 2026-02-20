@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../../contexts/ChatContext";
 import { socket } from "../../api/socket";
-import { FaSignOutAlt, FaImage, FaInfoCircle } from "react-icons/fa";
+import { FaSignOutAlt, FaImage, FaInfoCircle, FaArrowLeft } from "react-icons/fa";
 import GroupInfoModal from "./GroupInfoModal";
 import "./ChatHeader.css";
 
@@ -10,6 +10,7 @@ interface ChatHeaderProps {
   receiver: string;
   roomId: string;
   onMediaClick: () => void;
+  onBack?: () => void; // ✅ Added onBack prop for mobile
 }
 
 const API_URL = import.meta.env.VITE_API_URL as string;
@@ -18,6 +19,7 @@ export default function ChatHeader({
   receiver,
   roomId,
   onMediaClick,
+  onBack,
 }: ChatHeaderProps) {
   const navigate = useNavigate();
   const { onlineUsers, setCurrentUser, setSelectedRoom, chatRooms, currentUser } = useChat();
@@ -100,6 +102,20 @@ export default function ChatHeader({
         onClick={handleHeaderClick}
       >
         <div className="receiver-info">
+          {/* ✅ Back button – shown only on mobile when onBack is provided */}
+          {onBack && (
+            <button
+              className="back-btn-mobile"
+              onClick={(e) => {
+                e.stopPropagation();
+                onBack();
+              }}
+              aria-label="Back"
+            >
+              <FaArrowLeft />
+            </button>
+          )}
+
           {/* ✅ Show group icon OR user avatar */}
           {isGroup ? (
             <div className="group-header-icon">{groupIcon || "👥"}</div>

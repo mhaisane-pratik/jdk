@@ -17,7 +17,7 @@
 
 /* Sidebar */
 .chat-layout > .sidebar {
-  width: 420px; /* ✅ WhatsApp width */
+  width: 420px;
   flex-shrink: 0;
   flex-grow: 0;
   height: 100vh;
@@ -32,29 +32,41 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border-left: 1px solid #e9edef; /* ✅ Separator */
+  border-left: 1px solid #e9edef;
 }
 
 .theme-dark .chat-layout > :not(.sidebar) {
   border-left-color: #2a3942;
 }
 
-/* Mobile: stack vertically */
+/* ========== MOBILE OVERRIDES ========== */
 @media (max-width: 768px) {
-  .chat-layout {
-    flex-direction: column;
-  }
-
-  .chat-layout > .sidebar {
-    width: 100%;
-    height: auto;
-    max-height: 100vh;
-  }
-
+  /* Both panels hidden by default */
+  .chat-layout > .sidebar,
   .chat-layout > :not(.sidebar) {
+    display: none;
+  }
+
+  /* Show only chat list when no chat is open */
+  .chat-layout:not(.show-chat) > .sidebar {
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    height: 100%;
-    flex: 1;
+    height: 100vh;
+  }
+
+  /* Show only chat window when a chat is open */
+  .chat-layout.show-chat > :not(.sidebar) {
+    display: flex;
+    width: 100%;
+    height: 100vh;
     border-left: none;
+  }
+
+  /* Ensure fixed header & input area span full width when chat is shown */
+  .chat-layout.show-chat .chat-header,
+  .chat-layout.show-chat .input-area {
+    left: 0 !important;
+    width: 100% !important;
   }
 }

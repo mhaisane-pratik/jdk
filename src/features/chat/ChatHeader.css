@@ -5,7 +5,7 @@
 .chat-header {
   position: fixed;
   top: 0;
-  right: 0;        /* 👈 Stick to right side */
+  right: 0;
   
   display: flex;
   justify-content: space-between;
@@ -17,12 +17,12 @@
   background: #ffffff;
   border-bottom: 1px solid #e9edef;
 
-  width: 73%;      /* Takes 73% screen width (side‑by‑side with sidebar) */
+  width: 73%;
   box-sizing: border-box;
   z-index: 100;
 }
 
-/* Mobile: full width, no right offset */
+/* Mobile: full width, no offset */
 @media (max-width: 768px) {
   .chat-header {
     width: 100%;
@@ -215,6 +215,36 @@
 
 .theme-dark .chat-header .group-header-icon {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* ========== BACK BUTTON FOR MOBILE ========== */
+.chat-header .back-btn-mobile {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 24px;
+  color: #54656f;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.theme-dark .chat-header .back-btn-mobile {
+  color: #aebac1;
+}
+
+@media (max-width: 768px) {
+  .chat-header .back-btn-mobile {
+    display: flex;
+  }
+
+  .chat-header .receiver-info {
+    gap: 8px;
+  }
 }
 
 /* ========== MOBILE ADAPTATION ========== */

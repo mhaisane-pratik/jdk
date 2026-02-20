@@ -1,10 +1,9 @@
-/* File: video-call-main/src/features/chat/InputArea.css */
 .input-area {
   position: fixed;
   bottom: 0;
   right: 0;
-  width: 73%;        /* Matches header width */
-  left: 27.4%;       /* Align with sidebar offset */
+  width: 73%;
+  left: 27.4%;
   background: #ffffff;
   border-top: 1px solid #e8e8e8;
   flex-shrink: 0;

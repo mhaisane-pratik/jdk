@@ -12,7 +12,7 @@ import "./ChatLayout.css";
 
 export default function ChatLayout() {
   const navigate = useNavigate();
-  const { currentUser, selectedRoom, theme, wallpaper } = useChat();
+  const { currentUser, selectedRoom, theme, wallpaper, selectRoom } = useChat(); // ✅ get selectRoom from context
   const [showSettings, setShowSettings] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isReady, setIsReady] = useState(false);
@@ -24,16 +24,13 @@ export default function ChatLayout() {
   }, []);
 
   useEffect(() => {
-    // Quick check for user
     const savedUser = localStorage.getItem("chatUser");
-    
     if (!savedUser && !currentUser) {
       console.log("⚠️ No user, redirecting to login");
       navigate("/chat-login", { replace: true });
       return;
     }
 
-    // Mark as ready immediately if we have a user
     if (savedUser || currentUser) {
       setIsReady(true);
     }
@@ -43,7 +40,11 @@ export default function ChatLayout() {
     }
   }, [currentUser, navigate]);
 
-  // Show minimal loading only if absolutely necessary
+  // ✅ Handler for back button on mobile
+  const handleBack = () => {
+    selectRoom(null); // clear selected room to show chat list
+  };
+
   if (!isReady && !currentUser) {
     return (
       <div className="loading-container">
@@ -53,14 +54,17 @@ export default function ChatLayout() {
     );
   }
 
+  // ✅ Conditionally add 'show-chat' class when a room is selected
+  const layoutClass = `chat-layout theme-${theme} ${selectedRoom ? 'show-chat' : ''}`;
+
   return (
-    <div className={`chat-layout theme-${theme}`} data-wallpaper={wallpaper}>
+    <div className={layoutClass} data-wallpaper={wallpaper}>
       <Sidebar
         onSettingsClick={() => setShowSettings(true)}
         isMobile={isMobile}
       />
 
-      {selectedRoom ? <ChatWindow /> : <ChatSelect />}
+      {selectedRoom ? <ChatWindow onBack={handleBack} /> : <ChatSelect />}
 
       {showSettings && (
         <SettingsPanel onClose={() => setShowSettings(false)} />
