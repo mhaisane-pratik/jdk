@@ -2,7 +2,7 @@
 
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = "https://bac-fa0o.onrender.com";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL as string;
 
 export const socket: Socket = io(SOCKET_URL, {
   autoConnect: true,

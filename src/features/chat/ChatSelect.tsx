@@ -5,7 +5,7 @@ import { useChat } from "../../contexts/ChatContext";
 import { useNavigate } from "react-router-dom";
 import "./ChatSelect.css";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 export default function ChatSelect() {
   const { currentUser, setSelectedRoom, refreshRooms } = useChat();

@@ -15,7 +15,7 @@ interface GroupMember {
   is_online?: boolean;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps) {
   const { currentUser, chatRooms, refreshRooms, setSelectedRoom } = useChat();

@@ -5,8 +5,7 @@ import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { socket } from "../../api/socket";
 import { Message } from "./ChatWindow";
 import "./InputArea.css";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 interface InputAreaProps {
   roomId: string;

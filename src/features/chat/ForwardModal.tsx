@@ -6,6 +6,8 @@ import { socket } from "../../api/socket";
 import { Message } from "./ChatWindow";
 import "./ForwardModal.css";
 
+const API_URL = import.meta.env.VITE_API_URL as string; // ✅ Production API
+
 interface ForwardModalProps {
   messages: Message[];
   onClose: () => void;
@@ -35,6 +37,7 @@ export default function ForwardModal({ messages, onClose }: ForwardModalProps) {
 
     try {
       const messageIds = messages.map((m) => m.id);
+
       const toRooms = Array.from(selectedRooms).map((roomId) => {
         const room = chatRooms.find((r) => r.id === roomId);
         return {
@@ -43,7 +46,8 @@ export default function ForwardModal({ messages, onClose }: ForwardModalProps) {
         };
       });
 
-      const res = await fetch("http://localhost:4000/api/v1/messages/forward", {
+      // ✅ FIXED API CALL
+      const res = await fetch(`${API_URL}/api/v1/messages/forward`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -52,6 +56,10 @@ export default function ForwardModal({ messages, onClose }: ForwardModalProps) {
           sender: currentUser?.username,
         }),
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
 
       const data = await res.json();
 
@@ -63,6 +71,8 @@ export default function ForwardModal({ messages, onClose }: ForwardModalProps) {
 
         alert("Messages forwarded successfully!");
         onClose();
+      } else {
+        alert("Forward failed");
       }
     } catch (err) {
       console.error("Failed to forward messages", err);
@@ -85,7 +95,8 @@ export default function ForwardModal({ messages, onClose }: ForwardModalProps) {
 
         <div className="modal-body">
           <p className="forward-info">
-            Forwarding {messages.length} message{messages.length > 1 ? "s" : ""}
+            Forwarding {messages.length} message
+            {messages.length > 1 ? "s" : ""}
           </p>
 
           <div className="rooms-list">
@@ -112,15 +123,22 @@ export default function ForwardModal({ messages, onClose }: ForwardModalProps) {
         </div>
 
         <div className="modal-footer">
-          <button className="cancel-btn" onClick={onClose} disabled={forwarding}>
+          <button
+            className="cancel-btn"
+            onClick={onClose}
+            disabled={forwarding}
+          >
             Cancel
           </button>
+
           <button
             className="forward-btn"
             onClick={handleForward}
             disabled={selectedRooms.size === 0 || forwarding}
           >
-            {forwarding ? "Forwarding..." : `Forward (${selectedRooms.size})`}
+            {forwarding
+              ? "Forwarding..."
+              : `Forward (${selectedRooms.size})`}
           </button>
         </div>
       </div>

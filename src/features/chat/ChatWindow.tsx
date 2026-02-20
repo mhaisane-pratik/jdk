@@ -9,8 +9,7 @@ import MessageList from "./MessageList";
 import InputArea from "./InputArea";
 import MediaViewer from "./MediaViewer";
 import "./ChatWindow.css";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+ const API_URL = import.meta.env.VITE_API_URL as string;
 
 export interface Message {
   id: string;

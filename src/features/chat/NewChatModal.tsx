@@ -1,9 +1,10 @@
 // File: video-call-main/src/features/chat/NewChatModal.tsx
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useChat } from "../../contexts/ChatContext";
 import "./NewChatModal.css";
+
+const API_URL = import.meta.env.VITE_API_URL as string; // ✅ Production API
 
 interface NewChatModalProps {
   onClose: () => void;
@@ -30,27 +31,26 @@ export default function NewChatModal({ onClose }: NewChatModalProps) {
     setError("");
 
     try {
-      // Check if user exists
-      const res = await fetch(`http://localhost:4000/api/v1/users/${username}`);
-      
+      // ✅ FIXED API CALL
+      const res = await fetch(`${API_URL}/api/v1/users/${username}`);
+
       if (!res.ok) {
         setError("User not found");
         setLoading(false);
         return;
       }
 
-      // Create room ID
+      // Create deterministic room ID
       const roomId = [currentUser?.username, username]
         .sort()
         .join("__");
 
-      // Refresh rooms and select the new one
       await refreshRooms();
       setSelectedRoom(roomId);
       onClose();
     } catch (err) {
+      console.error("Failed to start chat", err);
       setError("Failed to start chat");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ export default function NewChatModal({ onClose }: NewChatModalProps) {
                 setUsername(e.target.value);
                 setError("");
               }}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder="Enter username"
               autoFocus
               disabled={loading}
@@ -99,9 +99,14 @@ export default function NewChatModal({ onClose }: NewChatModalProps) {
         </div>
 
         <div className="modal-footer">
-          <button className="cancel-btn" onClick={onClose} disabled={loading}>
+          <button
+            className="cancel-btn"
+            onClick={onClose}
+            disabled={loading}
+          >
             Cancel
           </button>
+
           <button
             className="start-btn"
             onClick={handleStartChat}
