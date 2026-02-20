@@ -12,7 +12,7 @@ import "./ChatLayout.css";
 
 export default function ChatLayout() {
   const navigate = useNavigate();
-  const { currentUser, selectedRoom, theme, wallpaper, selectRoom } = useChat(); // ✅ get selectRoom from context
+  const { currentUser, selectedRoom, theme, wallpaper, setSelectedRoom } = useChat(); // ✅ use setSelectedRoom
   const [showSettings, setShowSettings] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isReady, setIsReady] = useState(false);
@@ -26,7 +26,6 @@ export default function ChatLayout() {
   useEffect(() => {
     const savedUser = localStorage.getItem("chatUser");
     if (!savedUser && !currentUser) {
-      console.log("⚠️ No user, redirecting to login");
       navigate("/chat-login", { replace: true });
       return;
     }
@@ -40,9 +39,8 @@ export default function ChatLayout() {
     }
   }, [currentUser, navigate]);
 
-  // ✅ Handler for back button on mobile
   const handleBack = () => {
-    selectRoom(null); // clear selected room to show chat list
+    setSelectedRoom(null); // ✅ clear selected room
   };
 
   if (!isReady && !currentUser) {
@@ -54,21 +52,13 @@ export default function ChatLayout() {
     );
   }
 
-  // ✅ Conditionally add 'show-chat' class when a room is selected
   const layoutClass = `chat-layout theme-${theme} ${selectedRoom ? 'show-chat' : ''}`;
 
   return (
     <div className={layoutClass} data-wallpaper={wallpaper}>
-      <Sidebar
-        onSettingsClick={() => setShowSettings(true)}
-        isMobile={isMobile}
-      />
-
+      <Sidebar onSettingsClick={() => setShowSettings(true)} isMobile={isMobile} />
       {selectedRoom ? <ChatWindow onBack={handleBack} /> : <ChatSelect />}
-
-      {showSettings && (
-        <SettingsPanel onClose={() => setShowSettings(false)} />
-      )}
+      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
     </div>
   );
 }
