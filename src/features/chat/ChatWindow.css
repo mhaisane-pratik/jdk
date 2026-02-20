@@ -18,22 +18,21 @@
 .message-list {
   flex: 1;
   overflow-y: auto;
-  
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
   min-height: 0;
   
   /* ✅ REDUCED margins - closer to header and footer */
-     /* Reduced from 80px */
-  margin-bottom: 72px; /* Keep footer space */
+  margin-top: 64px;      /* Height of fixed header */
+  margin-bottom: 72px;   /* Height of input area */
 }
 
 /* Mobile heights */
 @media (max-width: 768px) {
   .message-list {
-    margin-top: 60px;   /* Reduced from 72px */
-    margin-bottom: 64px;
+    margin-top: 60px;   /* Reduced from 64px */
+    margin-bottom: 64px; /* Reduced from 72px */
   }
 }
 
@@ -116,34 +115,21 @@
   background: #374151;
 }
 
-
-
-
 /* ================= CHAT HEADER (Fixed at top) ================= */
 .chat-header {
   position: fixed; /* ✅ Fixed header */
-  top:0.5px;
-  /* ✅ Sidebar width offset */
-  left: 27.4%;
+  top: 0;
+  left: 27.4%;      /* Align with sidebar offset (420px) */
+  right: 0;
   height: 64px;
-  
-  
+  z-index: 100;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* Mobile: full width */
+@media (max-width: 768px) {
+  .chat-header {
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+}

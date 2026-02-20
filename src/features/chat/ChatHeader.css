@@ -17,11 +17,28 @@
   background: #ffffff;
   border-bottom: 1px solid #e9edef;
 
-  width: 73%;      /* Takes 70% screen width */
+  width: 73%;      /* Takes 73% screen width (side‑by‑side with sidebar) */
   box-sizing: border-box;
   z-index: 100;
 }
 
+/* Mobile: full width, no right offset */
+@media (max-width: 768px) {
+  .chat-header {
+    width: 100%;
+    right: auto;
+    left: 0;
+    height: 60px;
+    padding: 10px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-header {
+    padding: 8px 14px;
+    height: 56px;
+  }
+}
 
 .chat-header.clickable {
   cursor: pointer;
@@ -205,6 +222,9 @@
   .chat-header {
     height: 60px;
     padding: 10px 16px;
+    width: 100%;
+    left: 0;
+    right: 0;
   }
 
   .chat-header .receiver-avatar {

@@ -1,51 +1,49 @@
 /* ==========================================================================
-   GLOBAL BLUR FIX - Place at the very TOP of index.css
+   GLOBAL RESET & BASE STYLES
    ========================================================================== */
 
-/* RESET */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
 
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #f5f7fa;
+  color: #111b21;
+}
 
+/* Dark theme base */
+.theme-dark {
+  background: #111b21;
+  color: #e9edef;
+}
 
+/* ==========================================================================
+   LAYOUT UTILITIES
+   ========================================================================== */
 
+/* Example layout classes (used by other components) */
+.app-container {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
 
-/* LAYOUT */
-
-
-/* SIDEBAR */
+/* Sidebar (for reference, actual styles in Sidebar.css) */
 .sidebar {
-  width: 230px;
+  width: 420px;
   background: #ffffff;
-  padding: 20px;
-  color: #334155;
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid #e9edef;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.sidebar h2 {
-  margin-bottom: 30px;
-  font-size: 20px;
-  color: #0f172a;
-}
-
-.sidebar a {
-  display: block;
-  padding: 12px;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  color: #64748b;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.sidebar a:hover {
-  background: #f1f5f9;
-  color: #4f46e5;
-}
-
-/* HEADER */
+/* Header (for reference) */
 .header {
   height: 60px;
   background: #ffffff;
@@ -56,16 +54,7 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-
-
-/* JOIN */
-
-
-
-
-
-
-
+/* Meeting controls (example) */
 .meeting-controls {
   height: 80px;
   background: #ffffff;
@@ -87,4 +76,21 @@
 
 .meeting-controls button:hover {
   background: #e2e8f0;
+}
+
+/* Mobile adjustments for global elements */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    border-right: none;
+  }
+
+  .header {
+    padding: 0 12px;
+  }
+
+  .meeting-controls {
+    height: 64px;
+    gap: 10px;
+  }
 }

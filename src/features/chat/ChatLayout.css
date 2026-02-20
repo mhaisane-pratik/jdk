@@ -39,7 +39,7 @@
   border-left-color: #2a3942;
 }
 
-/* Mobile */
+/* Mobile: stack vertically */
 @media (max-width: 768px) {
   .chat-layout {
     flex-direction: column;
@@ -48,6 +48,7 @@
   .chat-layout > .sidebar {
     width: 100%;
     height: auto;
+    max-height: 100vh;
   }
 
   .chat-layout > :not(.sidebar) {

@@ -26,6 +26,17 @@
     inset 2px 0 4px rgba(0, 0, 0, 0.3),
     2px 0 3px rgba(0, 0, 0, 0.3);
 }
+
+/* Mobile: full width, no shadows */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+  }
+}
+
 /* --------------------------------------------------------------------------
    TOP BAR
    -------------------------------------------------------------------------- */

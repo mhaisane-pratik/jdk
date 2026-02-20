@@ -44,6 +44,13 @@
   background: #1e293b;
 }
 
+/* Mobile: full width */
+@media (max-width: 768px) {
+  .media-viewer {
+    width: 100%;
+  }
+}
+
 /* Header */
 .media-header {
   display: flex;
@@ -238,6 +245,12 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .media-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .media-item {
