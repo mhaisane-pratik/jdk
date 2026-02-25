@@ -8,7 +8,7 @@ import "./ChatSelect.css";
 const API_URL = import.meta.env.VITE_API_URL as string;
 
 export default function ChatSelect() {
-  const { currentUser, setSelectedRoom, refreshRooms } = useChat();
+  const { currentUser, setSelectedRoom, refreshRooms, loadUserProfile } = useChat(); // 👈 added loadUserProfile
   const navigate = useNavigate();
   const [receiverName, setReceiverName] = useState("");
   const [error, setError] = useState("");
@@ -41,6 +41,9 @@ export default function ChatSelect() {
         return;
       }
 
+      // 👇 Preload the user's profile immediately so display name is ready
+      await loadUserProfile(trimmedReceiver);
+
       // Create room ID (alphabetically sorted)
       const participants = [currentUser?.username, trimmedReceiver].sort();
       const roomId = participants.join("__");
@@ -64,7 +67,7 @@ export default function ChatSelect() {
         console.log("✅ Room created/verified");
       }
 
-      // 🔴 IMPORTANT: Store receiver in localStorage
+      // Store receiver in localStorage
       localStorage.setItem(`room_${roomId}_receiver`, trimmedReceiver);
 
       // Set the selected room

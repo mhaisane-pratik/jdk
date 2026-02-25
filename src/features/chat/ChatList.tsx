@@ -5,51 +5,66 @@ import "./ChatList.css";
 
 interface ChatListProps {
   rooms: any[];
+  searchTerm?: string;
+  activeFilter?: string;
 }
 
 export default function ChatList({ rooms }: ChatListProps) {
-  const { selectedRoom, setSelectedRoom } = useChat();
+  const {
+    currentUser,
+    selectedRoom,
+    setSelectedRoom,
+    userProfiles,
+  } = useChat();
 
-  if (rooms.length === 0) {
+  if (!currentUser) return null;
+
+  if (!rooms || rooms.length === 0) {
     return (
       <div className="empty-chat-list">
-        
         <p>No chats yet</p>
-        <span>Start a new conversation or create a group</span>
+        <span>Start a new conversation</span>
       </div>
     );
   }
 
-  // Separate pinned and unpinned
-  const pinnedRooms = rooms.filter((r) => r.is_pinned);
-  const unpinnedRooms = rooms.filter((r) => !r.is_pinned);
-
   return (
     <div className="chat-list">
-      {/* Pinned chats */}
-      {pinnedRooms.length > 0 && (
-        <>
-          {pinnedRooms.map((room) => (
-            <ChatItem
-              key={room.id}
-              room={room}
-              isSelected={selectedRoom === room.id}
-              onClick={() => setSelectedRoom(room.id)}
-            />
-          ))}
-          {unpinnedRooms.length > 0 && <div className="chat-divider" />}
-        </>
-      )}
+      {rooms.map((room) => {
+        const isGroup = room.is_group === true;
 
-      {/* Regular chats */}
-      {unpinnedRooms.map((room) => (
-        <ChatItem
-          key={room.id}
-          room={room}
-          isSelected={selectedRoom === room.id}
-          onClick={() => setSelectedRoom(room.id)}
-        />
-      ))}
+        // ✅ Always use backend field first
+        const otherUsername = !isGroup
+          ? room.other_user ||
+            (room.participant_1 === currentUser.username
+              ? room.participant_2
+              : room.participant_1)
+          : "";
+
+        const profile = userProfiles.get(otherUsername);
+
+        const displayName = isGroup
+          ? room.group_name || "Group"
+          : profile?.display_name || otherUsername || "Unknown";
+
+        return (
+          <ChatItem
+            key={room.id}
+            roomId={room.id}
+            displayName={displayName}
+            avatarUrl={profile?.profile_picture}
+            lastMessage={room.last_message}
+            lastMessageSender={room.last_message_sender}
+            lastMessageTime={room.last_message_time}
+            unreadCount={room.unread_count}
+            isGroup={isGroup}
+            isPinned={room.is_pinned}
+            isMuted={room.is_muted}
+            isSelected={selectedRoom === room.id}
+            onClick={() => setSelectedRoom(room.id)}
+          />
+        );
+      })}
     </div>
   );
 }

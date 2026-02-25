@@ -109,20 +109,4 @@
   background: #374151;
 }
 
-/* ================= CHAT HEADER (Fixed at top) ================= */
-.chat-header {
-  position: fixed;
-  top: 0;
-  left: 27.4%;
-  right: 0;
-  height: 64px;
-  z-index: 100;
-}
-
-@media (max-width: 768px) {
-  .chat-header {
-    left: 0;
-    right: 0;
-    width: 100%;
-  }
-}
+/* NOTE: .chat-header styles removed to avoid duplication – now handled by ChatHeader.css */

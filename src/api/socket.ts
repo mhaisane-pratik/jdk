@@ -5,7 +5,7 @@ import { io, Socket } from "socket.io-client";
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL as string;
 
 export const socket: Socket = io(SOCKET_URL, {
-  autoConnect: true,
+  autoConnect: false, // 🔥 FIXED
   reconnection: true,
   reconnectionAttempts: 10,
   reconnectionDelay: 1000,
@@ -17,16 +17,6 @@ export const socket: Socket = io(SOCKET_URL, {
 // Connection event listeners
 socket.on("connect", () => {
   console.log("✅ Socket Connected:", socket.id);
-  
-  // Rejoin room if there's a stored room
-  const savedRoom = localStorage.getItem("selectedRoom");
-  const savedUser = localStorage.getItem("chatUser");
-  
-  if (savedRoom && savedUser) {
-    console.log("🔄 Auto-rejoining room:", savedRoom);
-    socket.emit("join_room", savedRoom);
-    socket.emit("user_join", { username: savedUser });
-  }
 });
 
 socket.on("disconnect", (reason) => {
@@ -39,16 +29,6 @@ socket.on("connect_error", (error) => {
 
 socket.on("reconnect", (attemptNumber) => {
   console.log(`🔄 Reconnected after ${attemptNumber} attempts`);
-  
-  // Rejoin room after reconnection
-  const savedRoom = localStorage.getItem("selectedRoom");
-  const savedUser = localStorage.getItem("chatUser");
-  
-  if (savedRoom && savedUser) {
-    console.log("🔄 Rejoining room after reconnect:", savedRoom);
-    socket.emit("join_room", savedRoom);
-    socket.emit("user_join", { username: savedUser });
-  }
 });
 
 // Make socket available globally for debugging

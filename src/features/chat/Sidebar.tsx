@@ -1,3 +1,5 @@
+// File: video-call-main/src/features/chat/Sidebar.tsx
+
 import React, { useState, useEffect } from "react";
 import { useChat } from "../../contexts/ChatContext";
 import ChatList from "./ChatList";
@@ -14,13 +16,19 @@ interface SidebarProps {
 type FilterType = "all" | "unread" | "groups";
 
 export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
-  const { chatRooms } = useChat();
+  const { chatRooms, selectedRoom } = useChat(); // 👈 get selectedRoom
   const [showMenu, setShowMenu] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+
+  // 👇 Reset filters whenever a new room is selected
+  useEffect(() => {
+    setSearchTerm("");
+    setActiveFilter("all");
+  }, [selectedRoom]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -102,11 +110,11 @@ export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
           onClick={() => setShowNewChat(true)}
           title="New chat"
         >
-          
+          {/* Icon */}
         </button>
       </div>
 
-      {/* ✅ NEW: Filter Tabs (All, Unread, Groups) */}
+      {/* Filter Tabs */}
       <div className="filter-tabs">
         <button
           className={`filter-tab ${activeFilter === "all" ? "active" : ""}`}
@@ -136,7 +144,7 @@ export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
 
       {/* Chat list */}
       <div className="chat-list-container">
-        <ChatList rooms={filteredRooms} />
+        <ChatList rooms={filteredRooms} searchTerm={searchTerm} activeFilter={activeFilter} />
       </div>
 
       {/* Dropdown menu */}

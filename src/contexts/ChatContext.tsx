@@ -49,15 +49,15 @@ interface ChatContextType {
   onlineUsers: Set<string>;
   isSocketConnected: boolean;
   isLoading: boolean;
+  userProfiles: Map<string, ChatUser>;      // profile cache
+  loadUserProfile: (username: string) => Promise<ChatUser | null>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
- const API_URL = import.meta.env.VITE_API_URL as string;
+const API_URL = import.meta.env.VITE_API_URL as string;
 
-export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<ChatUser | null>(null);
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
@@ -66,15 +66,14 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [userProfiles, setUserProfiles] = useState<Map<string, ChatUser>>(new Map());
+
   const hasInitialized = useRef(false);
 
-  // Fast initialization - only restore from localStorage
+  // --- Fast initialization from localStorage ---
   useEffect(() => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
-
-    console.log("⚡ Fast ChatContext initialization...");
 
     const savedUsername = localStorage.getItem("chatUser");
     const savedTheme = localStorage.getItem("chatTheme") || "light";
@@ -83,10 +82,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setTheme(savedTheme);
     setWallpaper(savedWallpaper);
-
-    if (savedRoomId) {
-      setSelectedRoom(savedRoomId);
-    }
+    if (savedRoomId) setSelectedRoom(savedRoomId);
 
     if (savedUsername) {
       setCurrentUser({
@@ -95,18 +91,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         theme: savedTheme,
         wallpaper: savedWallpaper,
       });
-
       fetchUserProfile(savedUsername);
     }
-
-    console.log("✅ Context initialized instantly");
   }, []);
 
-  // Save preferences
+  // --- Save preferences ---
   useEffect(() => {
-    if (selectedRoom) {
-      localStorage.setItem("selectedRoom", selectedRoom);
-    }
+    if (selectedRoom) localStorage.setItem("selectedRoom", selectedRoom);
   }, [selectedRoom]);
 
   useEffect(() => {
@@ -118,28 +109,19 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("chatWallpaper", wallpaper);
   }, [wallpaper]);
 
-  // Socket connection
+  // --- Socket connection ---
   useEffect(() => {
     const handleConnect = () => {
       setIsSocketConnected(true);
-      if (currentUser) {
-        socket.emit("user_join", { username: currentUser.username });
-      }
-      if (selectedRoom) {
-        socket.emit("join_room", selectedRoom);
-      }
+      if (currentUser) socket.emit("user_join", { username: currentUser.username });
+      if (selectedRoom) socket.emit("join_room", selectedRoom);
     };
-
-    const handleDisconnect = () => {
-      setIsSocketConnected(false);
-    };
+    const handleDisconnect = () => setIsSocketConnected(false);
 
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
 
-    if (socket.connected) {
-      handleConnect();
-    }
+    if (socket.connected) handleConnect();
 
     return () => {
       socket.off("connect", handleConnect);
@@ -147,30 +129,28 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [currentUser, selectedRoom]);
 
-  // Room listeners
+  // --- Room listeners ---
   useEffect(() => {
     const handleRoomUpdated = ({ roomId, lastMessage, sender, timestamp }: any) => {
       setChatRooms((prev) =>
         prev
-          .map((room) => {
-            if (room.id === roomId) {
-              return {
-                ...room,
-                last_message: lastMessage,
-                last_message_sender: sender,
-                last_message_time: timestamp,
-                unread_count:
-                  sender !== currentUser?.username && selectedRoom !== roomId
-                    ? room.unread_count + 1
-                    : room.unread_count,
-              };
-            }
-            return room;
-          })
+          .map((room) =>
+            room.id === roomId
+              ? {
+                  ...room,
+                  last_message: lastMessage,
+                  last_message_sender: sender,
+                  last_message_time: timestamp,
+                  unread_count:
+                    sender !== currentUser?.username && selectedRoom !== roomId
+                      ? room.unread_count + 1
+                      : room.unread_count,
+                }
+              : room
+          )
           .sort(
             (a, b) =>
-              new Date(b.last_message_time).getTime() -
-              new Date(a.last_message_time).getTime()
+              new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime()
           )
       );
     };
@@ -187,10 +167,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
       });
     };
 
-    const handleNewGroupCreated = ({ groupId }: any) => {
-      console.log("🎉 New group created, refreshing rooms...");
-      refreshRooms();
-    };
+    const handleNewGroupCreated = () => refreshRooms();
 
     socket.on("room_updated", handleRoomUpdated);
     socket.on("user_online", handleUserOnline);
@@ -205,6 +182,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [currentUser, selectedRoom]);
 
+  // --- Fetch current user profile (used at login) ---
   const fetchUserProfile = async (username: string) => {
     try {
       let res = await fetch(`${API_URL}/api/v1/users/${username}`);
@@ -216,56 +194,83 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         res = await fetch(`${API_URL}/api/v1/users`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username,
-            display_name: username,
-          }),
+          body: JSON.stringify({ username, display_name: username }),
         });
-
-        if (res.ok) {
-          userData = await res.json();
-        }
+        if (res.ok) userData = await res.json();
       }
 
       if (userData) {
         setCurrentUser(userData);
         setTheme(userData.theme || "light");
         setWallpaper(userData.wallpaper || "solid-white");
-
-        if (socket.connected) {
-          socket.emit("user_join", { username: userData.username });
-        }
+        if (socket.connected) socket.emit("user_join", { username: userData.username });
       }
     } catch (err) {
       console.error("❌ Failed to fetch user:", err);
     }
   };
 
-  // ✅ UPDATED: Force refresh rooms every time
-  const refreshRooms = async () => {
-    if (!currentUser) {
-      console.log("⚠️ Cannot refresh rooms - no currentUser");
-      return;
+  // this i
+  // --- Load a single user profile (cached) ---
+  const loadUserProfile = async (username: string): Promise<ChatUser | null> => {
+    if (userProfiles.has(username)) {
+      return userProfiles.get(username) || null;
     }
+    try {
+      const res = await fetch(`${API_URL}/api/v1/users/${username}`);
+      if (!res.ok) return null;
+      const userData = await res.json();
+      setUserProfiles((prev) => new Map(prev).set(username, userData));
+      return userData;
+    } catch (err) {
+      console.error(`❌ Failed to load profile for ${username}:`, err);
+      return null;
+    }
+  };
+
+  // --- Refresh rooms and preload profiles of all chat partners ---
+  const refreshRooms = async () => {
+    if (!currentUser) return;
 
     setIsLoading(true);
-    console.log("🔄 Refreshing rooms for:", currentUser.username);
-
     try {
       const url = `${API_URL}/api/v1/chats/rooms/${currentUser.username}`;
-      console.log("📡 Fetching from:", url);
-
       const res = await fetch(url);
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
-
-      const data = await res.json();
-      console.log("✅ Rooms loaded:", data.length);
-      console.log("📦 Rooms data:", data);
-
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: ChatRoom[] = await res.json();
       setChatRooms(data);
+
+      // Collect all usernames of other participants (for 1-on-1 rooms)
+      const otherUsernames = data
+        .filter((room) => !room.is_group)
+        .map((room) => {
+          if (room.other_user) return room.other_user;
+          return room.participant_1 === currentUser.username
+            ? room.participant_2
+            : room.participant_1;
+        })
+        .filter(Boolean);
+
+
+        
+      const uniqueOthers = [...new Set(otherUsernames)];
+
+      // Preload profiles (only if not already cached)
+      await Promise.all(
+        uniqueOthers.map(async (username) => {
+          if (!userProfiles.has(username)) {
+            try {
+              const userRes = await fetch(`${API_URL}/api/v1/users/${username}`);
+              if (userRes.ok) {
+                const userData = await userRes.json();
+                setUserProfiles((prev) => new Map(prev).set(username, userData));
+              }
+            } catch (err) {
+              console.error(`Failed to preload ${username}:`, err);
+            }
+          }
+        })
+      );
     } catch (err) {
       console.error("❌ Error refreshing rooms:", err);
       setChatRooms([]);
@@ -274,13 +279,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // ✅ UPDATED: Auto-load rooms when user is set
+  // Auto-load rooms when user is set
   useEffect(() => {
-    if (currentUser && currentUser.username) {
-      console.log("👤 User detected, loading rooms...");
-      refreshRooms();
-    }
-  }, [currentUser?.username]); // ✅ Trigger on username change
+    if (currentUser?.username) refreshRooms();
+  }, [currentUser?.username]);
 
   return (
     <ChatContext.Provider
@@ -299,6 +301,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         onlineUsers,
         isSocketConnected,
         isLoading,
+        userProfiles,
+        loadUserProfile,
       }}
     >
       {children}
@@ -308,8 +312,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const useChat = () => {
   const context = useContext(ChatContext);
-  if (!context) {
-    throw new Error("useChat must be used within ChatProvider");
-  }
+  if (!context) throw new Error("useChat must be used within ChatProvider");
   return context;
 };

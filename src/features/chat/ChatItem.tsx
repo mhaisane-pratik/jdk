@@ -2,40 +2,46 @@ import React, { useState } from "react";
 import { useChat } from "../../contexts/ChatContext";
 import "./ChatItem.css";
 
-const API_URL = import.meta.env.VITE_API_URL as string; // ✅ Production API
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 interface ChatItemProps {
-  room: any;
-  isSelected: boolean;
+  roomId: string;
+  displayName: string;
+  avatarUrl?: string;
+  lastMessage?: string;
+  lastMessageSender?: string;
+  lastMessageTime?: string;
+  isGroup: boolean;
+  unreadCount?: number;
+  isPinned?: boolean;
+  isMuted?: boolean;
+  isSelected?: boolean;
   onClick: () => void;
 }
 
-export default function ChatItem({ room, isSelected, onClick }: ChatItemProps) {
+export default function ChatItem({
+  roomId,
+  displayName,
+  avatarUrl,
+  lastMessage,
+  lastMessageSender,
+  lastMessageTime,
+  isGroup,
+  unreadCount = 0,
+  isPinned = false,
+  isMuted = false,
+  isSelected,
+  onClick,
+}: ChatItemProps) {
   const { currentUser, onlineUsers, refreshRooms } = useChat();
   const [showMenu, setShowMenu] = useState(false);
 
-  // Determine if this is a group
-  const isGroup = room.is_group || room.type === "group";
+  // 🔥 Online check (IMPORTANT)
+  const isOnline = !isGroup && onlineUsers.has(displayName);
 
-  // Get chat name
-  const chatName = isGroup
-    ? room.group_name || room.name || "Group"
-    : room.other_user ||
-      (room.participant_1 === currentUser?.username
-        ? room.participant_2
-        : room.participant_1);
-
-  // Avatar URL for private chats
-  const avatarUrl = isGroup
-    ? null
-    : `https://ui-avatars.com/api/?name=${chatName}&background=random`;
-
-  // Check online status
-  const isOnline = !isGroup && onlineUsers.has(chatName);
-
-  // Format timestamp
-  const formatTime = (dateString: string) => {
+  const formatTime = (dateString?: string) => {
     if (!dateString) return "";
+
     const date = new Date(dateString);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -55,96 +61,47 @@ export default function ChatItem({ room, isSelected, onClick }: ChatItemProps) {
     }
   };
 
-  // ✅ FIXED PIN
-  const handlePin = async () => {
-    try {
-      await fetch(
-        `${API_URL}/api/v1/chats/pin/${room.id}/${currentUser?.username}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pinned: !room.is_pinned }),
-        }
-      );
-
-      await refreshRooms();
-      setShowMenu(false);
-    } catch (err) {
-      console.error("Failed to pin chat", err);
-    }
-  };
-
-  // ✅ FIXED MUTE
-  const handleMute = async () => {
-    try {
-      await fetch(
-        `${API_URL}/api/v1/chats/mute/${room.id}/${currentUser?.username}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ muted: !room.is_muted }),
-        }
-      );
-
-      await refreshRooms();
-      setShowMenu(false);
-    } catch (err) {
-      console.error("Failed to mute chat", err);
-    }
-  };
-
-  // Render last message
   const renderLastMessage = () => {
-    if (!room.last_message) return "No messages yet";
+    if (!lastMessage) return "No messages yet";
 
-    let prefix = "";
+    if (lastMessageSender === currentUser?.username) {
+      return <>You: {lastMessage}</>;
+    }
 
-    if (room.last_message_sender === currentUser?.username) {
-      prefix = "You: ";
-    } else if (isGroup && room.last_message_sender) {
+    if (isGroup && lastMessageSender) {
       return (
         <>
-          <span className="sender-name">
-            {room.last_message_sender}:{" "}
-          </span>
-          {room.last_message}
+          {lastMessageSender}: {lastMessage}
         </>
       );
     }
 
-    return (
-      <>
-        {prefix && <span className="you-label">{prefix}</span>}
-        {room.last_message}
-      </>
-    );
-  };
-
-  const getGroupIcon = () => {
-    if (room.group_icon) return room.group_icon;
-    if (room.group_name) return room.group_name.charAt(0).toUpperCase();
-    return "👥";
+    return lastMessage;
   };
 
   return (
     <div
       className={`chat-item ${isSelected ? "selected" : ""} ${
-        room.is_pinned ? "pinned" : ""
-      } ${room.is_muted ? "muted" : ""}`}
+        isPinned ? "pinned" : ""
+      } ${isMuted ? "muted" : ""}`}
       onClick={onClick}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        setShowMenu(true);
-      }}
     >
+      {/* Avatar */}
       <div className="chat-avatar-wrapper">
         {isGroup ? (
-          <div className="group-avatar">{getGroupIcon()}</div>
+          <div className="group-avatar">
+            {displayName?.charAt(0)?.toUpperCase()}
+          </div>
         ) : (
           <>
             <img
-              src={avatarUrl}
-              alt={chatName}
+              src={
+                avatarUrl ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  displayName
+                )}&background=random`
+              }
+              alt={displayName}
               className="chat-avatar"
             />
             {isOnline && <span className="online-badge"></span>}
@@ -152,53 +109,26 @@ export default function ChatItem({ room, isSelected, onClick }: ChatItemProps) {
         )}
       </div>
 
+      {/* Content */}
       <div className="chat-content">
-        <div className="chat-header">
+        <div className="chat-item-header">
           <div className="chat-user-name">
-            <h4>{chatName}</h4>
-            {room.is_pinned && <span className="pin-badge">📌</span>}
-            {room.is_muted && <span className="mute-badge">🔇</span>}
+            <h4>{displayName}</h4>
+            {isPinned && <span className="pin-badge">📌</span>}
+            {isMuted && <span className="mute-badge">🔇</span>}
           </div>
           <span className="chat-time">
-            {formatTime(room.last_message_time)}
+            {formatTime(lastMessageTime)}
           </span>
         </div>
 
         <div className="chat-preview">
           <p className="last-message">{renderLastMessage()}</p>
-          {room.unread_count > 0 && (
-            <span className="unread-badge">{room.unread_count}</span>
+          {unreadCount > 0 && (
+            <span className="unread-badge">{unreadCount}</span>
           )}
         </div>
-
-        {isGroup && (room.member_count || room.participant_count) && (
-          <div className="group-meta">
-            👥 {room.member_count || room.participant_count} members
-          </div>
-        )}
       </div>
-
-      {showMenu && (
-        <>
-          <div
-            className="menu-overlay"
-            onClick={() => setShowMenu(false)}
-          />
-          <div className="chat-context-menu">
-            <button onClick={handlePin}>
-              {room.is_pinned ? "📌 Unpin chat" : "📌 Pin chat"}
-            </button>
-            <button onClick={handleMute}>
-              {room.is_muted
-                ? "🔔 Unmute notifications"
-                : "🔇 Mute notifications"}
-            </button>
-            <button onClick={() => setShowMenu(false)}>
-              ❌ Cancel
-            </button>
-          </div>
-        </>
-      )}
     </div>
   );
 }
