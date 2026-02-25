@@ -82,7 +82,7 @@ await fetch(`${API_URL}/api/v1/users/${currentUser.username}/settings`, {
     if (!currentUser) return;
 
     try {
-      await fetch(`http://localhost:4000/api/v1/users/${currentUser.username}/settings`, {
+      await fetch(`${API_URL}/api/v1/users/${currentUser.username}/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ wallpaper: newWallpaper }),
@@ -99,7 +99,7 @@ await fetch(`${API_URL}/api/v1/users/${currentUser.username}/settings`, {
     if (!currentUser) return;
 
     try {
-      await fetch(`http://localhost:4000/api/v1/users/${currentUser.username}/settings`, {
+        await fetch(`${API_URL}/api/v1/users/${currentUser.username}/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notification_enabled: enabled }),
