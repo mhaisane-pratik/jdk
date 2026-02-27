@@ -11,7 +11,7 @@ import MediaViewer from "./MediaViewer";
 import "./ChatWindow.css";
 
 const API_URL = import.meta.env.VITE_API_URL as string;
-
+const API_KEY = "ZATCHAT_PRATEEK9373";
 export interface Message {
   id: string;
   room_id?: string;
@@ -196,7 +196,11 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
 
     try {
       const url = `${API_URL}/api/v1/chats/history/${selectedRoom}?username=${currentUser.username}`;
-      const res = await fetch(url);
+      const res = await fetch(url, {
+  headers: {
+    "x-api-key": API_KEY,
+  },
+});
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
       const data: Message[] = await res.json();
@@ -226,10 +230,15 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const markAsRead = async () => {
     if (!selectedRoom || !currentUser) return;
     try {
-      await fetch(
-        `${API_URL}/api/v1/chats/mark-read/${selectedRoom}/${currentUser.username}`,
-        { method: "POST" }
-      );
+    await fetch(
+  `${API_URL}/api/v1/chats/mark-read/${selectedRoom}/${currentUser.username}`,
+  {
+    method: "POST",
+    headers: {
+      "x-api-key": API_KEY,
+    },
+  }
+);
     } catch (err) {
       console.error("❌ Mark as read failed:", err);
     }

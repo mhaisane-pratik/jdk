@@ -277,17 +277,19 @@ export default function MessageItem({
                   </div>
                 </div>
               )}
-
-              <img
-                src={message.file_url}
-                alt="Shared"
-                className="message-image"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setImageFullscreen(true);
-                }}
-                loading="lazy"
-              />
+             <img
+  src={`${API_URL}/api/v1/proxy-image?url=${encodeURIComponent(
+    message.file_url
+  )}`}
+  alt="Shared"
+  className="message-image"
+  onClick={(e) => {
+    e.stopPropagation();
+    setImageFullscreen(true);
+  }}
+  loading="lazy"
+/>
+            
               {message.message && (
                 <p className="file-caption">{message.message}</p>
               )}
@@ -402,7 +404,12 @@ export default function MessageItem({
             >
               ×
             </button>
-            <img src={message.file_url} alt="Full size" />
+              <img
+  src={`${API_URL}/api/v1/proxy-image?url=${encodeURIComponent(
+    message.file_url
+  )}`}
+  alt="Full size"
+/>
             <a
               href={message.file_url}
               download

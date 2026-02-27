@@ -6,7 +6,7 @@ import { Home, User, Lock, Phone, MessageSquare } from "lucide-react";
 import "./Login.css";
 
 const API_URL = import.meta.env.VITE_API_URL as string;
-
+const API_KEY = "ZATCHAT_PRATEEK9373";
 export default function ChatLogin() {
   const navigate = useNavigate();
   const { setCurrentUser, currentUser } = useChat();
@@ -82,8 +82,11 @@ export default function ChatLogin() {
 
       if (!userData) {
         const createRes = await fetch(`${API_URL}/api/v1/users`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-api-key": API_KEY,
+  },
           body: JSON.stringify({
             username: trimmedUsername,
             display_name: trimmedUsername,
@@ -224,7 +227,7 @@ export default function ChatLogin() {
           {loginMode === "password" && (
             <div className="form">
               <div className="input-group">
-                <User size={18} className="input-icon" />
+                
                 <input
                   ref={usernameInputRef}
                   type="text"
@@ -235,7 +238,7 @@ export default function ChatLogin() {
                 />
               </div>
               <div className="input-group">
-                <Lock size={18} className="input-icon" />
+        
                 <input
                   type="password"
                   placeholder="Password (any value)"

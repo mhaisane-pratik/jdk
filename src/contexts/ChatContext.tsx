@@ -56,7 +56,7 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 const API_URL = import.meta.env.VITE_API_URL as string;
-
+const API_KEY = "ZATCHAT_PRATEEK9373";
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<ChatUser | null>(null);
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
@@ -185,17 +185,24 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // --- Fetch current user profile (used at login) ---
   const fetchUserProfile = async (username: string) => {
     try {
-      let res = await fetch(`${API_URL}/api/v1/users/${username}`);
+    let res = await fetch(`${API_URL}/api/v1/users/${username}`, {
+  headers: {
+    "x-api-key": API_KEY,
+  },
+});
       let userData;
 
       if (res.ok) {
         userData = await res.json();
       } else {
-        res = await fetch(`${API_URL}/api/v1/users`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, display_name: username }),
-        });
+          res = await fetch(`${API_URL}/api/v1/users`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-api-key": API_KEY,
+  },
+  body: JSON.stringify({ username, display_name: username }),
+});
         if (res.ok) userData = await res.json();
       }
 
@@ -217,7 +224,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return userProfiles.get(username) || null;
     }
     try {
-      const res = await fetch(`${API_URL}/api/v1/users/${username}`);
+  
+      const res = await fetch(`${API_URL}/api/v1/users/${username}`, {
+  headers: {
+    "x-api-key": API_KEY,
+  },
+});
       if (!res.ok) return null;
       const userData = await res.json();
       setUserProfiles((prev) => new Map(prev).set(username, userData));
@@ -235,7 +247,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const url = `${API_URL}/api/v1/chats/rooms/${currentUser.username}`;
-      const res = await fetch(url);
+      const res = await fetch(url, {
+  headers: {
+    "x-api-key": API_KEY,
+  },
+});
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: ChatRoom[] = await res.json();
       setChatRooms(data);
@@ -260,7 +276,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         uniqueOthers.map(async (username) => {
           if (!userProfiles.has(username)) {
             try {
-              const userRes = await fetch(`${API_URL}/api/v1/users/${username}`);
+              const userRes = await fetch(`${API_URL}/api/v1/users/${username}`, {
+  headers: {
+    "x-api-key": API_KEY,
+  },
+});
               if (userRes.ok) {
                 const userData = await userRes.json();
                 setUserProfiles((prev) => new Map(prev).set(username, userData));
