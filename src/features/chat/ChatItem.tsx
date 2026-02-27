@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { useChat } from "../../contexts/ChatContext";
 import "./ChatItem.css";
 
-const API_URL = import.meta.env.VITE_API_URL as string;
-
 interface ChatItemProps {
   roomId: string;
   displayName: string;
@@ -20,7 +18,6 @@ interface ChatItemProps {
 }
 
 export default function ChatItem({
-  roomId,
   displayName,
   avatarUrl,
   lastMessage,
@@ -33,10 +30,9 @@ export default function ChatItem({
   isSelected,
   onClick,
 }: ChatItemProps) {
-  const { currentUser, onlineUsers, refreshRooms } = useChat();
+  const { currentUser, onlineUsers } = useChat();
   const [showMenu, setShowMenu] = useState(false);
 
-  // 🔥 Online check (IMPORTANT)
   const isOnline = !isGroup && onlineUsers.has(displayName);
 
   const formatTime = (dateString?: string) => {
@@ -57,21 +53,40 @@ export default function ChatItem({
     } else if (days < 7) {
       return date.toLocaleDateString([], { weekday: "short" });
     } else {
-      return date.toLocaleDateString([], { month: "short", day: "numeric" });
+      return date.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+      });
     }
   };
 
-  const renderLastMessage = () => {
+  const renderPreviewText = () => {
     if (!lastMessage) return "No messages yet";
 
-    if (lastMessageSender === currentUser?.username) {
-      return <>You: {lastMessage}</>;
+    // Image detection
+    if (lastMessage.startsWith("http") && 
+        (lastMessage.includes(".jpg") ||
+         lastMessage.includes(".png") ||
+         lastMessage.includes(".jpeg") ||
+         lastMessage.includes(".webp"))) {
+      return "📷 Photo";
     }
 
+    // File detection
+    if (lastMessage.startsWith("http") && lastMessage.includes(".")) {
+      return "📎 File";
+    }
+
+    // If current user sent
+    if (lastMessageSender === currentUser?.username) {
+      return <> <strong>You:</strong> {lastMessage} </>;
+    }
+
+    // Group preview
     if (isGroup && lastMessageSender) {
       return (
         <>
-          {lastMessageSender}: {lastMessage}
+          <strong>{lastMessageSender}:</strong> {lastMessage}
         </>
       );
     }
@@ -81,9 +96,9 @@ export default function ChatItem({
 
   return (
     <div
-      className={`chat-item ${isSelected ? "selected" : ""} ${
-        isPinned ? "pinned" : ""
-      } ${isMuted ? "muted" : ""}`}
+      className={`chat-item ${isSelected ? "selected" : ""} 
+      ${isPinned ? "pinned" : ""} 
+      ${isMuted ? "muted" : ""}`}
       onClick={onClick}
     >
       {/* Avatar */}
@@ -113,19 +128,27 @@ export default function ChatItem({
       <div className="chat-content">
         <div className="chat-item-header">
           <div className="chat-user-name">
-            <h4>{displayName}</h4>
+            <h4 className={unreadCount > 0 ? "bold-name" : ""}>
+  {displayName}
+</h4>
             {isPinned && <span className="pin-badge">📌</span>}
             {isMuted && <span className="mute-badge">🔇</span>}
           </div>
+
           <span className="chat-time">
             {formatTime(lastMessageTime)}
           </span>
         </div>
 
         <div className="chat-preview">
-          <p className="last-message">{renderLastMessage()}</p>
+        
+         <p className={`last-message ${unreadCount > 0 ? "bold" : ""}`}>
+  {renderPreviewText()}
+</p>
           {unreadCount > 0 && (
-            <span className="unread-badge">{unreadCount}</span>
+            <span className="unread-badge">
+              {unreadCount}
+            </span>
           )}
         </div>
       </div>

@@ -281,3 +281,20 @@
     font-size: 10px;
   }
 }
+
+.last-message.bold {
+  font-weight: 600;
+  color: #111b21;
+}
+
+.last-message.bold {
+  font-weight: 600;
+  color: #111b21;
+}
+
+.theme-dark .last-message.bold {
+  color: #e9edef;
+}
+.bold-name {
+  font-weight: 700;
+}
