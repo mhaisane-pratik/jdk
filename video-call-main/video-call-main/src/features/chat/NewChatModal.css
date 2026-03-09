@@ -1,0 +1,217 @@
+/* File: video-call-main/src/features/chat/NewChatModal.css */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.new-chat-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 450px;
+  z-index: 1001;
+  animation: slideUp 0.3s ease;
+}
+
+.theme-dark .new-chat-modal {
+  background: #202c33;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e9edef;
+}
+
+.theme-dark .modal-header {
+  border-bottom: 1px solid #2a3942;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111b21;
+}
+
+.theme-dark .modal-header h2 {
+  color: #e9edef;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 28px;
+  color: #667781;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.theme-dark .close-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-description {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: #667781;
+}
+
+.theme-dark .modal-description {
+  color: #8696a0;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111b21;
+}
+
+.theme-dark .input-group label {
+  color: #e9edef;
+}
+
+.input-group input {
+  padding: 12px 16px;
+  border: 2px solid #e9edef;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: white;
+  color: #111b21;
+}
+
+.theme-dark .input-group input {
+  background: #2a3942;
+  border-color: #2a3942;
+  color: #e9edef;
+}
+
+.input-group input:focus {
+  border-color: #25d366;
+}
+
+.input-group input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #fff3f3;
+  border-left: 3px solid #ea4335;
+  border-radius: 4px;
+  color: #d93025;
+  font-size: 13px;
+}
+
+.theme-dark .error-message {
+  background: #3d2626;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #e9edef;
+}
+
+.theme-dark .modal-footer {
+  border-top: 1px solid #2a3942;
+}
+
+.cancel-btn,
+.start-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn {
+  background: #f0f2f5;
+  color: #111b21;
+}
+
+.theme-dark .cancel-btn {
+  background: #2a3942;
+  color: #e9edef;
+}
+
+.cancel-btn:hover {
+  background: #e4e6e9;
+}
+
+.theme-dark .cancel-btn:hover {
+  background: #374248;
+}
+
+.start-btn {
+  background: #25d366;
+  color: white;
+}
+
+.start-btn:hover:not(:disabled) {
+  background: #20bd5a;
+}
+
+.start-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

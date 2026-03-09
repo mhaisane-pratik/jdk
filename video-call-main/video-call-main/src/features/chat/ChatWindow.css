@@ -1,0 +1,112 @@
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f5f7fa;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-dark .chat-window {
+  background: #111827;
+}
+
+/* ================= MESSAGE LIST ================= */
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  
+  margin-top: 64px;
+  margin-bottom: 72px;
+}
+
+@media (max-width: 768px) {
+  .message-list {
+    margin-top: 60px;
+    margin-bottom: 64px;
+  }
+}
+
+.message-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.theme-dark .message-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.message-list {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ================= MESSAGE CONTAINER ================= */
+
+.message-container {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .message-container {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+}
+
+/* ================= LOADING ================= */
+
+.loading-chat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 64px;
+  margin-bottom: 72px;
+}
+
+.loading-chat .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(102, 126, 234, 0.1);
+  border-left-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ================= TYPING INDICATOR ================= */
+
+.typing-indicator {
+  padding: 8px 16px;
+  display: flex;
+  gap: 10px;
+  margin-top: 64px;
+  margin-bottom: 72px;
+}
+
+.typing-bubble {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 18px;
+}
+
+.theme-dark .typing-bubble {
+  background: #374151;
+}
+
+/* NOTE: .chat-header styles removed to avoid duplication – now handled by ChatHeader.css */

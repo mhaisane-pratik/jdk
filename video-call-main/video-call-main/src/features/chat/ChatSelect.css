@@ -1,0 +1,131 @@
+/* File: video-call-main/src/features/chat/ChatSelect.css */
+
+.chat-select-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  padding: 20px;
+}
+
+.select-wrapper {
+  max-width: 500px;
+  width: 100%;
+}
+
+.select-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.user-info-section {
+  background: white;
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.user-avatar-large {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 4px solid #25d366;
+  margin-bottom: 16px;
+}
+
+.user-info-section h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111b21;
+}
+
+.user-subtitle {
+  margin: 0;
+  font-size: 16px;
+  color: #667781;
+}
+
+.select-card {
+  background: white;
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  margin-bottom: 20px;
+}
+
+.select-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e9edef;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.select-input:focus {
+  border-color: #25d366;
+  box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+}
+
+.start-chat-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #25d366 0%, #20bd5a 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+.start-chat-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+.start-chat-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.select-actions {
+  text-align: center;
+}
+
+.logout-btn {
+  padding: 12px 24px;
+  border: none;
+  background: white;
+  color: #ea4335;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background: #fff3f3;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+  .select-card {
+    padding: 24px;
+  }
+
+  .user-info-section h2 {
+    font-size: 22px;
+  }
+}
