@@ -4,7 +4,7 @@
   bottom: 12px;
   left: max(27.4%, 260px);  /* falls back to 260px on smaller screens */
   right: 12px;
-  background: #ffffff;
+  background: black;
   border-radius: 28px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.05);
