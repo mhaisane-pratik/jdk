@@ -106,13 +106,13 @@ export default function ChatSelect() {
             <img
               src={
                 currentUser?.profile_picture ||
-                `https://ui-avatars.com/api/?name=${currentUser?.username}&background=random&size=80`
+                `https://ui-avatars.com/api/?name=${currentUser?.username}&background=0D9488&color=fff&size=80&font-size=0.4&bold=true`
               }
               alt="Profile"
               className="user-avatar-large"
             />
             <h2>Hello, {currentUser?.display_name || currentUser?.username}!</h2>
-            <p className="user-subtitle">Who would you like to chat with?</p>
+            <p className="user-subtitle">Who would you like to chat with today?</p>
           </div>
         </div>
 
@@ -120,7 +120,7 @@ export default function ChatSelect() {
           <div className="form-group">
             <label htmlFor="receiver" className="input-label">
               <span className="label-icon">💬</span>
-              Enter username to chat
+              Enter username to start chatting
             </label>
             <input
               ref={inputRef}
@@ -154,12 +154,12 @@ export default function ChatSelect() {
             {isLoading ? (
               <>
                 <span className="spinner"></span>
-                Starting...
+                <span>Starting chat...</span>
               </>
             ) : (
               <>
-                <span className="btn-icon">💬</span>
-                Start Chatting
+                <span className="btn-icon">✨</span>
+                <span>Start Chatting</span>
               </>
             )}
           </button>
@@ -167,7 +167,8 @@ export default function ChatSelect() {
 
         <div className="select-actions">
           <button onClick={handleLogout} className="logout-btn">
-            🚪 Logout
+            <span className="logout-icon">🚪</span>
+            <span>Logout</span>
           </button>
         </div>
       </div>
