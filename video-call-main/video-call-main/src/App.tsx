@@ -1,21 +1,30 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ChatProvider } from "./contexts/ChatContext";
 
-import Landing from "./features/landing/Landing";
+import ChatLogin from "./pages/Login";
 import ChatLayout from "./features/chat/ChatLayout";
+import ProtectedRoute from "./app/ProtectedRoute";
 
 export default function App() {
   return (
     <ChatProvider>
       <Routes>
-        {/* Landing page */}
-        <Route path="/" element={<Landing />} />
+        {/* Default route → Login */}
+        <Route path="/" element={<Navigate to="/chat-login" replace />} />
 
-        {/* Direct chat access (NO LOGIN) */}
-        <Route path="/chat" element={<ChatLayout />} />
+        <Route path="/chat-login" element={<ChatLogin />} />
 
-        {/* Redirect unknown routes */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <ChatLayout />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* fallback */}
+        <Route path="*" element={<Navigate to="/chat-login" replace />} />
       </Routes>
     </ChatProvider>
   );
