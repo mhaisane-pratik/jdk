@@ -4,15 +4,7 @@ import { socket } from "../../api/socket";
 import { Message } from "./ChatWindow";
 const API_URL = import.meta.env.VITE_API_URL as string;
 
-interface InputAreaProps {
-  roomId: string;
-  sender: string;
-  receiver: string;
-  replyingTo: Message | null;
-  onCancelReply: () => void;
-}
-
-// Professional icon components using Lucide React (install: npm install lucide-react)
+// Professional icons
 import {
   Smile,
   Paperclip,
@@ -29,6 +21,14 @@ import {
   ChevronRight,
   Sparkles
 } from 'lucide-react';
+
+interface InputAreaProps {
+  roomId: string;
+  sender: string;
+  receiver: string;
+  replyingTo: Message | null;
+  onCancelReply: () => void;
+}
 
 export default function InputArea({
   roomId,
@@ -50,9 +50,18 @@ export default function InputArea({
 
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const textInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      const newHeight = Math.min(textareaRef.current.scrollHeight, 100);
+      textareaRef.current.style.height = newHeight + "px";
+    }
+  }, [text]);
 
   // Smart suggestions based on conversation context
   const quickReplies = [
@@ -65,7 +74,6 @@ export default function InputArea({
   ];
 
   useEffect(() => {
-    // Filter suggestions based on input
     if (text.startsWith('/')) {
       const commands = ['/help', '/status', '/clear', '/mute', '/block'];
       setSuggestions(commands.filter(cmd => cmd.startsWith(text)));
@@ -91,10 +99,10 @@ export default function InputArea({
 
   const onEmojiClick = (emojiData: EmojiClickData) => {
     setText((prev) => prev + emojiData.emoji);
-    textInputRef.current?.focus();
+    textareaRef.current?.focus();
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -105,14 +113,12 @@ export default function InputArea({
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Enhanced file validation
     const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
       setUploadError("File size must be less than 50MB");
       return;
     }
 
-    // Check file type
     const allowedTypes = [
       'image/', 'application/pdf', 'application/msword', 
       'application/vnd.openxmlformats-officedocument', 'text/plain',
@@ -206,7 +212,6 @@ export default function InputArea({
       formData.append("receiver", receiver);
 
       try {
-        // Simulate upload progress
         const progressInterval = setInterval(() => {
           setUploadProgress(prev => Math.min(prev + 10, 90));
         }, 200);
@@ -236,7 +241,6 @@ export default function InputArea({
           throw new Error("No file URL in response");
         }
 
-        // Reset progress after success
         setTimeout(() => setUploadProgress(0), 1000);
       } catch (error: any) {
         setUploadError("Upload failed. Please try again.");
@@ -252,13 +256,13 @@ export default function InputArea({
     setShowEmoji(false);
     onCancelReply();
     setUploading(false);
-    textInputRef.current?.focus();
+    textareaRef.current?.focus();
   };
 
   const handleSuggestionClick = (suggestion: string) => {
     setText(suggestion);
     setShowSuggestions(false);
-    textInputRef.current?.focus();
+    textareaRef.current?.focus();
   };
 
   const getFileIcon = (file: File) => {
@@ -429,7 +433,7 @@ export default function InputArea({
       {/* Input Controls */}
       <div
         className={`
-          flex items-center gap-1 sm:gap-2 py-1.5 sm:py-2 px-2 sm:px-3
+          flex items-end gap-1 sm:gap-2 py-1.5 sm:py-2 px-2 sm:px-3
         `}
       >
         <button
@@ -472,30 +476,42 @@ export default function InputArea({
         </label>
 
         <div className="flex-1 relative min-w-0">
-          <input
-            ref={textInputRef}
-            type="text"
+          <textarea
+            ref={textareaRef}
             value={text}
             onChange={(e) => handleTyping(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={uploading ? "Uploading..." : "Type a message or use / for commands"}
-            className={`
-              w-full px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message..."
+            rows={1}
+            className="
+              w-full
+              px-3 sm:px-4
+              py-0
+              rounded-xl
               bg-gray-100
-              border-2 border-transparent
-              text-sm sm:text-[15px] text-gray-900
-              placeholder-gray-500 placeholder:text-xs sm:placeholder:text-sm
-              focus:border-blue-500 focus:bg-white
-              outline-none transition-all duration-200
-              disabled:opacity-50 disabled:cursor-not-allowed
-              pr-8 sm:pr-10
-            `}
+              border border-transparent
+              text-[15px]
+              placeholder-gray-500
+              focus:border-transparent
+              focus:bg-white
+              focus:shadow-none
+              outline-none
+              transition-all duration-200
+              resize-none
+              disabled:opacity-50
+              min-h-[35px]
+              max-h-[100px]
+              overflow-y-auto
+                flex items-center 
+            "
             disabled={uploading}
             autoFocus
           />
+
+          
           {text && (
             <button
-              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-2 sm:right-3 bottom-2.5 sm:bottom-3.5 text-gray-400 hover:text-gray-600 transition-colors"
               onClick={() => setText('')}
             >
               <X size={14} className="sm:w-4 sm:h-4" />
@@ -514,6 +530,7 @@ export default function InputArea({
             active:scale-95
             disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100
             flex-shrink-0 relative group
+            ${text || selectedFile ? 'animate-soft-pulse' : ''}
           `}
           onClick={sendMessage}
           disabled={(!text.trim() && !selectedFile) || uploading}
@@ -526,7 +543,7 @@ export default function InputArea({
           )}
         </button>
 
-        {/* Voice message button (optional feature) */}
+        {/* Voice message button */}
         <button
           className={`
             w-9 h-9 sm:w-[42px] sm:h-[42px] hidden sm:flex items-center justify-center rounded-full
