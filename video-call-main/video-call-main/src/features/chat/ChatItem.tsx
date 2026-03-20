@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useChat } from "../../contexts/ChatContext";
-import "./ChatItem.css";
 
 interface ChatItemProps {
   roomId: string;
@@ -37,52 +36,42 @@ export default function ChatItem({
 
   const formatTime = (dateString?: string) => {
     if (!dateString) return "";
-
     const date = new Date(dateString);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
     if (days === 0) {
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     } else if (days === 1) {
       return "Yesterday";
     } else if (days < 7) {
       return date.toLocaleDateString([], { weekday: "short" });
     } else {
-      return date.toLocaleDateString([], {
-        month: "short",
-        day: "numeric",
-      });
+      return date.toLocaleDateString([], { month: "short", day: "numeric" });
     }
   };
 
   const renderPreviewText = () => {
     if (!lastMessage) return "No messages yet";
-
-    // Image detection
-    if (lastMessage.startsWith("http") && 
-        (lastMessage.includes(".jpg") ||
-         lastMessage.includes(".png") ||
-         lastMessage.includes(".jpeg") ||
-         lastMessage.includes(".webp"))) {
+    if (
+      lastMessage.startsWith("http") &&
+      (lastMessage.includes(".jpg") ||
+        lastMessage.includes(".png") ||
+        lastMessage.includes(".jpeg") ||
+        lastMessage.includes(".webp"))
+    ) {
       return "📷 Photo";
     }
-
-    // File detection
     if (lastMessage.startsWith("http") && lastMessage.includes(".")) {
       return "📎 File";
     }
-
-    // If current user sent
     if (lastMessageSender === currentUser?.username) {
-      return <> <strong>You:</strong> {lastMessage} </>;
+      return (
+        <>
+          <strong>You:</strong> {lastMessage}
+        </>
+      );
     }
-
-    // Group preview
     if (isGroup && lastMessageSender) {
       return (
         <>
@@ -90,21 +79,19 @@ export default function ChatItem({
         </>
       );
     }
-
     return lastMessage;
   };
 
   return (
     <div
-      className={`chat-item ${isSelected ? "selected" : ""} 
-      ${isPinned ? "pinned" : ""} 
-      ${isMuted ? "muted" : ""}`}
+      className={`flex items-center px-3 py-1.5 cursor-pointer transition-colors duration-150 border-b border-gray-200 dark:border-gray-700 min-h-[60px] hover:bg-gray-100 dark:hover:bg-white/5 ${
+        isSelected ? "bg-gray-100 dark:bg-white/10 border-l-4 border-l-green-500 pl-2.5" : ""
+      } ${isPinned ? "" : ""} ${isMuted ? "opacity-60" : ""}`}
       onClick={onClick}
     >
-      {/* Avatar */}
-      <div className="chat-avatar-wrapper">
+      <div className="relative mr-2.5 flex-shrink-0">
         {isGroup ? (
-          <div className="group-avatar">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg font-semibold uppercase">
             {displayName?.charAt(0)?.toUpperCase()}
           </div>
         ) : (
@@ -117,36 +104,43 @@ export default function ChatItem({
                 )}&background=random`
               }
               alt={displayName}
-              className="chat-avatar"
+              className="w-10 h-10 rounded-full object-cover"
             />
-            {isOnline && <span className="online-badge"></span>}
+            {isOnline && (
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
+            )}
           </>
         )}
       </div>
 
-      {/* Content */}
-      <div className="chat-content">
-        <div className="chat-item-header">
-          <div className="chat-user-name">
-            <h4 className={unreadCount > 0 ? "bold-name" : ""}>
-  {displayName}
-</h4>
-            {isPinned && <span className="pin-badge">📌</span>}
-            {isMuted && <span className="mute-badge">🔇</span>}
+      <div className="flex-1 min-w-0 flex flex-col">
+        <div className="flex justify-between items-center gap-1.5 mb-0.5">
+          <div className="flex items-center gap-1 flex-1 min-w-0 max-w-[70%]">
+            <h4
+              className={`m-0 text-sm font-semibold text-gray-900 dark:text-gray-200 overflow-hidden text-ellipsis whitespace-nowrap w-full ${
+                unreadCount > 0 ? "font-bold" : ""
+              }`}
+            >
+              {displayName}
+            </h4>
+            {isPinned && <span className="text-xs text-gray-500 opacity-70">📌</span>}
+            {isMuted && <span className="text-xs text-gray-500 opacity-70">🔇</span>}
           </div>
-
-          <span className="chat-time">
+          <span className="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">
             {formatTime(lastMessageTime)}
           </span>
         </div>
 
-        <div className="chat-preview">
-        
-         <p className={`last-message ${unreadCount > 0 ? "bold" : ""}`}>
-  {renderPreviewText()}
-</p>
+        <div className="flex justify-between items-center gap-1.5">
+          <p
+            className={`m-0 text-sm text-gray-500 dark:text-gray-400 overflow-hidden text-ellipsis whitespace-nowrap flex-1 ${
+              unreadCount > 0 ? "font-semibold text-gray-900 dark:text-gray-200" : ""
+            }`}
+          >
+            {renderPreviewText()}
+          </p>
           {unreadCount > 0 && (
-            <span className="unread-badge">
+            <span className="min-w-[18px] h-[18px] px-1 bg-green-500 dark:bg-green-600 text-white rounded-full text-xs font-semibold flex items-center justify-center flex-shrink-0">
               {unreadCount}
             </span>
           )}

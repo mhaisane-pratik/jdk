@@ -1,10 +1,7 @@
-// File: video-call-main/src/features/chat/MessageList.tsx
-
 import React, { useEffect, useRef } from "react";
 import MessageItem from "./MessageItem";
 import { Message } from "./ChatWindow";
 import { groupMessagesByDate } from "../../utils/dateHelper";
-import "./MessageList.css";
 
 interface MessageListProps {
   messages: Message[];
@@ -21,7 +18,6 @@ export default function MessageList({
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -30,26 +26,24 @@ export default function MessageList({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Group messages by date
   const groupedMessages = groupMessagesByDate(messages);
 
   return (
-    <div className="message-list">
-      <div className="message-container">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden pb-24 scroll-smooth">
+      <div className="py-4 flex flex-col w-full">
         {Object.keys(groupedMessages).length === 0 ? (
-          <div className="empty-chat">
-          
-            <p>No messages yet. Start the conversation!</p>
+          <div className="flex flex-col items-center justify-center py-20 text-center text-gray-500 dark:text-gray-400 mx-auto">
+            <div className="text-7xl mb-5 opacity-50">💬</div>
+            <p className="text-base m-0 text-gray-400 dark:text-gray-500">No messages yet. Start the conversation!</p>
           </div>
         ) : (
           Object.keys(groupedMessages).map((dateLabel) => (
-            <div key={dateLabel} className="message-date-group">
-              {/* ✅ Date Divider */}
-              <div className="date-divider">
-                <span className="date-divider-text">{dateLabel}</span>
+            <div key={dateLabel} className="w-full">
+              <div className="flex items-center justify-center my-4 sticky top-2 z-10">
+                <span className="bg-gray-200/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-1.5 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300 shadow-sm">
+                  {dateLabel}
+                </span>
               </div>
-
-              {/* Messages for this date */}
               {groupedMessages[dateLabel].map((message) => (
                 <MessageItem
                   key={message.id}
@@ -68,5 +62,3 @@ export default function MessageList({
     </div>
   );
 }
-
-

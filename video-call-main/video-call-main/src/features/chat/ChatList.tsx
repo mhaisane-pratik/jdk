@@ -1,7 +1,6 @@
 import React from "react";
 import { useChat } from "../../contexts/ChatContext";
 import ChatItem from "./ChatItem";
-import "./ChatList.css";
 
 interface ChatListProps {
   rooms: any[];
@@ -10,39 +9,30 @@ interface ChatListProps {
 }
 
 export default function ChatList({ rooms }: ChatListProps) {
-  const {
-    currentUser,
-    selectedRoom,
-    setSelectedRoom,
-    userProfiles,
-  } = useChat();
+  const { currentUser, selectedRoom, setSelectedRoom, userProfiles } = useChat();
 
   if (!currentUser) return null;
 
   if (!rooms || rooms.length === 0) {
     return (
-      <div className="empty-chat-list">
-        <p>No chats yet</p>
-        <span>Start a new conversation</span>
+      <div className="flex flex-col items-center justify-center p-20 text-center min-h-[400px]">
+        <p className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">No chats yet</p>
+        <span className="text-sm text-gray-500 dark:text-gray-400">Start a new conversation</span>
       </div>
     );
   }
 
   return (
-    <div className="chat-list">
+    <div className="flex-1 overflow-y-auto">
       {rooms.map((room) => {
         const isGroup = room.is_group === true;
-
-        // ✅ Always use backend field first
         const otherUsername = !isGroup
           ? room.other_user ||
             (room.participant_1 === currentUser.username
               ? room.participant_2
               : room.participant_1)
           : "";
-
         const profile = userProfiles.get(otherUsername);
-
         const displayName = isGroup
           ? room.group_name || "Group"
           : profile?.display_name || otherUsername || "Unknown";

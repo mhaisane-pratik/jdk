@@ -49,7 +49,7 @@ interface ChatContextType {
   onlineUsers: Set<string>;
   isSocketConnected: boolean;
   isLoading: boolean;
-  userProfiles: Map<string, ChatUser>;      // profile cache
+  userProfiles: Map<string, ChatUser>;
   loadUserProfile: (username: string) => Promise<ChatUser | null>;
 }
 
@@ -57,6 +57,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 const API_URL = import.meta.env.VITE_API_URL as string;
 const API_KEY = "ZATCHAT_PRATEEK9373";
+
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<ChatUser | null>(null);
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
@@ -76,7 +77,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     hasInitialized.current = true;
 
     const savedUsername = localStorage.getItem("chatUser");
-    const savedTheme = localStorage.getItem("chatTheme") || "light";
+    const savedTheme = localStorage.getItem("chatTheme") || "light"; // default light
     const savedWallpaper = localStorage.getItem("chatWallpaper") || "solid-white";
     const savedRoomId = localStorage.getItem("selectedRoom");
 
@@ -95,13 +96,20 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // --- Save preferences ---
+  // --- Save preferences and apply theme to html element ---
   useEffect(() => {
     if (selectedRoom) localStorage.setItem("selectedRoom", selectedRoom);
   }, [selectedRoom]);
 
   useEffect(() => {
     localStorage.setItem("chatTheme", theme);
+    // For Tailwind dark mode: add/remove dark class on html element
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    // Also set data-theme attribute if needed (optional)
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
@@ -185,24 +193,22 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // --- Fetch current user profile (used at login) ---
   const fetchUserProfile = async (username: string) => {
     try {
-    let res = await fetch(`${API_URL}/api/v1/users/${username}`, {
-  headers: {
-    "x-api-key": API_KEY,
-  },
-});
+      let res = await fetch(`${API_URL}/api/v1/users/${username}`, {
+        headers: { "x-api-key": API_KEY },
+      });
       let userData;
 
       if (res.ok) {
         userData = await res.json();
       } else {
-          res = await fetch(`${API_URL}/api/v1/users`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "x-api-key": API_KEY,
-  },
-  body: JSON.stringify({ username, display_name: username }),
-});
+        res = await fetch(`${API_URL}/api/v1/users`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": API_KEY,
+          },
+          body: JSON.stringify({ username, display_name: username }),
+        });
         if (res.ok) userData = await res.json();
       }
 
@@ -217,19 +223,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // this i
   // --- Load a single user profile (cached) ---
   const loadUserProfile = async (username: string): Promise<ChatUser | null> => {
     if (userProfiles.has(username)) {
       return userProfiles.get(username) || null;
     }
     try {
-  
       const res = await fetch(`${API_URL}/api/v1/users/${username}`, {
-  headers: {
-    "x-api-key": API_KEY,
-  },
-});
+        headers: { "x-api-key": API_KEY },
+      });
       if (!res.ok) return null;
       const userData = await res.json();
       setUserProfiles((prev) => new Map(prev).set(username, userData));
@@ -248,15 +250,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const url = `${API_URL}/api/v1/chats/rooms/${currentUser.username}`;
       const res = await fetch(url, {
-  headers: {
-    "x-api-key": API_KEY,
-  },
-});
+        headers: { "x-api-key": API_KEY },
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: ChatRoom[] = await res.json();
       setChatRooms(data);
 
-      // Collect all usernames of other participants (for 1-on-1 rooms)
       const otherUsernames = data
         .filter((room) => !room.is_group)
         .map((room) => {
@@ -267,20 +266,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
         .filter(Boolean);
 
-
-        
       const uniqueOthers = [...new Set(otherUsernames)];
 
-      // Preload profiles (only if not already cached)
       await Promise.all(
         uniqueOthers.map(async (username) => {
           if (!userProfiles.has(username)) {
             try {
               const userRes = await fetch(`${API_URL}/api/v1/users/${username}`, {
-  headers: {
-    "x-api-key": API_KEY,
-  },
-});
+                headers: { "x-api-key": API_KEY },
+              });
               if (userRes.ok) {
                 const userData = await userRes.json();
                 setUserProfiles((prev) => new Map(prev).set(username, userData));
@@ -299,7 +293,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Auto-load rooms when user is set
   useEffect(() => {
     if (currentUser?.username) refreshRooms();
   }, [currentUser?.username]);

@@ -9,11 +9,8 @@ export default function App() {
   return (
     <ChatProvider>
       <Routes>
-        {/* Default route → Login */}
         <Route path="/" element={<Navigate to="/chat-login" replace />} />
-
         <Route path="/chat-login" element={<ChatLogin />} />
-
         <Route
           path="/chat"
           element={
@@ -22,8 +19,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* fallback */}
         <Route path="*" element={<Navigate to="/chat-login" replace />} />
       </Routes>
     </ChatProvider>

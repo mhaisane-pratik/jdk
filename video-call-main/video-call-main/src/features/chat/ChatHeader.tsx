@@ -4,7 +4,6 @@ import { useChat } from "../../contexts/ChatContext";
 import { socket } from "../../api/socket";
 import GroupInfoModal from "./GroupInfoModal";
 
-// Professional icon imports
 import {
   LogOut,
   Image,
@@ -48,7 +47,6 @@ export default function ChatHeader({
   const groupIcon = room?.group_icon;
   const isAdmin = room?.created_by === currentUser?.username;
 
-  // Use cached profile if available
   const cachedProfile = !isGroup ? userProfiles.get(receiver) : null;
   const displayName = isGroup
     ? room?.group_name
@@ -57,11 +55,9 @@ export default function ChatHeader({
   const isOnline = !isGroup && onlineUsers.has(receiver);
 
   useEffect(() => {
-    // Fetch receiver info only if not in cache and not a group
     if (!isGroup && receiver && receiver !== currentUser?.username && !cachedProfile) {
       fetchReceiverInfo();
     }
-    // eslint-disable-next-line
   }, [receiver, isGroup, currentUser, cachedProfile]);
 
   const fetchReceiverInfo = async () => {
@@ -117,19 +113,19 @@ export default function ChatHeader({
       <div
         className={`
           fixed flex justify-between items-center z-[100]
-          bg-white
-          border-b border-gray-200
+          bg-white dark:bg-gray-800
+          border-b border-gray-200 dark:border-gray-700
           px-4 md:px-6 py-2 md:py-3 h-[60px] md:h-[72px] box-border
           transition-all duration-300
           shadow-sm
           w-full
-          ${isGroup ? "cursor-pointer hover:bg-gray-50" : ""}
+          ${isGroup ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" : ""}
           left-0 right-0 top-0
           md:left-[420px] md:w-auto
         `}
         onClick={handleHeaderClick}
       >
-        {/* Left Section: Back + Avatar + Details */}
+        {/* Left Section */}
         <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0 max-w-[calc(100%-120px)] md:max-w-none">
           {/* Mobile back button */}
           {onBack && (
@@ -137,9 +133,9 @@ export default function ChatHeader({
               className={`
                 flex md:hidden items-center justify-center
                 w-8 h-8 rounded-lg
-                bg-gray-100
-                text-gray-600
-                hover:bg-gray-200
+                bg-gray-100 dark:bg-gray-700
+                text-gray-600 dark:text-gray-300
+                hover:bg-gray-200 dark:hover:bg-gray-600
                 active:scale-95
                 transition-all duration-200
                 flex-shrink-0
@@ -161,7 +157,7 @@ export default function ChatHeader({
                   flex items-center justify-center text-white
                   shadow-md
                   text-base md:text-xl
-                  ring-2 ring-white
+                  ring-2 ring-white dark:ring-gray-800
                 `}
               >
                 {groupIcon || <Users size={20} className="md:w-6 md:h-6" />}
@@ -177,19 +173,18 @@ export default function ChatHeader({
                   alt={receiver}
                   className={`
                     w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl object-cover
-                    ring-2 ring-white
+                    ring-2 ring-white dark:ring-gray-800
                     shadow-md
                   `}
                 />
-                {/* Online indicator */}
                 {!isGroup && (
                   <span
                     className={`
                       absolute -bottom-0.5 -right-0.5
                       w-3 h-3 md:w-3.5 md:h-3.5 rounded-full
                       ${isOnline
-                        ? "bg-green-500 ring-2 ring-white"
-                        : "bg-gray-400 ring-2 ring-white"
+                        ? "bg-green-500 ring-2 ring-white dark:ring-gray-800"
+                        : "bg-gray-400 ring-2 ring-white dark:ring-gray-800"
                       }
                     `}
                   />
@@ -198,12 +193,12 @@ export default function ChatHeader({
             )}
           </div>
 
-          {/* User/Group Details */}
+          {/* Details */}
           <div className="flex flex-col min-w-0 flex-1">
             <div className="flex items-center gap-1.5 md:gap-2">
               <h3
                 className={`
-                  font-semibold truncate text-gray-900
+                  font-semibold truncate text-gray-900 dark:text-white
                   text-sm md:text-base lg:text-lg
                   max-w-[150px] xs:max-w-[200px] sm:max-w-[250px] md:max-w-[300px]
                 `}
@@ -219,26 +214,26 @@ export default function ChatHeader({
             </div>
             
             {isGroup ? (
-              <div className="flex items-center gap-1 text-gray-500 text-xs md:text-sm">
+              <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs md:text-sm">
                 <Users size={12} className="flex-shrink-0 md:w-3.5 md:h-3.5" />
                 <span className="truncate max-w-[80px] xs:max-w-[120px] sm:max-w-[150px]">
                   {memberCount || 0} member{memberCount !== 1 ? "s" : ""}
                 </span>
-                <span className="w-1 h-1 rounded-full bg-gray-300 mx-1 hidden xs:inline" />
+                <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600 mx-1 hidden xs:inline" />
                 <span className="hidden xs:inline truncate max-w-[60px]">
                   {room?.is_public ? 'Public' : 'Private'}
                 </span>
               </div>
             ) : (
-              <div className="flex items-center gap-1 text-gray-500 text-xs md:text-sm">
+              <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs md:text-sm">
                 {isOnline ? (
-                  <div className="flex items-center gap-1 text-green-600 min-w-0">
+                  <div className="flex items-center gap-1 text-green-600 dark:text-green-400 min-w-0">
                     <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500 flex-shrink-0" />
                     <span className="font-medium truncate max-w-[60px] xs:max-w-[80px]">Online</span>
                   </div>
                 ) : (
                   <>
-                    <Clock size={12} className="text-gray-400 flex-shrink-0 md:w-3.5 md:h-3.5" />
+                    <Clock size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0 md:w-3.5 md:h-3.5" />
                     <span className="truncate max-w-[80px] xs:max-w-[120px] sm:max-w-[150px]">
                       {cachedProfile?.last_seen || receiverInfo?.last_seen
                         ? `Last seen ${formatLastSeen(cachedProfile?.last_seen || receiverInfo?.last_seen)}`
@@ -246,11 +241,10 @@ export default function ChatHeader({
                     </span>
                   </>
                 )}
-                {/* Typing indicator */}
                 {room?.typingUsers?.includes(receiver) && (
                   <>
-                    <span className="w-1 h-1 rounded-full bg-gray-300 mx-1 flex-shrink-0" />
-                    <span className="text-blue-500 font-medium animate-pulse truncate max-w-[60px] xs:max-w-[80px]">
+                    <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600 mx-1 flex-shrink-0" />
+                    <span className="text-blue-500 dark:text-blue-400 font-medium animate-pulse truncate max-w-[60px] xs:max-w-[80px]">
                       typing...
                     </span>
                   </>
@@ -262,15 +256,14 @@ export default function ChatHeader({
 
         {/* Right Section: Actions */}
         <div className="flex items-center gap-0.5 md:gap-1 flex-shrink-0">
-          {/* Video call button - hidden on very small screens */}
           <button
             className={`
               hidden sm:flex items-center justify-center
               w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl
-              bg-gray-100
-              text-gray-600
-              hover:bg-gray-200
-              hover:text-indigo-600
+              bg-gray-100 dark:bg-gray-700
+              text-gray-600 dark:text-gray-300
+              hover:bg-gray-200 dark:hover:bg-gray-600
+              hover:text-indigo-600 dark:hover:text-indigo-400
               active:scale-95
               transition-all duration-200
               flex-shrink-0
@@ -281,16 +274,15 @@ export default function ChatHeader({
             <Video size={16} className="md:w-[18px] md:h-[18px]" />
           </button>
 
-          {/* Group info button (only for groups) */}
           {isGroup && (
             <button
               className={`
                 flex items-center justify-center
                 w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl
-                bg-gray-100
-                text-gray-600
-                hover:bg-gray-200
-                hover:text-indigo-600
+                bg-gray-100 dark:bg-gray-700
+                text-gray-600 dark:text-gray-300
+                hover:bg-gray-200 dark:hover:bg-gray-600
+                hover:text-indigo-600 dark:hover:text-indigo-400
                 active:scale-95
                 transition-all duration-200
                 flex-shrink-0
@@ -302,15 +294,14 @@ export default function ChatHeader({
             </button>
           )}
 
-          {/* Media button */}
           <button
             className={`
               flex items-center justify-center
               w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl
-              bg-gray-100
-              text-gray-600
-              hover:bg-gray-200
-              hover:text-emerald-600
+              bg-gray-100 dark:bg-gray-700
+              text-gray-600 dark:text-gray-300
+              hover:bg-gray-200 dark:hover:bg-gray-600
+              hover:text-emerald-600 dark:hover:text-emerald-400
               active:scale-95
               transition-all duration-200
               flex-shrink-0
@@ -321,15 +312,14 @@ export default function ChatHeader({
             <Image size={16} className="md:w-[18px] md:h-[18px]" />
           </button>
 
-          {/* Options dropdown */}
           <div className="relative">
             <button
               className={`
                 flex items-center justify-center
                 w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl
-                bg-gray-100
-                text-gray-600
-                hover:bg-gray-200
+                bg-gray-100 dark:bg-gray-700
+                text-gray-600 dark:text-gray-300
+                hover:bg-gray-200 dark:hover:bg-gray-600
                 active:scale-95
                 transition-all duration-200
                 flex-shrink-0
@@ -340,31 +330,30 @@ export default function ChatHeader({
               <MoreVertical size={16} className="md:w-[18px] md:h-[18px]" />
             </button>
 
-            {/* Options dropdown menu */}
             {showOptions && (
               <>
                 <div 
                   className="fixed inset-0 z-[999]" 
                   onClick={() => setShowOptions(false)} 
                 />
-                <div className="absolute right-0 top-10 md:top-12 z-[1000] bg-white rounded-xl shadow-lg border border-gray-200 py-1 min-w-[160px] md:min-w-[180px] animate-fadeIn">
+                <div className="absolute right-0 top-10 md:top-12 z-[1000] bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[160px] md:min-w-[180px] animate-fadeIn">
                   <button
-                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
                     onClick={(e) => { e.stopPropagation(); setShowGroupInfo(true); setShowOptions(false); }}
                   >
                     <UserCircle2 size={14} className="md:w-4 md:h-4 flex-shrink-0" />
                     <span className="truncate">View contact</span>
                   </button>
                   <button
-                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
                     onClick={(e) => { e.stopPropagation(); handleClearChat(); }}
                   >
                     <Clock size={14} className="md:w-4 md:h-4 flex-shrink-0" />
                     <span className="truncate">Clear chat</span>
                   </button>
-                  <div className="border-t border-gray-200 my-1" />
+                  <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
                   <button
-                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center gap-2 transition-colors"
                     onClick={(e) => { e.stopPropagation(); handleLogout(); setShowOptions(false); }}
                   >
                     <LogOut size={14} className="md:w-4 md:h-4 flex-shrink-0" />
@@ -380,30 +369,6 @@ export default function ChatHeader({
       {showGroupInfo && isGroup && (
         <GroupInfoModal groupId={roomId} onClose={() => setShowGroupInfo(false)} />
       )}
-
-      {/* Add animation styles */}
-      <style>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-        
-        /* Custom breakpoint for extra small devices */
-        @media (min-width: 480px) {
-          .xs\\:inline {
-            display: inline;
-          }
-        }
-      `}</style>
     </>
   );
 }

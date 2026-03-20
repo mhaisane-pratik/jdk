@@ -4,7 +4,6 @@ import { socket } from "../../api/socket";
 import { Message } from "./ChatWindow";
 const API_URL = import.meta.env.VITE_API_URL as string;
 
-// Professional icons
 import {
   Smile,
   Paperclip,
@@ -54,16 +53,14 @@ export default function InputArea({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      const newHeight = Math.min(textareaRef.current.scrollHeight, 100);
+      const newHeight = Math.min(textareaRef.current.scrollHeight, 90); // reduced max height
       textareaRef.current.style.height = newHeight + "px";
     }
   }, [text]);
 
-  // Smart suggestions based on conversation context
   const quickReplies = [
     "Thanks! 👍",
     "I'll get back to you soon",
@@ -112,28 +109,23 @@ export default function InputArea({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
     const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
       setUploadError("File size must be less than 50MB");
       return;
     }
-
     const allowedTypes = [
       'image/', 'application/pdf', 'application/msword', 
       'application/vnd.openxmlformats-officedocument', 'text/plain',
       'application/zip', 'audio/', 'video/'
     ];
-    
     if (!allowedTypes.some(type => file.type.startsWith(type))) {
       setUploadError("File type not supported");
       return;
     }
-
     setSelectedFile(file);
     setUploadError(null);
     setUploadProgress(0);
-
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => setFilePreview(reader.result as string);
@@ -157,18 +149,15 @@ export default function InputArea({
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-
       mediaRecorder.ondataavailable = (event) => {
         audioChunksRef.current.push(event.data);
       };
-
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const audioFile = new File([audioBlob], 'voice-message.webm', { type: 'audio/webm' });
         setSelectedFile(audioFile);
         stream.getTracks().forEach(track => track.stop());
       };
-
       mediaRecorder.start();
       setIsRecording(true);
     } catch (error) {
@@ -204,28 +193,22 @@ export default function InputArea({
     if (selectedFile) {
       setUploading(true);
       setUploadError(null);
-      
       const formData = new FormData();
       formData.append("file", selectedFile);
       formData.append("roomId", roomId);
       formData.append("sender", sender);
       formData.append("receiver", receiver);
-
       try {
         const progressInterval = setInterval(() => {
           setUploadProgress(prev => Math.min(prev + 10, 90));
         }, 200);
-
         const res = await fetch(`${API_URL}/api/v1/chats/upload`, {
           method: "POST",
           body: formData,
         });
-
         clearInterval(progressInterval);
         setUploadProgress(100);
-
         if (!res.ok) throw new Error(`Upload failed with status: ${res.status}`);
-        
         const data = await res.json();
         if (data?.file_url) {
           socket.emit("send_file", {
@@ -240,7 +223,6 @@ export default function InputArea({
         } else {
           throw new Error("No file URL in response");
         }
-
         setTimeout(() => setUploadProgress(0), 1000);
       } catch (error: any) {
         setUploadError("Upload failed. Please try again.");
@@ -274,37 +256,23 @@ export default function InputArea({
 
   return (
     <div
-      className={`
-        fixed z-[90]
-        bg-white rounded-[24px] shadow-[0_8px_30px_rgba(0,0,0,0.12)]
-        border border-gray-100
-        left-0 right-0
-        bottom-[12px]
-        mx-3 sm:mx-4 md:mx-6
-        backdrop-blur-sm bg-opacity-95
-        transition-all duration-300
-        hover:shadow-[0_8px_35px_rgba(0,0,0,0.15)]
-        md:left-[420px] md:w-auto
-      `}
+      className="fixed z-[90] bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 left-0 right-0 bottom-3 mx-3 sm:mx-4 md:mx-6 backdrop-blur-sm bg-opacity-95 transition-all duration-300 hover:shadow-xl md:left-[420px] md:w-auto"
     >
-      {/* Smart Suggestions */}
       {showSuggestions && suggestions.length > 0 && (
-        <div
-          className="absolute bottom-full left-0 right-0 mb-2 mx-3 sm:mx-4 md:mx-0 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-slideUp"
-        >
+        <div className="absolute bottom-full left-0 right-0 mb-2 mx-3 sm:mx-4 md:mx-0 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-slideUp">
           <div className="p-2 max-h-[200px] overflow-y-auto">
             {suggestions.map((suggestion, index) => (
               <button
                 key={index}
-                className="w-full text-left px-3 sm:px-4 py-2 sm:py-2.5 hover:bg-gray-50 rounded-xl transition-all duration-200 flex items-center gap-2 group"
+                className="w-full text-left px-3 sm:px-4 py-2 sm:py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 flex items-center gap-2 group"
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 {text.startsWith('/') ? (
-                  <Sparkles size={16} className="text-blue-500 flex-shrink-0" />
+                  <Sparkles size={16} className="text-indigo-500 flex-shrink-0" />
                 ) : (
-                  <CornerUpRight size={16} className="text-gray-400 group-hover:text-blue-500 transition-colors flex-shrink-0" />
+                  <CornerUpRight size={16} className="text-gray-400 group-hover:text-indigo-500 transition-colors flex-shrink-0" />
                 )}
-                <span className="text-xs sm:text-sm text-gray-700 flex-1 truncate">{suggestion}</span>
+                <span className="text-sm sm:text-base text-gray-700 dark:text-gray-300 flex-1 truncate">{suggestion}</span>
                 <ChevronRight size={16} className="text-gray-400 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0" />
               </button>
             ))}
@@ -312,45 +280,29 @@ export default function InputArea({
         </div>
       )}
 
-      {/* Reply Preview */}
       {replyingTo && (
-        <div
-          className={`
-            flex items-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4
-            bg-gradient-to-r from-blue-50 to-indigo-50
-            rounded-t-[24px] border-b border-blue-100
-            animate-slideDown
-          `}
-        >
-          <div className="w-1 h-6 sm:h-8 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full flex-shrink-0"></div>
+        <div className="flex items-center gap-2 sm:gap-3 py-2 sm:py-2 px-3 sm:px-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-t-2xl border-b border-indigo-200 dark:border-indigo-800 animate-slideDown">
+          <div className="w-1 h-6 sm:h-7 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full flex-shrink-0"></div>
           <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-            <span className="text-[10px] sm:text-xs font-semibold text-blue-600 lowercase flex items-center gap-1">
-              <CornerUpRight size={10} className="sm:w-3 sm:h-3" />
+            <span className="text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400 lowercase flex items-center gap-1">
+              <CornerUpRight size={12} className="sm:w-4 sm:h-4" />
               <span className="truncate">Replying to {replyingTo.sender_name}</span>
             </span>
-            <span className="text-xs sm:text-[13px] text-gray-600 truncate">
+            <span className="text-sm sm:text-base text-gray-600 dark:text-gray-300 truncate">
               {replyingTo.message || `${replyingTo.message_type}`}
             </span>
           </div>
           <button
-            className="w-6 h-6 sm:w-8 sm:h-8 border-none bg-white/50 rounded-full flex items-center justify-center text-gray-600 hover:bg-white transition-all flex-shrink-0 backdrop-blur-sm group"
+            className="w-6 h-6 sm:w-8 sm:h-8 border-none bg-white/50 dark:bg-gray-700/50 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-all flex-shrink-0 backdrop-blur-sm group"
             onClick={onCancelReply}
           >
-            <X size={14} className="sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform" />
+            <X size={14} className="sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" />
           </button>
         </div>
       )}
 
-      {/* File Preview */}
       {selectedFile && (
-        <div
-          className={`
-            flex items-center justify-between py-2 sm:py-3 px-3 sm:px-4
-            bg-gradient-to-r from-gray-50 to-gray-100/50
-            rounded-t-[24px] border-b border-gray-200
-            animate-slideDown
-          `}
-        >
+        <div className="flex items-center justify-between py-2 sm:py-2 px-3 sm:px-4 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-700/50 rounded-t-2xl border-b border-gray-200 dark:border-gray-700 animate-slideDown">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <div className="relative flex-shrink-0">
               {filePreview ? (
@@ -360,50 +312,48 @@ export default function InputArea({
                   className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg sm:rounded-xl shadow-md"
                 />
               ) : (
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white shadow-md">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-md">
                   {getFileIcon(selectedFile)}
                 </div>
               )}
               {uploadProgress > 0 && uploadProgress < 100 && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">
+                <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-indigo-500 rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">
                   {uploadProgress}%
                 </div>
               )}
             </div>
             <div className="flex flex-col gap-0.5 min-w-0">
-              <span className="text-xs sm:text-[14px] font-medium text-gray-900 truncate max-w-[120px] xs:max-w-[180px] sm:max-w-[250px]">
+              <span className="text-sm sm:text-base font-medium text-gray-900 dark:text-white truncate max-w-[140px] xs:max-w-[200px] sm:max-w-[280px]">
                 {selectedFile.name}
               </span>
-              <span className="text-[10px] sm:text-xs text-gray-500">
+              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 {(selectedFile.size / 1024).toFixed(2)} KB
               </span>
             </div>
           </div>
           <button
-            className="w-6 h-6 sm:w-8 sm:h-8 border-none bg-white rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 transition-all flex-shrink-0 shadow-sm group"
+            className="w-6 h-6 sm:w-8 sm:h-8 border-none bg-white dark:bg-gray-700 rounded-full flex items-center justify-center text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all flex-shrink-0 shadow-sm group"
             onClick={clearFileSelection}
             disabled={uploading}
           >
-            <X size={14} className="sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform" />
+            <X size={14} className="sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" />
           </button>
         </div>
       )}
 
-      {/* Upload Error */}
       {uploadError && (
-        <div className="flex items-center gap-2 py-1.5 sm:py-2 px-3 sm:px-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-t-[24px] border-b border-red-200 text-red-600 text-xs sm:text-[13px] animate-shake">
-          <AlertCircle size={14} className="sm:w-4 sm:h-4 flex-shrink-0" />
+        <div className="flex items-center gap-2 py-1.5 sm:py-2 px-3 sm:px-4 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 rounded-t-2xl border-b border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 text-sm sm:text-base animate-shake">
+          <AlertCircle size={16} className="sm:w-5 sm:h-5 flex-shrink-0" />
           <span className="truncate">{uploadError}</span>
           <button 
             onClick={() => setUploadError(null)}
-            className="ml-auto hover:bg-red-100 rounded-full p-1 flex-shrink-0"
+            className="ml-auto hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full p-1 flex-shrink-0"
           >
-            <X size={12} className="sm:w-3.5 sm:h-3.5" />
+            <X size={14} className="sm:w-4 sm:h-4" />
           </button>
         </div>
       )}
 
-      {/* Emoji Picker */}
       {showEmoji && (
         <>
           <div className="fixed inset-0 z-[9999] bg-black/5 backdrop-blur-sm" onClick={() => setShowEmoji(false)} />
@@ -430,38 +380,18 @@ export default function InputArea({
         </>
       )}
 
-      {/* Input Controls */}
-      <div
-        className={`
-          flex items-end gap-1 sm:gap-2 py-1.5 sm:py-2 px-2 sm:px-3
-        `}
-      >
+      <div className="flex items-end gap-1 sm:gap-2 py-1.5 sm:py-2 px-2 sm:px-3">
         <button
-          className={`
-            w-9 h-9 sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-full
-            text-gray-600
-            hover:bg-gray-100
-            transition-all duration-200 hover:scale-110
-            disabled:opacity-40 disabled:hover:scale-100
-            flex-shrink-0 relative group
-            ${showEmoji ? 'bg-gray-100 text-blue-500' : ''}
-          `}
+          className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-110 disabled:opacity-40 disabled:hover:scale-100 flex-shrink-0 relative group ${showEmoji ? 'bg-gray-100 dark:bg-gray-700 text-indigo-500' : ''}`}
           onClick={() => setShowEmoji(!showEmoji)}
           title="Emoji"
           disabled={uploading}
         >
-          <Smile size={18} className="sm:w-[22px] sm:h-[22px] group-hover:rotate-12 transition-transform" />
+          <Smile size={20} className="sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
         </button>
 
         <label
-          className={`
-            w-9 h-9 sm:w-[42px] sm:h-[42px] flex items-center justify-center rounded-full
-            text-gray-600
-            hover:bg-gray-100
-            transition-all duration-200 hover:scale-110
-            disabled:opacity-40
-            flex-shrink-0 cursor-pointer relative group
-          `}
+          className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-110 disabled:opacity-40 flex-shrink-0 cursor-pointer relative group"
           title="Attach file"
         >
           <input
@@ -472,7 +402,7 @@ export default function InputArea({
             accept="image/*,.pdf,.doc,.docx,.txt,.zip,audio/*,video/*"
             disabled={uploading}
           />
-          <Paperclip size={18} className="sm:w-[22px] sm:h-[22px] group-hover:-rotate-12 transition-transform" />
+          <Paperclip size={20} className="sm:w-5 sm:h-5 group-hover:-rotate-12 transition-transform" />
         </label>
 
         <div className="flex-1 relative min-w-0">
@@ -483,82 +413,41 @@ export default function InputArea({
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             rows={1}
-            className="
-              w-full
-              px-3 sm:px-4
-              py-0
-              rounded-xl
-              bg-gray-100
-              border border-transparent
-              text-[15px]
-              placeholder-gray-500
-              focus:border-transparent
-              focus:bg-white
-              focus:shadow-none
-              outline-none
-              transition-all duration-200
-              resize-none
-              disabled:opacity-50
-              min-h-[35px]
-              max-h-[100px]
-              overflow-y-auto
-                flex items-center 
-            "
+            className="w-full px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 border border-transparent text-base text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-transparent focus:bg-white dark:focus:bg-gray-600 focus:shadow-none outline-none transition-all duration-200 resize-none disabled:opacity-50 min-h-[36px] max-h-[90px] overflow-y-auto"
             disabled={uploading}
             autoFocus
           />
-
-          
           {text && (
             <button
-              className="absolute right-2 sm:right-3 bottom-2.5 sm:bottom-3.5 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-2 bottom-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               onClick={() => setText('')}
             >
-              <X size={14} className="sm:w-4 sm:h-4" />
+              <X size={16} className="sm:w-4 sm:h-4" />
             </button>
           )}
         </div>
 
         <button
-          className={`
-            w-10 h-10 sm:w-[46px] sm:h-[46px] flex items-center justify-center rounded-full
-            bg-gradient-to-r from-blue-500 to-indigo-500
-            text-white
-            shadow-lg shadow-blue-500/30
-            transition-all duration-200
-            hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105
-            active:scale-95
-            disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100
-            flex-shrink-0 relative group
-            ${text || selectedFile ? 'animate-soft-pulse' : ''}
-          `}
+          className={`w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-indigo-500/40 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0 relative group ${text || selectedFile ? 'animate-soft-pulse' : ''}`}
           onClick={sendMessage}
           disabled={(!text.trim() && !selectedFile) || uploading}
           title="Send"
         >
           {uploading ? (
-            <Loader2 size={18} className="sm:w-[22px] sm:h-[22px] animate-spin" />
+            <Loader2 size={18} className="sm:w-5 sm:h-5 animate-spin" />
           ) : (
-            <Send size={18} className="sm:w-[22px] sm:h-[22px] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            <Send size={18} className="sm:w-5 sm:h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           )}
         </button>
 
-        {/* Voice message button */}
         <button
-          className={`
-            w-9 h-9 sm:w-[42px] sm:h-[42px] hidden sm:flex items-center justify-center rounded-full
-            text-gray-600
-            hover:bg-gray-100
-            transition-all duration-200 hover:scale-110
-            flex-shrink-0 relative group
-            ${isRecording ? 'bg-red-100 text-red-500 animate-pulse' : ''}
-          `}
+          className={`w-9 h-9 sm:w-10 sm:h-10 hidden sm:flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-110 flex-shrink-0 relative group ${isRecording ? 'bg-red-100 dark:bg-red-900/30 text-red-500 animate-pulse' : ''}`}
           onMouseDown={startRecording}
           onMouseUp={stopRecording}
           onMouseLeave={stopRecording}
           title={isRecording ? "Recording... release to send" : "Hold to record"}
         >
-          <Mic size={18} className="sm:w-[22px] sm:h-[22px] group-hover:scale-110 transition-transform" />
+          <Mic size={18} className="sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
         </button>
       </div>
     </div>

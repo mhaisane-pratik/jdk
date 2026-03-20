@@ -1,5 +1,3 @@
-// File: video-call-main/src/features/chat/ChatWindow.tsx
-
 import React, { useEffect, useState, useRef } from "react";
 import { useChat } from "../../contexts/ChatContext";
 import { socket } from "../../api/socket";
@@ -8,10 +6,10 @@ import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import InputArea from "./InputArea";
 import MediaViewer from "./MediaViewer";
-import "./ChatWindow.css";
 
 const API_URL = import.meta.env.VITE_API_URL as string;
 const API_KEY = "ZATCHAT_PRATEEK9373";
+
 export interface Message {
   id: string;
   room_id?: string;
@@ -42,7 +40,6 @@ const getWallpaperStyle = (wallpaperId: string): React.CSSProperties => {
   return { background: "#efeae2" };
 };
 
-// ✅ Accept onBack prop
 export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const { currentUser, selectedRoom, chatRooms, wallpaper } = useChat();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -57,12 +54,9 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const hasJoinedRoom = useRef(false);
   const isLoadingRef = useRef(false);
 
-  // Determine receiver
   useEffect(() => {
     if (!selectedRoom || !currentUser) return;
-
     let receiverName = "";
-
     if (room?.other_user) {
       receiverName = room.other_user;
     } else {
@@ -74,32 +68,27 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         receiverName = participants.find((p) => p !== currentUser.username) || "";
       }
     }
-
     if (receiverName) {
       setReceiver(receiverName);
       localStorage.setItem(`room_${selectedRoom}_receiver`, receiverName);
     }
   }, [selectedRoom, currentUser, room]);
 
-  // Load messages when room changes
   useEffect(() => {
     if (!selectedRoom || !currentUser) {
       setMessages([]);
       setLoading(false);
       return;
     }
-
     setMessages([]);
     setError(null);
     setReplyingTo(null);
     setShowMedia(false);
     loadMessages();
-
     if (!hasJoinedRoom.current && socket.connected) {
       socket.emit("join_room", selectedRoom);
       hasJoinedRoom.current = true;
     }
-
     return () => {
       if (hasJoinedRoom.current) {
         socket.emit("leave_room", selectedRoom);
@@ -108,13 +97,10 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
     };
   }, [selectedRoom, currentUser]);
 
-  // Socket listeners
   useEffect(() => {
     if (!selectedRoom || !currentUser) return;
-
     const handleReceiveMessage = (msg: Message) => {
       if (msg.room_id !== selectedRoom) return;
-
       setMessages((prev) => {
         if (prev.some((m) => m.id === msg.id)) return prev;
         if (msg.reply_to_id && !msg.reply_to) {
@@ -123,7 +109,6 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         }
         return [...prev, msg];
       });
-
       if (msg.sender_name !== currentUser.username) {
         setTimeout(() => {
           socket.emit("message_seen", {
@@ -134,13 +119,11 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         }, 500);
       }
     };
-
     const handleMessageDelivered = ({ messageId }: { messageId: string }) => {
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, is_delivered: true } : m))
       );
     };
-
     const handleMessageSeen = ({ messageIds }: { messageIds: string[] }) => {
       setMessages((prev) =>
         prev.map((m) =>
@@ -148,13 +131,10 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         )
       );
     };
-
     const handleTyping = ({ sender }: { sender: string }) => {
       if (sender !== currentUser.username) setTypingUser(sender);
     };
-
     const handleStopTyping = () => setTypingUser(null);
-
     const handleMessageDeleted = ({ messageId, deletedFor }: any) => {
       if (deletedFor === "everyone") {
         setMessages((prev) =>
@@ -166,14 +146,12 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         setMessages((prev) => prev.filter((m) => m.id !== messageId));
       }
     };
-
     socket.on("receive_message", handleReceiveMessage);
     socket.on("message_delivered", handleMessageDelivered);
     socket.on("message_seen", handleMessageSeen);
     socket.on("typing", handleTyping);
     socket.on("stop_typing", handleStopTyping);
     socket.on("message_deleted", handleMessageDeleted);
-
     return () => {
       socket.off("receive_message", handleReceiveMessage);
       socket.off("message_delivered", handleMessageDelivered);
@@ -189,20 +167,13 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
       setLoading(false);
       return;
     }
-
     isLoadingRef.current = true;
     setLoading(true);
     setError(null);
-
     try {
       const url = `${API_URL}/api/v1/chats/history/${selectedRoom}?username=${currentUser.username}`;
-      const res = await fetch(url, {
-  headers: {
-    "x-api-key": API_KEY,
-  },
-});
+      const res = await fetch(url, { headers: { "x-api-key": API_KEY } });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-
       const data: Message[] = await res.json();
       const processedMessages = data.map((msg) => {
         if (msg.reply_to_id) {
@@ -215,7 +186,6 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
       setMessages(sortedMessages);
-
       if (sortedMessages.length > 0) markAsRead();
     } catch (err: any) {
       console.error("❌ Failed to load messages:", err);
@@ -230,15 +200,10 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const markAsRead = async () => {
     if (!selectedRoom || !currentUser) return;
     try {
-    await fetch(
-  `${API_URL}/api/v1/chats/mark-read/${selectedRoom}/${currentUser.username}`,
-  {
-    method: "POST",
-    headers: {
-      "x-api-key": API_KEY,
-    },
-  }
-);
+      await fetch(`${API_URL}/api/v1/chats/mark-read/${selectedRoom}/${currentUser.username}`, {
+        method: "POST",
+        headers: { "x-api-key": API_KEY },
+      });
     } catch (err) {
       console.error("❌ Mark as read failed:", err);
     }
@@ -250,27 +215,28 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const handleMediaClick = () => setShowMedia(true);
   const handleMediaClose = () => setShowMedia(false);
 
-  // Loading state
   if (loading) {
     return (
-      <div className="chat-window" style={getWallpaperStyle(wallpaper)}>
-        <div className="loading-chat">
-          <div className="spinner"></div>
-          <p>Loading messages...</p>
+      <div className="flex flex-col h-screen bg-cover" style={getWallpaperStyle(wallpaper)}>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+          <p className="ml-3 text-gray-600 dark:text-gray-300 text-base">Loading messages...</p>
         </div>
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="chat-window" style={getWallpaperStyle(wallpaper)}>
-        <div className="error-state">
-          <div className="error-icon">❌</div>
-          <h3>Error Loading Chat</h3>
-          <p>{error}</p>
-          <button className="retry-btn" onClick={loadMessages}>
+      <div className="flex flex-col h-screen bg-cover" style={getWallpaperStyle(wallpaper)}>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="text-5xl mb-4">❌</div>
+          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Error Loading Chat</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-4 text-base">{error}</p>
+          <button
+            onClick={loadMessages}
+            className="px-5 py-2.5 bg-blue-500 text-white rounded-lg text-base font-semibold hover:bg-blue-600 transition"
+          >
             Retry
           </button>
         </div>
@@ -278,27 +244,25 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
     );
   }
 
-  // Invalid state
   if (!receiver || !currentUser) {
     return (
-      <div className="chat-window" style={getWallpaperStyle(wallpaper)}>
-        <div className="error-state">
-          <div className="error-icon">⚠️</div>
-          <h3>Invalid Chat</h3>
-          <p>Could not load chat session.</p>
+      <div className="flex flex-col h-screen bg-cover" style={getWallpaperStyle(wallpaper)}>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="text-5xl mb-4">⚠️</div>
+          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Invalid Chat</h3>
+          <p className="text-gray-600 dark:text-gray-300 text-base">Could not load chat session.</p>
         </div>
       </div>
     );
   }
 
-  // Main chat window – pass onBack to ChatHeader
   return (
-    <div className="chat-window" style={getWallpaperStyle(wallpaper)}>
+    <div className="flex flex-col h-screen bg-cover relative overflow-hidden" style={getWallpaperStyle(wallpaper)}>
       <ChatHeader
         receiver={receiver}
         roomId={selectedRoom || ""}
         onMediaClick={handleMediaClick}
-        onBack={onBack} // ✅ pass the back handler
+        onBack={onBack}
       />
 
       <MessageList
@@ -309,15 +273,17 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
       />
 
       {typingUser && (
-        <div className="typing-indicator">
-          <div className="typing-bubble">
-            <div className="typing-dots">
-              <span></span>
-              <span></span>
-              <span></span>
+        <div className="px-4 py-2 flex gap-2.5 absolute bottom-[72px] left-0 right-0 pointer-events-none">
+          <div className="bg-white dark:bg-gray-700 p-3 rounded-2xl shadow-md">
+            <div className="flex gap-1">
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
             </div>
           </div>
-          <span className="typing-text">{typingUser} is typing...</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 px-3 py-1.5 rounded-full">
+            {typingUser} is typing...
+          </span>
         </div>
       )}
 
@@ -329,9 +295,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         onCancelReply={handleCancelReply}
       />
 
-      {showMedia && (
-        <MediaViewer roomId={selectedRoom || ""} onClose={handleMediaClose} />
-      )}
+      {showMedia && <MediaViewer roomId={selectedRoom || ""} onClose={handleMediaClose} />}
     </div>
   );
 }
