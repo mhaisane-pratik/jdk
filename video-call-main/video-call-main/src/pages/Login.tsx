@@ -17,7 +17,6 @@ export default function ChatLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [showWhatsAppLoading, setShowWhatsAppLoading] = useState(false);
   
-  // 🔥 NEW: Stores the token so we can wait for the user to click "Continue Chat"
   const [ssoReadyToken, setSsoReadyToken] = useState("");
 
   const usernameInputRef = useRef<HTMLInputElement>(null);
@@ -28,7 +27,7 @@ export default function ChatLogin() {
     const token = urlParams.get("ssoToken");
 
     if (token) {
-      // ✅ We found a token! Save it to state and wait for the user to click the button.
+      // Save token to state and wait for click
       setSsoReadyToken(token);
     } else {
       // Normal Standalone Behavior
@@ -40,7 +39,7 @@ export default function ChatLogin() {
     }
   }, [navigate, currentUser]);
 
-  // 🔥 This runs ONLY when they click the "Continue Chat" button
+  // 🔥 PROCESS SSO LOGIN: Now configured to show the EXACT Backend Error!
   const processSsoLogin = async () => {
     if (!ssoReadyToken) return;
     
@@ -49,7 +48,6 @@ export default function ChatLogin() {
     setError("");
     
     try {
-      // Send the token to store the data in the Chat Database
       const response = await fetch(`${API_URL}/api/v1/auth/sso-login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -58,8 +56,8 @@ export default function ChatLogin() {
       
       const data = await response.json();
       
-      if (data.success) {
-        // ✅ IT WORKED! User is now in your database!
+      if (response.ok && data.success) {
+        // ✅ Connection Successful!  
         localStorage.setItem("officialChatToken", data.token);
         localStorage.setItem("chatUser", data.user.username);
         setCurrentUser(data.user);
@@ -72,11 +70,14 @@ export default function ChatLogin() {
           setShowWhatsAppLoading(false);
           navigate("/chat", { replace: true });
         }, 1500); 
+
       } else {
-        throw new Error("SSO Login Failed");
+        // ❌ We catch the EXACT error reason the server gave us
+        throw new Error(data.details || data.error || `Server responded with ${response.status}`);
       }
     } catch (err: any) {
-      setError("Auto-login failed. Please refresh the page.");
+      // 🚨 Displays the EXACT error on screen!
+      setError(`Auth Error: ${err.message}`);
       setShowWhatsAppLoading(false);
       setIsLoading(false);
     }
@@ -188,7 +189,6 @@ export default function ChatLogin() {
           {error && <div className="error-message">⚠️ {error}</div>}
 
           <div className="form">
-            {/* 🔥 THIS IS THE MAGIC: If we have the Stock token, hide the input and show "Continue Chat" */}
             {ssoReadyToken ? (
               <button
                 className="login-button"
@@ -202,7 +202,6 @@ export default function ChatLogin() {
                 )}
               </button>
             ) : (
-              /* Normal Username Input for Standalone Chat users */
               <>
                 <div className="input-group">
                   <User size={18} className="input-icon" />
