@@ -341,7 +341,7 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
                       member.username !== room.created_by && (
                         <button
                           onClick={() => handleRemoveMember(member.username)}
-                          className="px-3 py-1.5 bg-red-500 text-white rounded-md text-xs font-semibold hover:bg-red-600 flex-shrink-0"
+                          className="px-3 py-1.5 bg-blue-500 text-white rounded-md text-xs font-semibold hover:bg-blue-600 flex-shrink-0"
                         >
                           Remove
                         </button>
@@ -422,7 +422,7 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
           <div className="pt-5 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={handleLeaveGroup}
-              className="w-full py-3.5 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition"
+              className="w-full py-3.5 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition"
             >
               🚪 Leave Group
             </button>

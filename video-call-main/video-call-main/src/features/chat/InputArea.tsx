@@ -440,16 +440,10 @@ export default function InputArea({
           )}
         </button>
 
-        <button
-          className={`w-9 h-9 sm:w-10 sm:h-10 hidden sm:flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-110 flex-shrink-0 relative group ${isRecording ? 'bg-red-100 dark:bg-red-900/30 text-red-500 animate-pulse' : ''}`}
-          onMouseDown={startRecording}
-          onMouseUp={stopRecording}
-          onMouseLeave={stopRecording}
-          title={isRecording ? "Recording... release to send" : "Hold to record"}
-        >
-          <Mic size={18} className="sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
-        </button>
+   
       </div>
     </div>
   );
 }
+
+

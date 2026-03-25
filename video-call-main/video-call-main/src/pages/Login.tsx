@@ -16,21 +16,71 @@ export default function ChatLogin() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showWhatsAppLoading, setShowWhatsAppLoading] = useState(false);
+  
+  // 🔥 NEW: Stores the token so we can wait for the user to click "Continue Chat"
+  const [ssoReadyToken, setSsoReadyToken] = useState("");
 
   const usernameInputRef = useRef<HTMLInputElement>(null);
 
-  // Redirect if already logged in
   useEffect(() => {
-    const existingUser = localStorage.getItem("chatUser");
-    if (existingUser || currentUser) {
-      navigate("/chat", { replace: true });
+    // Check if the Stock App sent a ticket in the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("ssoToken");
+
+    if (token) {
+      // ✅ We found a token! Save it to state and wait for the user to click the button.
+      setSsoReadyToken(token);
+    } else {
+      // Normal Standalone Behavior
+      usernameInputRef.current?.focus();
+      const existingUser = localStorage.getItem("chatUser");
+      if (existingUser || currentUser) {
+        navigate("/chat", { replace: true });
+      }
     }
   }, [navigate, currentUser]);
 
-  // Focus username input on mount
-  useEffect(() => {
-    usernameInputRef.current?.focus();
-  }, []);
+  // 🔥 This runs ONLY when they click the "Continue Chat" button
+  const processSsoLogin = async () => {
+    if (!ssoReadyToken) return;
+    
+    setShowWhatsAppLoading(true);
+    setIsLoading(true);
+    setError("");
+    
+    try {
+      // Send the token to store the data in the Chat Database
+      const response = await fetch(`${API_URL}/api/v1/auth/sso-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: ssoReadyToken })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // ✅ IT WORKED! User is now in your database!
+        localStorage.setItem("officialChatToken", data.token);
+        localStorage.setItem("chatUser", data.user.username);
+        setCurrentUser(data.user);
+        
+        if (!socket.connected) socket.connect();
+        socket.emit("user_join", { username: data.user.username });
+        
+        // Jump to chat
+        setTimeout(() => {
+          setShowWhatsAppLoading(false);
+          navigate("/chat", { replace: true });
+        }, 1500); 
+      } else {
+        throw new Error("SSO Login Failed");
+      }
+    } catch (err: any) {
+      setError("Auto-login failed. Please refresh the page.");
+      setShowWhatsAppLoading(false);
+      setIsLoading(false);
+    }
+  };
 
   const validateUsername = (name: string) => {
     if (name.length < 3) return "Username must be at least 3 characters";
@@ -53,11 +103,9 @@ export default function ChatLogin() {
     setError("");
 
     try {
-      // Health check
       const health = await fetch(`${API_URL}/health`);
       if (!health.ok) throw new Error("Backend not responding");
 
-      // Try to get existing user or create new one
       let userData: any = null;
       const res = await fetch(`${API_URL}/api/v1/users/${trimmedUsername}`);
       if (res.ok) userData = await res.json();
@@ -84,12 +132,11 @@ export default function ChatLogin() {
       if (!socket.connected) socket.connect();
       socket.emit("user_join", { username: trimmedUsername });
 
-      // Wait 10 seconds to show WhatsApp loading animation
       setTimeout(() => {
         setShowWhatsAppLoading(false);
         setIsLoading(false);
         navigate("/chat", { replace: true });
-      }, 10000);
+      }, 1500);
     } catch (err: any) {
       setShowWhatsAppLoading(false);
       setIsLoading(false);
@@ -98,14 +145,13 @@ export default function ChatLogin() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !isLoading) {
+    if (e.key === "Enter" && !isLoading && !ssoReadyToken) {
       handleLogin();
     }
   };
 
   return (
     <div className="login-page">
-      {/* Home button */}
       <Link to="/" className="home-button">
         <Home size={20} />
         <span>Home</span>
@@ -113,7 +159,6 @@ export default function ChatLogin() {
 
       <div className="login-container">
         <div className="login-card">
-          {/* WhatsApp-style Loading Overlay */}
           {showWhatsAppLoading && (
             <div className="whatsapp-loading-overlay">
               <div className="whatsapp-loading-content">
@@ -128,44 +173,64 @@ export default function ChatLogin() {
             </div>
           )}
 
-          {/* Brand - ZatChat */}
           <div className="brand">
             <div className="logo">
               <MessageSquare size={32} />
             </div>
             <h1>ZatChat</h1>
-            <p>Connect with anyone, anywhere</p>
+            {ssoReadyToken ? (
+              <p className="text-green-500 font-bold mt-2">Stock App Connection Secure 🔒</p>
+            ) : (
+              <p>Connect with anyone, anywhere</p>
+            )}
           </div>
 
-          {/* Error message */}
           {error && <div className="error-message">⚠️ {error}</div>}
 
-          {/* Simple Username Login Form */}
           <div className="form">
-            <div className="input-group">
-              <User size={18} className="input-icon" />
-              <input
-                ref={usernameInputRef}
-                type="text"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                onKeyDown={handleKeyDown}
+            {/* 🔥 THIS IS THE MAGIC: If we have the Stock token, hide the input and show "Continue Chat" */}
+            {ssoReadyToken ? (
+              <button
+                className="login-button"
+                onClick={processSsoLogin}
                 disabled={isLoading}
-              />
-            </div>
-            <button
-              className="login-button"
-              onClick={handleLogin}
-              disabled={isLoading}
-            >
-              {isLoading && !showWhatsAppLoading ? (
-                <span className="spinner" />
-              ) : (
-                "Start Chatting"
-              )}
-            </button>
+              >
+                {isLoading && !showWhatsAppLoading ? (
+                  <span className="spinner" />
+                ) : (
+                  "Continue Chat"
+                )}
+              </button>
+            ) : (
+              /* Normal Username Input for Standalone Chat users */
+              <>
+                <div className="input-group">
+                  <User size={18} className="input-icon" />
+                  <input
+                    ref={usernameInputRef}
+                    type="text"
+                    placeholder="Enter your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    disabled={isLoading}
+                  />
+                </div>
+                <button
+                  className="login-button"
+                  onClick={handleLogin}
+                  disabled={isLoading}
+                >
+                  {isLoading && !showWhatsAppLoading ? (
+                    <span className="spinner" />
+                  ) : (
+                    "Start Chatting"
+                  )}
+                </button>
+              </>
+            )}
           </div>
+          
         </div>
       </div>
     </div>

@@ -16,7 +16,7 @@ import { AppDataSource } from "./config/data-source";
 import { pool } from "./db";
 
 import proxyRoutes from "./modules/chat/proxy.route";
-
+import ssoAuthRoutes from "./modules/auth/auth.sso";
 // Import calendar route
 
 // Import chat routes (with error handling)
@@ -133,6 +133,7 @@ if (messageRoutes) {
 
 // Calendar routes
 console.log("✅ Calendar routes registered at /api/v1/calendar");
+app.use("/api/v1/auth", ssoAuthRoutes);
 
 /* ================= 404 HANDLER ================= */
 app.use((req, res) => {
