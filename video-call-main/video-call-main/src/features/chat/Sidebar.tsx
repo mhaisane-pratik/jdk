@@ -25,7 +25,7 @@ interface SidebarProps {
 type FilterType = "all" | "unread" | "groups";
 
 export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
-  const { chatRooms, selectedRoom } = useChat();
+  const { chatRooms, selectedRoom, allowGroupCreation, currentUser, appName, appLogo } = useChat();
   const [showMenu, setShowMenu] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -71,49 +71,68 @@ export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
 
   return (
     <div className="w-full md:w-[420px] h-screen flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-hidden shadow-lg">
-      {/* Header */}
-      <div className="flex items-center p-3 gap-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <button
-          className="menu-button w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 active:scale-95"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowMenu(!showMenu);
-          }}
-          title="Menu"
-        >
-          <Menu size={20} />
-        </button>
-
-        <div className="flex-1 relative">
-          <Search
-            size={18}
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Search or start new chat"
-            className="w-full pl-10 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          {searchTerm && (
-            <button
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-              onClick={() => setSearchTerm("")}
-              title="Clear search"
-            >
-              <X size={16} />
-            </button>
-          )}
+      
+      {/* Dynamic App Branding & Header */}
+      <div className="flex flex-col bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+        
+        {/* Top Branding Row */}
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+           <div className="flex items-center gap-3">
+             {appLogo ? (
+                <img src={appLogo} alt="App Logo" className="w-8 h-8 rounded-lg object-cover shadow-sm bg-gray-50 dark:bg-gray-800" />
+             ) : (
+                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                  {appName ? appName.charAt(0).toUpperCase() : "Z"}
+                </div>
+             )}
+             <span className="font-extrabold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 block">
+               {appName || "ZatChat"}
+             </span>
+           </div>
+           
+           <div className="flex items-center gap-1">
+             <button
+               className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all"
+               onClick={() => setShowNewChat(true)}
+               title="New chat"
+             >
+               <Plus size={20} />
+             </button>
+             <button
+               className="menu-button w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all"
+               onClick={(e) => {
+                 e.stopPropagation();
+                 setShowMenu(!showMenu);
+               }}
+               title="Menu"
+             >
+               <Menu size={20} />
+             </button>
+           </div>
         </div>
 
-        <button
-          className="w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 active:scale-95"
-          onClick={() => setShowNewChat(true)}
-          title="New chat"
-        >
-          <Plus size={20} />
-        </button>
+        {/* Bottom Search Row */}
+        <div className="px-4 pb-3 pt-1">
+          <div className="relative w-full">
+            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search or start new chat"
+              className="w-full pl-10 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all font-medium"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                onClick={() => setSearchTerm("")}
+                title="Clear search"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Filter Tabs */}
@@ -182,16 +201,18 @@ export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
               <MessageSquare size={18} className="text-gray-500 dark:text-gray-400" />
               <span>New chat</span>
             </button>
-            <button
-              className="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
-              onClick={() => {
-                setShowCreateGroup(true);
-                setShowMenu(false);
-              }}
-            >
-              <UserPlus size={18} className="text-gray-500 dark:text-gray-400" />
-              <span>New group</span>
-            </button>
+            {allowGroupCreation && (
+              <button
+                className="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
+                onClick={() => {
+                  setShowCreateGroup(true);
+                  setShowMenu(false);
+                }}
+              >
+                <UserPlus size={18} className="text-gray-500 dark:text-gray-400" />
+                <span>New group</span>
+              </button>
+            )}
             <button
               className="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
               onClick={() => {
@@ -202,6 +223,17 @@ export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
               <Settings size={18} className="text-gray-500 dark:text-gray-400" />
               <span>Settings</span>
             </button>
+            {(currentUser?.username === 'admin' || currentUser?.is_admin === true) && (
+              <button
+                className="w-full px-4 py-3 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-3 transition-colors"
+                onClick={() => {
+                  window.location.href = '/admin'; // Redirects to admin dashboard
+                }}
+              >
+                <Settings size={18} />
+                <span>Admin Dashboard</span>
+              </button>
+            )}
             <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
             <button
               className="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors"

@@ -11,8 +11,12 @@ interface ChatUser {
   wallpaper?: string;
   notification_enabled?: boolean;
   sound_enabled?: boolean;
-  is_online?: boolean;
-  last_seen?: string;
+  is_online?: boolean;  
+  last_seen?: string;  
+  is_admin?: boolean;
+  can_create_group?: boolean;
+  is_banned?: boolean;
+  warning_count?: number;
 }
 
 interface ChatRoom {
@@ -51,6 +55,10 @@ interface ChatContextType {
   isLoading: boolean;
   userProfiles: Map<string, ChatUser>;
   loadUserProfile: (username: string) => Promise<ChatUser | null>;
+  allowGroupCreation: boolean;
+  appName: string;
+  appLogo: string;
+  typingUsers: Record<string, Set<string>>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -68,6 +76,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
   const [isLoading, setIsLoading] = useState(false);
   const [userProfiles, setUserProfiles] = useState<Map<string, ChatUser>>(new Map());
+  const [allowGroupCreation, setAllowGroupCreation] = useState(true);
+  const [appName, setAppName] = useState("ZatChat");
+  const [appLogo, setAppLogo] = useState("");
+  const [typingUsers, setTypingUsers] = useState<Record<string, Set<string>>>({});
 
   const hasInitialized = useRef(false);
 
@@ -94,6 +106,29 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       fetchUserProfile(savedUsername);
     }
+  }, []);
+
+  // --- Fetch App Config ---
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/v1/admin/dashboard`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.applications && data.applications.length > 0) {
+            const defaultApp = data.applications.find((app: any) => app.app_name === "ZatChat Default") || data.applications[0];
+            if (defaultApp) {
+              if (defaultApp.allow_group_creation !== undefined) setAllowGroupCreation(defaultApp.allow_group_creation);
+              if (defaultApp.app_name) setAppName(defaultApp.app_name);
+              if (defaultApp.app_logo) setAppLogo(defaultApp.app_logo);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch app config", err);
+      }
+    };
+    fetchConfig();
   }, []);
 
   // --- Save preferences and apply theme to html element ---
@@ -123,6 +158,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsSocketConnected(true);
       if (currentUser) socket.emit("user_join", { username: currentUser.username });
       if (selectedRoom) socket.emit("join_room", selectedRoom);
+      
+      // Actively subscribe to all ambient chats to receive Global Typing + Unread Badges universally
+      chatRooms.forEach(room => {
+        socket.emit("join_room", room.id);
+      });
     };
     const handleDisconnect = () => setIsSocketConnected(false);
 
@@ -177,16 +217,68 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const handleNewGroupCreated = () => refreshRooms();
 
+    const handlePermissionUpdated = ({ username, is_admin, can_create_group }: any) => {
+      if (currentUser && currentUser.username === username) {
+        setCurrentUser(prev => prev ? { ...prev, is_admin, can_create_group } : prev);
+      }
+    };
+    
+    const handleUserBanned = ({ username }: any) => {
+      if (currentUser && currentUser.username === username) {
+        setCurrentUser(prev => prev ? { ...prev, is_banned: true } : prev);
+        socket.disconnect(); // violently disconnect them
+      }
+    };
+    
+    const handleUserWarned = ({ username, message, warning_count }: any) => {
+      if (currentUser && currentUser.username === username) {
+        alert(`🚨 ADMIN WARNING (${warning_count}):\n\n${message}`);
+      }
+    };
+
+    const handleGlobalTyping = ({ roomId, sender }: any) => {
+      if (currentUser && sender === currentUser.username) return;
+      setTypingUsers(prev => {
+        const roomSet = new Set(prev[roomId] || []);
+        roomSet.add(sender);
+        return { ...prev, [roomId]: roomSet };
+      });
+    };
+
+    const handleGlobalStopTyping = ({ roomId, sender }: any) => {
+      setTypingUsers(prev => {
+        if (!prev[roomId]) return prev;
+        const roomSet = new Set(prev[roomId]);
+        roomSet.delete(sender);
+        if (roomSet.size === 0) {
+          const next = { ...prev };
+          delete next[roomId];
+          return next;
+        }
+        return { ...prev, [roomId]: roomSet };
+      });
+    };
+
     socket.on("room_updated", handleRoomUpdated);
     socket.on("user_online", handleUserOnline);
     socket.on("user_offline", handleUserOffline);
     socket.on("new_group_created", handleNewGroupCreated);
+    socket.on("user_permission_updated", handlePermissionUpdated);
+    socket.on("user_banned", handleUserBanned);
+    socket.on("user_warned", handleUserWarned);
+    socket.on("typing", handleGlobalTyping);
+    socket.on("stop_typing", handleGlobalStopTyping);
 
     return () => {
       socket.off("room_updated", handleRoomUpdated);
       socket.off("user_online", handleUserOnline);
       socket.off("user_offline", handleUserOffline);
       socket.off("new_group_created", handleNewGroupCreated);
+      socket.off("user_permission_updated", handlePermissionUpdated);
+      socket.off("user_banned", handleUserBanned);
+      socket.off("user_warned", handleUserWarned);
+      socket.off("typing", handleGlobalTyping);
+      socket.off("stop_typing", handleGlobalStopTyping);
     };
   }, [currentUser, selectedRoom]);
 
@@ -255,6 +347,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: ChatRoom[] = await res.json();
       setChatRooms(data);
+      
+      // Wire up infinite listeners for all our rooms
+      if (socket.connected) {
+        data.forEach((room) => {
+          socket.emit("join_room", room.id);
+        });
+      }
 
       const otherUsernames = data
         .filter((room) => !room.is_group)
@@ -297,6 +396,23 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (currentUser?.username) refreshRooms();
   }, [currentUser?.username]);
 
+  // Combine Global limits with Individual child-admin Overrides
+  const effectiveAllowGroupCreation = currentUser?.can_create_group || allowGroupCreation;
+
+  if (currentUser?.is_banned) {
+    return (
+      <div className="fixed inset-0 z-50 bg-red-900 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+        <div className="bg-white/10 p-10 rounded-3xl backdrop-blur-md border border-white/20">
+          <svg className="w-24 h-24 text-white mx-auto mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-lg mb-4">ACCOUNT SUSPENDED</h1>
+          <p className="text-xl text-red-100 font-medium max-w-lg mx-auto">Your access has been permanently revoked by the administration for violating community guidelines.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ChatContext.Provider
       value={{
@@ -316,6 +432,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         userProfiles,
         loadUserProfile,
+        allowGroupCreation: effectiveAllowGroupCreation,
+        appName,
+        appLogo,
+        typingUsers,
       }}
     >
       {children}

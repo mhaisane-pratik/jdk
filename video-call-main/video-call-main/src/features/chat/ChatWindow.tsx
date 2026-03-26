@@ -41,14 +41,15 @@ const getWallpaperStyle = (wallpaperId: string): React.CSSProperties => {
 };
 
 export default function ChatWindow({ onBack }: { onBack?: () => void }) {
-  const { currentUser, selectedRoom, chatRooms, wallpaper } = useChat();
+  const { currentUser, selectedRoom, chatRooms, wallpaper, typingUsers } = useChat();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const [typingUser, setTypingUser] = useState<string | null>(null);
   const [receiver, setReceiver] = useState<string>("");
   const [showMedia, setShowMedia] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const room = chatRooms.find((r) => r.id === selectedRoom);
   const hasJoinedRoom = useRef(false);
@@ -89,12 +90,6 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
       socket.emit("join_room", selectedRoom);
       hasJoinedRoom.current = true;
     }
-    return () => {
-      if (hasJoinedRoom.current) {
-        socket.emit("leave_room", selectedRoom);
-        hasJoinedRoom.current = false;
-      }
-    };
   }, [selectedRoom, currentUser]);
 
   useEffect(() => {
@@ -131,10 +126,6 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         )
       );
     };
-    const handleTyping = ({ sender }: { sender: string }) => {
-      if (sender !== currentUser.username) setTypingUser(sender);
-    };
-    const handleStopTyping = () => setTypingUser(null);
     const handleMessageDeleted = ({ messageId, deletedFor }: any) => {
       if (deletedFor === "everyone") {
         setMessages((prev) =>
@@ -149,15 +140,11 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
     socket.on("receive_message", handleReceiveMessage);
     socket.on("message_delivered", handleMessageDelivered);
     socket.on("message_seen", handleMessageSeen);
-    socket.on("typing", handleTyping);
-    socket.on("stop_typing", handleStopTyping);
     socket.on("message_deleted", handleMessageDeleted);
     return () => {
       socket.off("receive_message", handleReceiveMessage);
       socket.off("message_delivered", handleMessageDelivered);
       socket.off("message_seen", handleMessageSeen);
-      socket.off("typing", handleTyping);
-      socket.off("stop_typing", handleStopTyping);
       socket.off("message_deleted", handleMessageDeleted);
     };
   }, [selectedRoom, currentUser]);
@@ -174,10 +161,14 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
       const url = `${API_URL}/api/v1/chats/history/${selectedRoom}?username=${currentUser.username}`;
       const res = await fetch(url, { headers: { "x-api-key": API_KEY } });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      const data: Message[] = await res.json();
-      const processedMessages = data.map((msg) => {
+      const data = await res.json();
+      
+      const fetchedMessages: Message[] = Array.isArray(data) ? data : data.messages || [];
+      const newHasMore = typeof data.hasMore === 'boolean' ? data.hasMore : false;
+
+      const processedMessages = fetchedMessages.map((msg) => {
         if (msg.reply_to_id) {
-          const replyToMsg = data.find((m) => m.id === msg.reply_to_id);
+          const replyToMsg = fetchedMessages.find((m) => m.id === msg.reply_to_id);
           if (replyToMsg) msg.reply_to = replyToMsg;
         }
         return msg;
@@ -186,6 +177,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
       setMessages(sortedMessages);
+      setHasMore(newHasMore);
       if (sortedMessages.length > 0) markAsRead();
     } catch (err: any) {
       console.error("❌ Failed to load messages:", err);
@@ -194,6 +186,44 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
     } finally {
       setLoading(false);
       isLoadingRef.current = false;
+    }
+  };
+
+  const loadMoreMessages = async () => {
+    if (loadingMore || !hasMore || messages.length === 0 || !selectedRoom || !currentUser) return;
+    setLoadingMore(true);
+    try {
+      const oldestMessage = messages[0];
+      const url = `${API_URL}/api/v1/chats/history/${selectedRoom}?username=${currentUser.username}&before=${encodeURIComponent(oldestMessage.created_at)}`;
+      const res = await fetch(url, { headers: { "x-api-key": API_KEY } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      
+      const data = await res.json();
+      const fetchedMessages: Message[] = Array.isArray(data) ? data : data.messages || [];
+      const newHasMore = typeof data.hasMore === 'boolean' ? data.hasMore : false;
+      
+      if (fetchedMessages.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      const processedMessages = fetchedMessages.map((msg) => {
+        if (msg.reply_to_id) {
+          const replyToMsg = fetchedMessages.find((m) => m.id === msg.reply_to_id);
+          if (replyToMsg) msg.reply_to = replyToMsg;
+        }
+        return msg;
+      });
+      const sortedMessages = processedMessages.sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+      
+      setMessages(prev => [...sortedMessages, ...prev]);
+      setHasMore(newHasMore);
+    } catch (err) {
+      console.error("❌ Failed to load older messages:", err);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -214,6 +244,18 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const handleDeleteRefresh = () => setTimeout(() => loadMessages(), 500);
   const handleMediaClick = () => setShowMedia(true);
   const handleMediaClose = () => setShowMedia(false);
+
+  const handleClearChatSubmit = async () => {
+    if (!window.confirm("Are you sure you want to completely clear this chat? This action cannot be undone.")) return;
+    try {
+      const res = await fetch(`${API_URL}/api/v1/chats/clear/${selectedRoom}`, {
+        method: 'DELETE',
+        headers: { "x-api-key": API_KEY }
+      });
+      if (res.ok) setMessages([]);
+      else alert("Failed to clear chat");
+    } catch (err) { console.error(err); }
+  };
 
   if (loading) {
     return (
@@ -263,6 +305,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         roomId={selectedRoom || ""}
         onMediaClick={handleMediaClick}
         onBack={onBack}
+        onClearChat={handleClearChatSubmit}
       />
 
       <MessageList
@@ -270,10 +313,13 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         currentUser={currentUser.username}
         onReply={handleReply}
         onRefresh={handleDeleteRefresh}
+        onLoadMore={loadMoreMessages}
+        hasMore={hasMore}
+        loadingMore={loadingMore}
       />
 
-      {typingUser && (
-        <div className="px-4 py-2 flex gap-2.5 absolute bottom-[72px] left-0 right-0 pointer-events-none">
+      {selectedRoom && typingUsers[selectedRoom] && typingUsers[selectedRoom].size > 0 && (
+        <div className="px-4 py-2 flex gap-2.5 absolute bottom-[72px] left-0 right-0 pointer-events-none z-10">
           <div className="bg-white dark:bg-gray-700 p-3 rounded-2xl shadow-md">
             <div className="flex gap-1">
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
@@ -281,8 +327,8 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
             </div>
           </div>
-          <span className="text-sm text-gray-600 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 px-3 py-1.5 rounded-full">
-            {typingUser} is typing...
+          <span className="text-sm text-gray-600 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 px-3 py-1.5 rounded-full backdrop-blur-sm">
+            {Array.from(typingUsers[selectedRoom]).join(", ")} is typing...
           </span>
         </div>
       )}

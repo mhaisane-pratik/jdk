@@ -4,6 +4,7 @@ import { ChatProvider } from "./contexts/ChatContext";
 import ChatLogin from "./pages/Login";
 import ChatLayout from "./features/chat/ChatLayout";
 import ProtectedRoute from "./app/ProtectedRoute";
+import AdminDashboard from "./pages/AdminDashboard";
 
 export default function App() {
   return (
@@ -16,6 +17,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ChatLayout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

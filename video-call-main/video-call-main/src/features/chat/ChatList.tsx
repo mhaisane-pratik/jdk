@@ -9,7 +9,7 @@ interface ChatListProps {
 }
 
 export default function ChatList({ rooms }: ChatListProps) {
-  const { currentUser, selectedRoom, setSelectedRoom, userProfiles } = useChat();
+  const { currentUser, selectedRoom, setSelectedRoom, userProfiles, typingUsers } = useChat();
 
   if (!currentUser) return null;
 
@@ -51,6 +51,7 @@ export default function ChatList({ rooms }: ChatListProps) {
             isPinned={room.is_pinned}
             isMuted={room.is_muted}
             isSelected={selectedRoom === room.id}
+            typingUsers={typingUsers[room.id] ? Array.from(typingUsers[room.id]) : undefined}
             onClick={() => setSelectedRoom(room.id)}
           />
         );

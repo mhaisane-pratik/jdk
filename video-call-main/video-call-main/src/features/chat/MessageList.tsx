@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import MessageItem from "./MessageItem";
 import { Message } from "./ChatWindow";
 import { groupMessagesByDate } from "../../utils/dateHelper";
@@ -8,6 +8,9 @@ interface MessageListProps {
   currentUser: string;
   onReply: (message: Message) => void;
   onRefresh: () => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
 }
 
 export default function MessageList({
@@ -15,23 +18,62 @@ export default function MessageList({
   currentUser,
   onReply,
   onRefresh,
+  onLoadMore,
+  hasMore,
+  loadingMore,
 }: MessageListProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const firstMessageIdRef = useRef<string | null>(null);
+  const previousScrollHeightRef = useRef<number>(0);
 
-  useEffect(() => {
-    scrollToBottom();
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container || messages.length === 0) return;
+
+    const currentOldestId = messages[0].id;
+
+    if (firstMessageIdRef.current && firstMessageIdRef.current !== currentOldestId) {
+      // Historical messages were prepended - adjust scroll synchronously to prevent snap
+      const newHeight = container.scrollHeight;
+      const oldHeight = previousScrollHeightRef.current;
+      container.scrollTop += (newHeight - oldHeight);
+    } else {
+      // Normal append or initial load
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+      if (previousScrollHeightRef.current === 0 || isNearBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    firstMessageIdRef.current = currentOldestId;
+    previousScrollHeightRef.current = container.scrollHeight;
   }, [messages]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const handleScroll = () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (container.scrollTop < 100 && hasMore && !loadingMore && onLoadMore) {
+      onLoadMore();
+    }
   };
 
   const groupedMessages = groupMessagesByDate(messages);
 
   return (
-    <div className="flex-1 overflow-y-auto overflow-x-hidden pb-24 scroll-smooth">
+    <div 
+      ref={containerRef}
+      onScroll={handleScroll}
+      className="flex-1 overflow-y-auto overflow-x-hidden pb-24" // removed scroll-smooth to prevent jarring jump animations during prepend
+    >
       <div className="py-4 flex flex-col w-full">
-        {Object.keys(groupedMessages).length === 0 ? (
+        {loadingMore && (
+           <div className="flex justify-center py-2 text-indigo-500 animate-pulse">
+             <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+           </div>
+        )}
+        
+        {Object.keys(groupedMessages).length === 0 && !loadingMore ? (
           <div className="flex flex-col items-center justify-center py-20 text-center text-gray-500 dark:text-gray-400 mx-auto">
             <div className="text-7xl mb-5 opacity-50">💬</div>
             <p className="text-base m-0 text-gray-400 dark:text-gray-500">No messages yet. Start the conversation!</p>
@@ -57,7 +99,6 @@ export default function MessageList({
             </div>
           ))
         )}
-        <div ref={messagesEndRef} />
       </div>
     </div>
   );

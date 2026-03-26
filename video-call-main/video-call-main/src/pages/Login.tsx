@@ -178,9 +178,9 @@ export default function ChatLogin() {
             <div className="logo">
               <MessageSquare size={32} />
             </div>
-            <h1>ZatChat</h1>
+            <h1>Chat</h1>
             {ssoReadyToken ? (
-              <p className="text-green-500 font-bold mt-2">Stock App Connection Secure 🔒</p>
+              <p className="text-green-500 font-bold mt-2"> Chat APP Connection Secure 🔒</p>
             ) : (
               <p>Connect with anyone, anywhere</p>
             )}

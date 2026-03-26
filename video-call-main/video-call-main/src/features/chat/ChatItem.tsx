@@ -13,6 +13,7 @@ interface ChatItemProps {
   isPinned?: boolean;
   isMuted?: boolean;
   isSelected?: boolean;
+  typingUsers?: string[];
   onClick: () => void;
 }
 
@@ -27,6 +28,7 @@ export default function ChatItem({
   isPinned = false,
   isMuted = false,
   isSelected,
+  typingUsers,
   onClick,
 }: ChatItemProps) {
   const { currentUser, onlineUsers } = useChat();
@@ -52,6 +54,14 @@ export default function ChatItem({
   };
 
   const renderPreviewText = () => {
+    if (typingUsers && typingUsers.length > 0) {
+      return (
+        <span className="text-green-500 dark:text-green-400 font-semibold italic animate-pulse">
+          {isGroup && typingUsers.length === 1 ? `${typingUsers[0]} is typing...` : 'typing...'}
+        </span>
+      );
+    }
+    
     if (!lastMessage) return "No messages yet";
     if (
       lastMessage.startsWith("http") &&
