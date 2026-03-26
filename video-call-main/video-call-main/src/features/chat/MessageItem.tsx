@@ -35,12 +35,12 @@ export default function MessageItem({
   const getMessageStatus = () => {
     if (!isSent) return null;
     if (message.is_seen) {
-      return <span className="text-indigo-400 text-[10px] ml-1">✓✓</span>;
+      return <span className="text-cyan-300 font-bold text-[11px] ml-1 drop-shadow-sm leading-none">✓✓</span>;
     }
     if (message.is_delivered) {
-      return <span className="text-gray-500 dark:text-gray-400 text-[10px] ml-1">✓✓</span>;
+      return <span className="text-white/90 text-[11px] ml-1 font-medium leading-none">✓✓</span>;
     }
-    return <span className="text-gray-500 dark:text-gray-400 text-[10px] ml-1">✓</span>;
+    return <span className="text-white/60 text-[11px] ml-1 font-medium leading-none">✓</span>;
   };
 
   useEffect(() => {

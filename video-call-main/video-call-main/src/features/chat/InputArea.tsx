@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { socket } from "../../api/socket";
 import { Message } from "./ChatWindow";
+import { useChat } from "../../contexts/ChatContext";
+
 const API_URL = import.meta.env.VITE_API_URL as string;
 
 import {
@@ -46,6 +48,8 @@ export default function InputArea({
   const [isRecording, setIsRecording] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const { playNotificationSound } = useChat();
 
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -188,6 +192,7 @@ export default function InputArea({
         message: trimmedText,
         reply_to_id: replyingTo?.id || null,
       });
+      playNotificationSound("send");
     }
 
     if (selectedFile) {
@@ -220,6 +225,7 @@ export default function InputArea({
             file_name: data.file_name,
             file_size: data.file_size,
           });
+          playNotificationSound("send");
         } else {
           throw new Error("No file URL in response");
         }

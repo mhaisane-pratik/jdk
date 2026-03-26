@@ -19,7 +19,7 @@ const wallpapers = [
 ];
 
 export default function SettingsPanel({ onClose }: SettingsPanelProps) {
-  const { currentUser, theme, setTheme, wallpaper, setWallpaper } = useChat();
+  const { currentUser, theme, setTheme, wallpaper, setWallpaper, soundEnabled, setSoundEnabled } = useChat();
   const [activeTab, setActiveTab] = useState<"profile" | "theme" | "wallpaper" | "notifications">("profile");
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState(currentUser?.display_name || "");
@@ -213,7 +213,12 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
                     </div>
                   </div>
                   <label className="relative inline-block w-12 h-6">
-                    <input type="checkbox" className="opacity-0 w-0 h-0" defaultChecked />
+                    <input 
+                      type="checkbox" 
+                      className="opacity-0 w-0 h-0 peer" 
+                      checked={soundEnabled}
+                      onChange={(e) => setSoundEnabled(e.target.checked)}
+                    />
                     <span className="absolute cursor-pointer inset-0 bg-gray-300 dark:bg-gray-600 rounded-3xl transition before:absolute before:h-[18px] before:w-[18px] before:left-[3px] before:bottom-[3px] before:bg-white before:rounded-full before:transition peer-checked:bg-green-500 peer-checked:before:translate-x-6"></span>
                   </label>
                 </div>

@@ -59,6 +59,9 @@ interface ChatContextType {
   appName: string;
   appLogo: string;
   typingUsers: Record<string, Set<string>>;
+  soundEnabled: boolean;
+  setSoundEnabled: (enabled: boolean) => void;
+  playNotificationSound: (type: "send" | "receive") => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -80,6 +83,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [appName, setAppName] = useState("ZatChat");
   const [appLogo, setAppLogo] = useState("");
   const [typingUsers, setTypingUsers] = useState<Record<string, Set<string>>>({});
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const hasInitialized = useRef(false);
 
@@ -92,10 +96,14 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savedTheme = localStorage.getItem("chatTheme") || "light"; // default light
     const savedWallpaper = localStorage.getItem("chatWallpaper") || "solid-white";
     const savedRoomId = localStorage.getItem("selectedRoom");
+    const savedSound = localStorage.getItem("chatSoundEnabled");
 
     setTheme(savedTheme);
     setWallpaper(savedWallpaper);
     if (savedRoomId) setSelectedRoom(savedRoomId);
+    if (savedSound !== null) {
+      setSoundEnabled(savedSound === "true");
+    }
 
     if (savedUsername) {
       setCurrentUser({
@@ -151,6 +159,43 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     localStorage.setItem("chatWallpaper", wallpaper);
   }, [wallpaper]);
+
+  useEffect(() => {
+    localStorage.setItem("chatSoundEnabled", String(soundEnabled));
+  }, [soundEnabled]);
+
+  // Using real high-quality MP3 UI notification sounds
+  const audioSend = useRef<HTMLAudioElement | null>(null);
+  const audioReceive = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Preload audio files
+    audioSend.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3");
+    audioReceive.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3");
+    audioSend.current.volume = 0.5;
+    audioReceive.current.volume = 0.7;
+  }, []);
+
+  const playNotificationSound = (type: "send" | "receive") => {
+    if (!soundEnabled) return;
+    try {
+      if (type === "send" && audioSend.current) {
+        audioSend.current.currentTime = 0;
+        const playPromise = audioSend.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((e) => console.warn("Audio blocked by browser policy:", e));
+        }
+      } else if (type === "receive" && audioReceive.current) {
+        audioReceive.current.currentTime = 0;
+        const playPromise = audioReceive.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((e) => console.warn("Audio blocked by browser policy:", e));
+        }
+      }
+    } catch (e) {
+      console.error("Audio playback failed", e);
+    }
+  };
 
   // --- Socket connection ---
   useEffect(() => {
@@ -436,6 +481,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         appName,
         appLogo,
         typingUsers,
+        soundEnabled,
+        setSoundEnabled,
+        playNotificationSound,
       }}
     >
       {children}

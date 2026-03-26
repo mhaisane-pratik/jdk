@@ -41,7 +41,7 @@ const getWallpaperStyle = (wallpaperId: string): React.CSSProperties => {
 };
 
 export default function ChatWindow({ onBack }: { onBack?: () => void }) {
-  const { currentUser, selectedRoom, chatRooms, wallpaper, typingUsers } = useChat();
+  const { currentUser, selectedRoom, chatRooms, wallpaper, typingUsers, playNotificationSound } = useChat();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,6 +105,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         return [...prev, msg];
       });
       if (msg.sender_name !== currentUser.username) {
+        playNotificationSound("receive");
         setTimeout(() => {
           socket.emit("message_seen", {
             roomId: selectedRoom,
