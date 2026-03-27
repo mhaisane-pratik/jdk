@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import { supabase } from "../../config/supabase";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
 /* ================= GET ALL USERS ================= */
 export async function getAllUsers(req: Request, res: Response) {
@@ -178,6 +181,75 @@ export async function updateOnlineStatus(req: Request, res: Response) {
   }
 }
 
+/* ================= PROFILE UPLOAD SETUP ================= */
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, "../../uploads/profiles");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const filename = "dp-" + uniqueSuffix + path.extname(file.originalname);
+    cb(null, filename);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|webp|gif/;
+    if (
+      allowedTypes.test(path.extname(file.originalname).toLowerCase()) &&
+      allowedTypes.test(file.mimetype)
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error("Invalid image type"));
+    }
+  },
+}).single("photo");
+
+/* ================= UPLOAD PROFILE PICTURE ================= */
+export async function uploadProfilePicture(req: Request, res: Response) {
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    try {
+      const { username } = req.params;
+
+      const fileUrl = `http://localhost:4000/uploads/profiles/${req.file.filename}`;
+
+      const { data, error } = await supabase
+        .from("chat_users")
+        .update({
+          profile_picture: fileUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("username", username)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      console.log(`✅ Profile picture updated for ${username}: ${fileUrl}`);
+      res.json({ success: true, profile_picture: fileUrl, user: data });
+    } catch (error: any) {
+      console.error("❌ Profile picture upload error:", error);
+      if (req.file) fs.unlink(req.file.path, () => {});
+      res.status(500).json({ error: error.message });
+    }
+  });
+}
+
 // Export as object for backwards compatibility
 export const userController = {
   getAllUsers,
@@ -185,4 +257,5 @@ export const userController = {
   getUserProfile,
   updateSettings,
   updateOnlineStatus,
+  uploadProfilePicture,
 };

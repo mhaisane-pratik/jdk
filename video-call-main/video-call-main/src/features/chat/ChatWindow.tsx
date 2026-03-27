@@ -6,6 +6,7 @@ import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import InputArea from "./InputArea";
 import MediaViewer from "./MediaViewer";
+import { ArrowLeft, ChevronUp, ChevronDown } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL as string;
 const API_KEY = "ZATCHAT_PRATEEK9373";
@@ -52,8 +53,43 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
   const [forwardingMessage, setForwardingMessage] = useState<Message | null>(null);
   const [forwardSelectedRooms, setForwardSelectedRooms] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!isSearching || !searchQuery) {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      return;
+    }
+    const query = searchQuery.toLowerCase();
+    const results = messages
+      .filter((m) => m.message_type === "text" && m.message?.toLowerCase().includes(query))
+      .map((m) => m.id);
+    setSearchResults(results);
+    setCurrentSearchIndex(results.length > 0 ? results.length - 1 : -1);
+  }, [searchQuery, messages, isSearching]);
+
+  const handleSearchNext = () => {
+    if (currentSearchIndex > 0) {
+      setCurrentSearchIndex((prev) => prev - 1);
+    }
+  };
+
+  const handleSearchPrev = () => {
+    if (currentSearchIndex < searchResults.length - 1) {
+      setCurrentSearchIndex((prev) => prev + 1);
+    }
+  };
+
+  const handleCloseSearch = () => {
+    setIsSearching(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    setCurrentSearchIndex(-1);
+  };
 
   const room = chatRooms.find((r) => r.id === selectedRoom);
   const hasJoinedRoom = useRef(false);
@@ -379,7 +415,51 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         onMediaClick={handleMediaClick}
         onBack={onBack}
         onClearChat={handleClearChatSubmit}
+        onSearchAction={() => setIsSearching(true)}
       />
+
+      {isSearching && (
+        <div className="absolute top-[60px] md:top-[72px] left-0 right-0 z-[90] bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 md:p-3 flex items-center gap-2 md:gap-3 shadow-sm animate-slideDown">
+          <button 
+            onClick={handleCloseSearch}
+            className="p-1.5 md:p-2.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition"
+            title="Close Search"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <input
+            type="text"
+            placeholder="Search messages..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 md:py-2.5 rounded-full outline-none text-sm focus:ring-2 focus:ring-indigo-500 transition-shadow"
+            autoFocus
+          />
+          {searchResults.length > 0 && (
+            <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap hidden xs:inline-block">
+              {searchResults.length - currentSearchIndex} of {searchResults.length}
+            </span>
+          )}
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-full p-1">
+            <button 
+              onClick={handleSearchPrev}
+              disabled={currentSearchIndex >= searchResults.length - 1 || searchResults.length === 0}
+              className="p-1.5 md:p-2 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-full transition disabled:opacity-30 shadow-sm"
+              title="Previous Match"
+            >
+              <ChevronUp size={18} />
+            </button>
+            <button 
+              onClick={handleSearchNext}
+              disabled={currentSearchIndex <= 0 || searchResults.length === 0}
+              className="p-1.5 md:p-2 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-full transition disabled:opacity-30 shadow-sm"
+              title="Next Match"
+            >
+              <ChevronDown size={18} />
+            </button>
+          </div>
+        </div>
+      )}
 
       <MessageList
         messages={messages}
@@ -390,6 +470,8 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         onLoadMore={loadMoreMessages}
         hasMore={hasMore}
         loadingMore={loadingMore}
+        searchQuery={isSearching ? searchQuery : ""}
+        highlightedMessageId={isSearching && searchResults.length > 0 ? searchResults[currentSearchIndex] : undefined}
       />
 
       {selectedRoom && typingUsers[selectedRoom] && typingUsers[selectedRoom].size > 0 && (

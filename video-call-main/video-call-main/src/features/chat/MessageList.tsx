@@ -10,6 +10,7 @@ interface MessageListProps {
   onRefresh: () => void;
   onForward?: (message: Message) => void;
   searchQuery?: string;
+  highlightedMessageId?: string;
   onLoadMore?: () => void;
   hasMore?: boolean;
   loadingMore?: boolean;
@@ -22,6 +23,7 @@ export default function MessageList({
   onRefresh,
   onForward,
   searchQuery,
+  highlightedMessageId,
   onLoadMore,
   hasMore,
   loadingMore,
@@ -100,6 +102,7 @@ export default function MessageList({
                   onRefresh={onRefresh}
                   onForward={onForward ? () => onForward(message) : undefined}
                   searchQuery={searchQuery}
+                  isHighlighted={highlightedMessageId === message.id}
                 />
               ))}
             </div>

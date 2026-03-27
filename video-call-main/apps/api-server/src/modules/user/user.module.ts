@@ -20,6 +20,7 @@ router.get("/test", (req, res) => {
       "POST /api/v1/users",
       "PUT /api/v1/users/:username/settings",
       "PUT /api/v1/users/:username/status",
+      "POST /api/v1/users/:username/profile-picture",
     ],
   });
 });
@@ -32,6 +33,7 @@ router.post("/", userController.upsertUser);
 router.get("/:username", userController.getUserProfile);
 router.put("/:username/settings", userController.updateSettings);
 router.put("/:username/status", userController.updateOnlineStatus);
+router.post("/:username/profile-picture", userController.uploadProfilePicture);
 
 console.log("✅ User routes configured:");
 console.log("   GET  /api/v1/users (all users)");
@@ -40,6 +42,7 @@ console.log("   GET  /api/v1/users/:username");
 console.log("   POST /api/v1/users");
 console.log("   PUT  /api/v1/users/:username/settings");
 console.log("   PUT  /api/v1/users/:username/status");
+console.log("   POST /api/v1/users/:username/profile-picture");
 console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
 export default router;

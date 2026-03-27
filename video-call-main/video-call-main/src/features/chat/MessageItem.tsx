@@ -10,6 +10,7 @@ interface MessageItemProps {
   onDelete?: (messageId: string) => void;
   onForward?: (message: Message) => void;
   searchQuery?: string;
+  isHighlighted?: boolean;
   onRefresh: () => void;
 }
 
@@ -23,6 +24,7 @@ export default function MessageItem({
   onDelete,
   onForward,
   searchQuery,
+  isHighlighted,
   onRefresh 
 }: MessageItemProps) {
   const [showActions, setShowActions] = useState(false);
@@ -65,16 +67,30 @@ export default function MessageItem({
     };
   }, [showActions]);
 
+  useEffect(() => {
+    if (isHighlighted && wrapperRef.current) {
+      wrapperRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [isHighlighted]);
+
   const renderMessageContent = (text: string | null | undefined) => {
     if (!text) return null;
     if (!searchQuery) return text;
     try {
       const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
-      return parts.map((part, i) => 
-        part.toLowerCase() === searchQuery.toLowerCase() 
-          ? <mark key={i} className="bg-yellow-300 text-black rounded-sm px-[2px] shadow-sm">{part}</mark> 
-          : part
-      );
+      return parts.map((part, i) => {
+        if (part.toLowerCase() === searchQuery.toLowerCase()) {
+          return (
+            <mark 
+              key={i} 
+              className={`${isHighlighted ? 'bg-orange-500 text-white animate-pulse' : 'bg-yellow-300 text-black'} rounded-sm px-[2px] shadow-sm transition-colors duration-300`}
+            >
+              {part}
+            </mark>
+          );
+        }
+        return part;
+      });
     } catch (e) {
       return text;
     }
@@ -173,7 +189,7 @@ export default function MessageItem({
     <>
       <div
         ref={wrapperRef}
-        className={`flex mb-2 px-4 relative ${isSent ? "justify-end" : "justify-start"}`}
+        className={`flex mb-2 px-4 relative transition-all duration-500 ${isSent ? "justify-end" : "justify-start"} ${isHighlighted ? "bg-black/5 dark:bg-white/5 py-1 rounded-lg" : ""}`}
       >
         <div className={`relative max-w-[70%] ${isSent ? "order-2" : "order-1"}`} onClick={handleMessageClick}>
           {message.message_type === "text" && (
