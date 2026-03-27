@@ -48,6 +48,10 @@ export default function InputArea({
   const [isRecording, setIsRecording] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showGiphy, setShowGiphy] = useState(false);
+  const [giphySearch, setGiphySearch] = useState("");
+  const [giphyResults, setGiphyResults] = useState<any[]>([]);
+  const [giphyLoading, setGiphyLoading] = useState(false);
 
   const { playNotificationSound } = useChat();
 
@@ -88,6 +92,29 @@ export default function InputArea({
       setShowSuggestions(false);
     }
   }, [text]);
+
+  useEffect(() => {
+    if (showGiphy) {
+      const fetchGifs = async () => {
+        setGiphyLoading(true);
+        try {
+          const endpoint = giphySearch 
+            ? `https://g.tenor.com/v1/search?key=LIVDSRZULELA&q=${encodeURIComponent(giphySearch)}&limit=20`
+            : `https://g.tenor.com/v1/trending?key=LIVDSRZULELA&limit=20`;
+          const res = await fetch(endpoint);
+          const data = await res.json();
+          setGiphyResults(data.results || []);
+        } catch (e) {
+          console.error("Giphy fetch error", e);
+        } finally {
+          setGiphyLoading(false);
+        }
+      };
+      
+      const timeout = setTimeout(fetchGifs, giphySearch ? 500 : 0);
+      return () => clearTimeout(timeout);
+    }
+  }, [showGiphy, giphySearch]);
 
   const handleTyping = (value: string) => {
     setText(value);
@@ -145,6 +172,24 @@ export default function InputArea({
     setUploadError(null);
     setUploadProgress(0);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const sendGif = (gif: any) => {
+    const gifUrl = gif.media[0].gif.url;
+    socket.emit("send_file", {
+      roomId,
+      sender,
+      receiver,
+      message_type: "image",
+      file_url: gifUrl,
+      file_name: "giphy.gif",
+      file_size: 0,
+    });
+    playNotificationSound("send");
+    socket.emit("stop_typing", { roomId, sender });
+    setShowGiphy(false);
+    setGiphySearch("");
+    onCancelReply();
   };
 
   const startRecording = async () => {
@@ -242,6 +287,7 @@ export default function InputArea({
     setText("");
     clearFileSelection();
     setShowEmoji(false);
+    setShowGiphy(false);
     onCancelReply();
     setUploading(false);
     textareaRef.current?.focus();
@@ -386,14 +432,73 @@ export default function InputArea({
         </>
       )}
 
+      {showGiphy && (
+        <>
+          <div className="fixed inset-0 z-[9999] bg-black/5 backdrop-blur-sm" onClick={() => setShowGiphy(false)} />
+          <div
+            className="fixed z-[10000] shadow-2xl rounded-2xl overflow-hidden animate-scaleUp bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col"
+            style={{
+              left: '50%',
+              transform: 'translateX(-50%)',
+              bottom: '90px',
+              width: '350px',
+              height: '400px',
+              maxWidth: 'calc(100vw - 32px)'
+            }}
+          >
+            <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-hidden relative">
+              <input
+                type="text"
+                placeholder="Search Giphy..."
+                value={giphySearch}
+                onChange={(e) => setGiphySearch(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 outline-none text-sm focus:border-indigo-500 text-gray-900 dark:text-white"
+                autoFocus
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 bg-gray-50 dark:bg-gray-900/50">
+              {giphyLoading && giphyResults.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {giphyResults.map((gif) => (
+                    <img
+                      key={gif.id}
+                      src={gif.media[0].tinygif.url}
+                      alt={gif.id}
+                      className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition hover:scale-105"
+                      onClick={() => sendGif(gif)}
+                    />
+                  ))}
+                  {giphyResults.length === 0 && !giphyLoading && (
+                    <div className="col-span-2 text-center text-sm text-gray-500 py-10">No GIFs found</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
       <div className="flex items-end gap-1 sm:gap-2 py-1.5 sm:py-2 px-2 sm:px-3">
         <button
           className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-110 disabled:opacity-40 disabled:hover:scale-100 flex-shrink-0 relative group ${showEmoji ? 'bg-gray-100 dark:bg-gray-700 text-indigo-500' : ''}`}
-          onClick={() => setShowEmoji(!showEmoji)}
+          onClick={() => { setShowEmoji(!showEmoji); setShowGiphy(false); }}
           title="Emoji"
           disabled={uploading}
         >
           <Smile size={20} className="sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
+        </button>
+
+        <button
+          className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-[11px] sm:text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-110 disabled:opacity-40 disabled:hover:scale-100 flex-shrink-0 relative group ${showGiphy ? 'bg-gray-100 dark:bg-gray-700 text-indigo-500' : ''}`}
+          onClick={() => { setShowGiphy(!showGiphy); setShowEmoji(false); }}
+          title="GIFs"
+          disabled={uploading}
+        >
+          GIF
         </button>
 
         <label

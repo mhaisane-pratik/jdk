@@ -43,6 +43,9 @@ router.post("/create-room", chatController.createRoom);
 // ✅ NEW: Update group
 router.put("/update-group", chatController.updateGroup);
 
+// ✅ NEW: Clear chat messages
+router.delete("/clear/:roomId", chatController.clearChat);
+
 console.log("✅ Chat routes configured:");
 console.log("   GET  /api/v1/chats/history/:roomId");
 console.log("   GET  /api/v1/chats/rooms/:username");

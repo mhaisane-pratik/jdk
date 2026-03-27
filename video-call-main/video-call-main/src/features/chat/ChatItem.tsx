@@ -38,7 +38,13 @@ export default function ChatItem({
 
   const formatTime = (dateString?: string) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
+    
+    let safeString = dateString;
+    if (!safeString.includes('Z') && !safeString.includes('+')) {
+      safeString = safeString.replace(' ', 'T') + 'Z';
+    }
+
+    const date = new Date(safeString);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));

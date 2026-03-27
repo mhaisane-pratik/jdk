@@ -8,6 +8,8 @@ interface MessageListProps {
   currentUser: string;
   onReply: (message: Message) => void;
   onRefresh: () => void;
+  onForward?: (message: Message) => void;
+  searchQuery?: string;
   onLoadMore?: () => void;
   hasMore?: boolean;
   loadingMore?: boolean;
@@ -18,6 +20,8 @@ export default function MessageList({
   currentUser,
   onReply,
   onRefresh,
+  onForward,
+  searchQuery,
   onLoadMore,
   hasMore,
   loadingMore,
@@ -94,6 +98,8 @@ export default function MessageList({
                   currentUser={currentUser}
                   onReply={onReply}
                   onRefresh={onRefresh}
+                  onForward={onForward ? () => onForward(message) : undefined}
+                  searchQuery={searchQuery}
                 />
               ))}
             </div>

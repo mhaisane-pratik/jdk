@@ -296,25 +296,25 @@ export default function AdminDashboard() {
 
   if (!isPasswordAuth) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 dark:bg-gray-900">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-sm w-full text-center border border-gray-100 dark:border-gray-700">
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full text-center border border-gray-100">
           <ShieldAlert className="w-16 h-16 text-indigo-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Security Check</h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-8 font-medium text-sm">Please enter the master password to access the admin dashboard.</p>
+          <h2 className="text-2xl font-bold mb-2 text-gray-900">Security Check</h2>
+          <p className="text-gray-500 mb-8 font-medium text-sm">Please enter the master password to access the admin dashboard.</p>
           <form onSubmit={handlePasswordSubmit}>
             <input 
               type="password" 
               value={passwordInput}
               onChange={(e) => setPasswordInput(e.target.value)}
               placeholder="Admin Password (admin123)"
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl mb-4 focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white transition"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 transition"
               autoFocus
             />
             <button type="submit" className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-md">
               Unlock Dashboard
             </button>
           </form>
-          <button onClick={() => navigate('/chat')} className="mt-6 text-sm text-gray-500 dark:text-gray-400 underline hover:text-gray-700 dark:hover:text-gray-300 transition">
+          <button onClick={() => navigate('/chat')} className="mt-6 text-sm text-gray-500 underline hover:text-gray-700 transition">
             Cancel & Return to Chat
           </button>
         </div>
@@ -324,14 +324,14 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 md:p-10">
+    <div className="min-h-screen bg-gray-50 p-6 md:p-10">
       <div className="max-w-6xl mx-auto">
         
         {/* Header */}
@@ -339,22 +339,22 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => navigate('/chat')}
-              className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              className="p-2 bg-white rounded-lg shadow-sm hover:bg-gray-100 transition"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+              <ArrowLeft className="w-5 h-5 text-gray-700" />
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
                 <Settings className="w-8 h-8 text-indigo-500" />
                 Admin Dashboard
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">Manage API integrations and platform settings</p>
+              <p className="text-gray-500 mt-1">Manage API integrations and platform settings</p>
             </div>
           </div>
         </div>
 
         {error ? (
-          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-4 rounded-xl flex items-center gap-3">
+          <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl flex items-center gap-3">
             <ShieldAlert className="w-6 h-6" />
             <span>{error}</span>
             <button onClick={fetchStats} className="ml-auto underline font-medium hover:text-red-800">Retry</button>
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
         ) : (
           <>
             {stats?.setupRequired && (
-              <div className="mb-8 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400 p-5 rounded-xl shadow-sm">
+              <div className="mb-8 bg-amber-50 border border-amber-200 text-amber-800 p-5 rounded-xl shadow-sm">
                 <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
                   <ShieldAlert className="w-5 h-5" /> 
                   Database Setup Required
@@ -374,15 +374,15 @@ export default function AdminDashboard() {
             {/* Metrics (Only Super Admin sees exact user data) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {isSuperAdmin && (
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Active Users</p>
-                      <h3 className="text-4xl font-extrabold text-gray-900 dark:text-white mt-2">
+                      <p className="text-sm font-medium text-gray-500">Total Active Users</p>
+                      <h3 className="text-4xl font-extrabold text-gray-900 mt-2">
                         {stats?.activeUsers || 0}
                       </h3>
                     </div>
-                    <div className="w-14 h-14 bg-green-50 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center">
                       <Activity className="w-7 h-7 text-green-500" />
                     </div>
                   </div>
@@ -393,36 +393,36 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition">
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Groups</p>
-                    <h3 className="text-4xl font-extrabold text-gray-900 dark:text-white mt-2">
+                    <p className="text-sm font-medium text-gray-500">Total Groups</p>
+                    <h3 className="text-4xl font-extrabold text-gray-900 mt-2">
                       {stats?.totalGroups || 0}
                     </h3>
                   </div>
-                  <div className="w-14 h-14 bg-purple-50 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                  <div className="w-14 h-14 bg-purple-50 rounded-full flex items-center justify-center">
                     <Users className="w-7 h-7 text-purple-500" />
                   </div>
                 </div>
-                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+                <div className="mt-4 text-sm text-gray-500 line-clamp-1">
                   Groups actively registered
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition">
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Connected Applications</p>
-                    <h3 className="text-4xl font-extrabold text-gray-900 dark:text-white mt-2">
+                    <p className="text-sm font-medium text-gray-500">Connected Applications</p>
+                    <h3 className="text-4xl font-extrabold text-gray-900 mt-2">
                       {stats?.applications.length || 0}
                     </h3>
                   </div>
-                  <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
+                  <div className="w-14 h-14 bg-indigo-50 rounded-full flex items-center justify-center">
                     <Settings className="w-7 h-7 text-indigo-500" />
                   </div>
                 </div>
-                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+                <div className="mt-4 text-sm text-gray-500 line-clamp-1">
                   Apps utilizing your Chat API
                 </div>
               </div>
@@ -432,13 +432,13 @@ export default function AdminDashboard() {
               {isSuperAdmin && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                   {/* Online Users List */}
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-96">
-                    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex justify-between items-center sticky top-0 z-10">
-                      <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-96">
+                    <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center sticky top-0 z-10">
+                      <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                         <Activity className="w-5 h-5 text-green-500" />
                         Live Online Users
                       </h2>
-                      <span className="bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-full font-bold dark:bg-green-900/30 dark:text-green-400">
+                      <span className="bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-full font-bold">
                         {stats?.onlineUsersList?.length || 0} Online
                       </span>
                     </div>
@@ -449,17 +449,17 @@ export default function AdminDashboard() {
                           <p>No users are currently online.</p>
                         </div>
                       ) : (
-                        <ul className="divide-y divide-gray-50 dark:divide-gray-700/50">
+                        <ul className="divide-y divide-gray-50">
                           {stats?.onlineUsersList?.map((user: any) => (
-                            <li key={user.username} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 flex items-center justify-between rounded-xl transition">
+                            <li key={user.username} className="p-4 hover:bg-gray-50 flex items-center justify-between rounded-xl transition">
                                 <div className="flex items-center gap-4">
                                   <div className="relative">
                                     <img src={user.profile_picture || `https://ui-avatars.com/api/?name=${user.username}&background=random`} className="w-10 h-10 rounded-full shadow-sm" alt="avatar" />
-                                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></span>
+                                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
                                   </div>
                                   <div>
-                                    <p className="font-bold text-sm text-gray-900 dark:text-gray-100">{user.display_name}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">@{user.username}</p>
+                                    <p className="font-bold text-sm text-gray-900">{user.display_name}</p>
+                                    <p className="text-xs text-gray-500">@{user.username}</p>
                                   </div>
                                 </div>
                             </li>
@@ -470,13 +470,13 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Admins List */}
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-96">
-                    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex justify-between items-center sticky top-0 z-10">
-                      <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-96">
+                    <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center sticky top-0 z-10">
+                      <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                         <ShieldAlert className="w-5 h-5 text-indigo-500" />
                         Administrative Team
                       </h2>
-                      <span className="bg-indigo-100 text-indigo-800 text-xs px-2.5 py-1 rounded-full font-bold dark:bg-indigo-900/30 dark:text-indigo-400">
+                      <span className="bg-indigo-100 text-indigo-800 text-xs px-2.5 py-1 rounded-full font-bold">
                         {stats?.adminUsersList?.length || 0} Admins
                       </span>
                     </div>
@@ -487,43 +487,43 @@ export default function AdminDashboard() {
                           <p>No extra admins appointed.</p>
                         </div>
                       ) : (
-                        <ul className="divide-y divide-gray-50 dark:divide-gray-700/50">
+                        <ul className="divide-y divide-gray-50">
                           {/* Force Displaying the Hardcoded Super Admin to be complete */}
-                          <li className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 flex items-center justify-between rounded-xl transition bg-indigo-50/30 dark:bg-indigo-900/10">
+                          <li className="p-4 hover:bg-gray-50 flex items-center justify-between rounded-xl transition bg-indigo-50/30">
                             <div className="flex items-center gap-4">
                               <img src={`https://ui-avatars.com/api/?name=admin&background=random`} className="w-10 h-10 rounded-full shadow-sm" alt="avatar" />
                               <div>
-                                <p className="font-bold text-sm text-indigo-900 dark:text-indigo-100 flex items-center gap-2">
+                                <p className="font-bold text-sm text-indigo-900 flex items-center gap-2">
                                   Super Admin <span className="text-[10px] bg-indigo-600 text-white px-1.5 rounded uppercase">Owner</span>
                                 </p>
-                                <p className="text-xs text-indigo-500 dark:text-indigo-400">@admin</p>
+                                <p className="text-xs text-indigo-500">@admin</p>
                               </div>
                             </div>
                           </li>
 
                           {stats?.adminUsersList?.map((user: any) => (
-                            <li key={user.username} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 flex items-center justify-between rounded-xl transition group">
+                            <li key={user.username} className="p-4 hover:bg-gray-50 flex items-center justify-between rounded-xl transition group">
                                 <div className="flex items-center gap-4">
                                   <img src={user.profile_picture || `https://ui-avatars.com/api/?name=${user.username}&background=random`} className="w-10 h-10 rounded-full shadow-sm" alt="avatar" />
                                   <div>
-                                    <p className="font-bold text-sm text-gray-900 dark:text-gray-100">{user.display_name}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">@{user.username}</p>
+                                    <p className="font-bold text-sm text-gray-900">{user.display_name}</p>
+                                    <p className="text-xs text-gray-500">@{user.username}</p>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <div className="flex flex-col items-end mr-2">
-                                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                                    <span className="text-xs font-bold text-gray-700">
                                       {user.total_chats || 0} Chats
                                     </span>
                                     {user.can_create_group && (
-                                      <span className="text-[10px] text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400 px-1.5 py-0.5 mt-0.5 rounded font-bold">
+                                      <span className="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 py-0.5 mt-0.5 rounded font-bold">
                                         + Groups
                                       </span>
                                     )}
                                   </div>
                                   <button
                                     onClick={() => quickRevokeAdmin(user.username)}
-                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition opacity-0 group-hover:opacity-100 focus:opacity-100"
                                     title="Revoke Admin Access"
                                   >
                                     <ShieldAlert className="w-4 h-4" />
@@ -539,17 +539,17 @@ export default function AdminDashboard() {
               )}
 
             {/* App Management & Group Directory Tabs */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-8">
-              <div className="flex border-b border-gray-100 dark:border-gray-700">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+              <div className="flex border-b border-gray-100">
                 <button
                   onClick={() => setActiveTab("metrics")}
-                  className={`flex-1 py-4 font-bold text-center border-b-2 transition ${activeTab === 'metrics' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}
+                  className={`flex-1 py-4 font-bold text-center border-b-2 transition ${activeTab === 'metrics' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:bg-gray-50'}`}
                 >
                   Global API Configuration
                 </button>
                 <button
                   onClick={() => setActiveTab("directories")}
-                  className={`flex-1 py-4 font-bold text-center border-b-2 transition ${activeTab === 'directories' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}
+                  className={`flex-1 py-4 font-bold text-center border-b-2 transition ${activeTab === 'directories' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:bg-gray-50'}`}
                 >
                   Active Groups Directory
                 </button>
@@ -559,31 +559,31 @@ export default function AdminDashboard() {
                 <div className="p-6">
                   {editingApp ? (
                     <div className="animate-fade-in">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                         <Settings className="w-5 h-5 text-indigo-500" /> Editing {editingApp.app_name} Configuration
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
                         <div className="flex flex-col gap-1">
-                          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">App Name</label>
-                          <input type="text" className="px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 outline-none w-full" 
+                          <label className="text-sm font-semibold text-gray-700">App Name</label>
+                          <input type="text" className="px-4 py-2 border rounded-lg bg-white outline-none w-full" 
                             value={appForm?.app_name || ''} onChange={(e) => setAppForm(prev => prev ? {...prev, app_name: e.target.value} : prev)} />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">App Logo URL</label>
-                          <input type="text" className="px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 outline-none w-full" 
+                          <label className="text-sm font-semibold text-gray-700">App Logo URL</label>
+                          <input type="text" className="px-4 py-2 border rounded-lg bg-white outline-none w-full" 
                             value={appForm?.app_logo || ''} onChange={(e) => setAppForm(prev => prev ? {...prev, app_logo: e.target.value} : prev)} />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Max Group Size</label>
-                          <input type="number" className="px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 outline-none w-full" 
+                          <label className="text-sm font-semibold text-gray-700">Max Group Size</label>
+                          <input type="number" className="px-4 py-2 border rounded-lg bg-white outline-none w-full" 
                             value={appForm?.max_group_size || 50} onChange={(e) => setAppForm(prev => prev ? {...prev, max_group_size: parseInt(e.target.value)} : prev)} />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Max Message Length</label>
-                          <input type="number" className="px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 outline-none w-full" 
+                          <label className="text-sm font-semibold text-gray-700">Max Message Length</label>
+                          <input type="number" className="px-4 py-2 border rounded-lg bg-white outline-none w-full" 
                             value={appForm?.max_message_length || 1000} onChange={(e) => setAppForm(prev => prev ? {...prev, max_message_length: parseInt(e.target.value)} : prev)} />
                         </div>
-                        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" className="w-5 h-5 text-indigo-600 rounded" checked={appForm?.allow_chat_creation} 
                               onChange={(e) => setAppForm(prev => prev ? {...prev, allow_chat_creation: e.target.checked} : prev)} />
@@ -610,42 +610,42 @@ export default function AdminDashboard() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-left border-collapse">
                         <thead>
-                          <tr className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-sm">
+                          <tr className="bg-gray-50 text-gray-500 text-sm">
                             <th className="px-6 py-4 font-semibold uppercase tracking-wider">Application</th>
                             <th className="px-6 py-4 font-semibold uppercase tracking-wider">Group Size Cap</th>
                             <th className="px-6 py-4 font-semibold uppercase tracking-wider text-center">Media Sharing</th>
                             {isSuperAdmin && <th className="px-6 py-4 font-semibold uppercase tracking-wider text-right">Action</th>}
-                          </tr>
+                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                        <tbody className="divide-y divide-gray-100">
                           {stats?.applications.map((app) => (
-                            <tr key={app.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                            <tr key={app.id} className="hover:bg-gray-50 transition">
                               <td className="px-6 py-4 flex items-center gap-3">
                                 <img src={app.app_logo} alt="logo" className="w-10 h-10 rounded-lg shadow-sm" />
                                 <div>
-                                  <div className="font-bold text-gray-900 dark:text-white text-lg">{app.app_name}</div>
+                                  <div className="font-bold text-gray-900 text-lg">{app.app_name}</div>
                                   <div className="text-xs text-gray-500 font-mono">APP-{app.id.substring(0,6).toUpperCase()}</div>
                                 </div>
-                              </td>
+                               </td>
                               <td className="px-6 py-4">
-                                <span className="font-bold text-gray-700 dark:text-gray-300">{app.max_group_size || 50} Members</span>
-                              </td>
+                                <span className="font-bold text-gray-700">{app.max_group_size || 50} Members</span>
+                               </td>
                               <td className="px-6 py-4 text-center">
                                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${app.allow_media_sharing ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
                                   {app.allow_media_sharing ? "Allowed" : "Blocked"}
                                 </span>
-                              </td>
+                               </td>
                               {isSuperAdmin && (
                                 <td className="px-6 py-4 text-right">
-                                  <button onClick={() => { setEditingApp(app); setAppForm(app); }} className="px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 rounded-lg font-bold transition">
+                                  <button onClick={() => { setEditingApp(app); setAppForm(app); }} className="px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg font-bold transition">
                                     Edit Settings
                                   </button>
-                                </td>
+                                 </td>
                               )}
-                            </tr>
+                             </tr>
                           ))}
                         </tbody>
-                      </table>
+                       </table>
                     </div>
                   )}
                 </div>
@@ -653,37 +653,37 @@ export default function AdminDashboard() {
                 <div className="p-0">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-sm">
+                      <tr className="bg-gray-50 text-gray-500 text-sm">
                         <th className="px-6 py-4 font-semibold uppercase tracking-wider">Group Details</th>
                         <th className="px-6 py-4 font-semibold uppercase tracking-wider">Members</th>
                         <th className="px-6 py-4 font-semibold uppercase tracking-wider">Created By</th>
-                      </tr>
+                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    <tbody className="divide-y divide-gray-100">
                       {groupsList.map(g => (
-                        <tr key={g.id} className="hover:bg-gray-50 dark:bg-gray-800/20 transition">
+                        <tr key={g.id} className="hover:bg-gray-50 transition">
                           <td className="px-6 py-4 flex items-center gap-3">
                             <img src={g.group_icon} alt="icon" className="w-10 h-10 rounded-full shadow-sm" />
-                            <div className="font-bold text-gray-900 dark:text-white">{g.group_name}</div>
-                          </td>
-                          <td className="px-6 py-4 font-bold text-gray-700 dark:text-gray-300">{g.member_count}</td>
-                          <td className="px-6 py-4 text-indigo-600 dark:text-indigo-400 font-medium">@{g.created_by}</td>
-                        </tr>
+                            <div className="font-bold text-gray-900">{g.group_name}</div>
+                           </td>
+                          <td className="px-6 py-4 font-bold text-gray-700">{g.member_count}</td>
+                          <td className="px-6 py-4 text-indigo-600 font-medium">@{g.created_by}</td>
+                         </tr>
                       ))}
                       {groupsList.length === 0 && (
-                        <tr><td colSpan={3} className="p-8 text-center text-gray-500 font-medium">No active groups found in the directory.</td></tr>
+                         <tr><td colSpan={3} className="p-8 text-center text-gray-500 font-medium">No active groups found in the directory.</td></tr>
                       )}
                     </tbody>
-                  </table>
+                   </table>
                 </div>
               )}
             </div>
 
             {/* User Management Section (Super Admin Only) */}
             {isSuperAdmin && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-8">
-              <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-8">
+              <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   <UserCheck className="w-6 h-6 text-indigo-500" />
                   Assign Admin Access
                 </h2>
@@ -696,7 +696,7 @@ export default function AdminDashboard() {
                     <input 
                       type="text" 
                       placeholder="Search for a username..." 
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white transition"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 transition"
                       value={searchUsername}
                       onChange={(e) => setSearchUsername(e.target.value)}
                     />
@@ -711,14 +711,14 @@ export default function AdminDashboard() {
                 </form>
 
                 {searchError && (
-                  <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl flex items-center gap-2 mb-4 border border-red-100 dark:border-red-800 max-w-lg">
+                  <div className="p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 mb-4 border border-red-100 max-w-lg">
                     <UserX className="w-5 h-5 flex-shrink-0" />
                     <span className="font-medium">{searchError}</span>
                   </div>
                 )}
 
                 {searchResult && (
-                  <div className="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex flex-col gap-4 max-w-2xl">
+                  <div className="p-5 border border-gray-200 rounded-xl bg-gray-50 flex flex-col gap-4 max-w-2xl">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <img 
@@ -727,49 +727,49 @@ export default function AdminDashboard() {
                           className="w-14 h-14 rounded-full shadow-sm"
                         />
                         <div>
-                          <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                          <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
                             {searchResult.display_name}
-                            {searchResult.is_admin && <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full font-bold dark:bg-indigo-900 dark:text-indigo-300">ADMIN</span>}
+                            {searchResult.is_admin && <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full font-bold">ADMIN</span>}
                           </h3>
-                          <p className="text-gray-500 dark:text-gray-400 text-sm">@{searchResult.username}</p>
+                          <p className="text-gray-500 text-sm">@{searchResult.username}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* User Action Controls */}
-                    <div className="flex flex-col gap-5 w-full mt-2 border-t border-gray-200 dark:border-gray-700 pt-5">
+                    <div className="flex flex-col gap-5 w-full mt-2 border-t border-gray-200 pt-5">
                       
                       <div className="flex flex-col sm:flex-row gap-6">
                         <label className="flex items-center gap-3 cursor-pointer">
                           <input type="checkbox" className="w-5 h-5 text-indigo-600 rounded bg-gray-100 border-gray-300 focus:ring-indigo-500" 
                                  checked={editAdminStatus}
                                  onChange={(e) => setEditAdminStatus(e.target.checked)} />
-                          <span className="font-medium text-gray-700 dark:text-gray-300">Grant Admin Dashboard Access</span>
+                          <span className="font-medium text-gray-700">Grant Admin Dashboard Access</span>
                         </label>
 
                         <label className="flex items-center gap-3 cursor-pointer">
                           <input type="checkbox" className="w-5 h-5 text-indigo-600 rounded bg-gray-100 border-gray-300 focus:ring-indigo-500" 
                                  checked={editGroupAccess}
                                  onChange={(e) => setEditGroupAccess(e.target.checked)} />
-                          <span className="font-medium text-gray-700 dark:text-gray-300">Allow Group Creation (Bypass Global Limit)</span>
+                          <span className="font-medium text-gray-700">Allow Group Creation (Bypass Global Limit)</span>
                         </label>
                       </div>
 
                       {editAdminStatus && (
                         <div className="flex flex-col gap-2 mt-2">
-                          <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Child Admin Specific Dashboard Password</label>
+                          <label className="text-sm font-semibold text-gray-600">Child Admin Specific Dashboard Password</label>
                           <input 
                             type="text" 
                             placeholder="Set their secure dashboard password..."
-                            className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-900 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none w-full sm:max-w-md text-gray-900 dark:text-white"
+                            className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none w-full sm:max-w-md text-gray-900"
                             value={editPassword}
                             onChange={(e) => setEditPassword(e.target.value)}
                           />
-                          <p className="text-xs text-gray-500 dark:text-gray-400">This user must type this password to unlock their Admin Dashboard view.</p>
+                          <p className="text-xs text-gray-500">This user must type this password to unlock their Admin Dashboard view.</p>
                         </div>
                       )}
 
-                      <div className="mt-4 flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 dark:border-gray-700 pt-5">
+                      <div className="mt-4 flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 pt-5">
                         <div className="flex gap-3 w-full sm:w-auto mb-4 sm:mb-0">
                           <button onClick={() => warnUserAction(searchResult.username)} className="flex-1 sm:flex-none px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 rounded-lg font-bold transition flex items-center justify-center gap-2">
                             <ShieldAlert className="w-4 h-4" /> Warn User
@@ -797,4 +797,5 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
-}
+}   
+

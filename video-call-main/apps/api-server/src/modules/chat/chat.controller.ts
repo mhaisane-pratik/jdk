@@ -8,25 +8,33 @@ import fs from "fs";
 export async function getChatHistory(req: Request, res: Response) {
   try {
     const { roomId } = req.params;
-    const { username } = req.query;
+    const { username, before } = req.query;
 
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log("📥 GET CHAT HISTORY");
+    console.log("📥 GET CHAT HISTORY (PAGINATED)");
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     console.log("Room ID:", roomId);
     console.log("Username:", username);
+    if (before) console.log("Before:", before);
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
     if (!roomId) {
       return res.status(400).json({ error: "Room ID is required" });
     }
 
-    // Get all messages for this room
-    const { data: messages, error: messagesError } = await supabase
+    // Build paginated query
+    let query = supabase
       .from("zatchat")
       .select("*")
       .eq("room_id", roomId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false }) // Descending to get the most recent messages from the anchor
+      .limit(50);
+
+    if (before && typeof before === "string") {
+      query = query.lt("created_at", before);
+    }
+
+    const { data: messages, error: messagesError } = await query;
 
     if (messagesError) {
       console.error("❌ Database error:", messagesError);
@@ -39,45 +47,38 @@ export async function getChatHistory(req: Request, res: Response) {
     if (username && typeof username === "string") {
       console.log("🔍 Filtering deleted messages for:", username);
 
-      // Get messages deleted by this user
       const { data: deletedByUser, error: deletedError } = await supabase
         .from("deleted_messages")
         .select("message_id")
         .eq("deleted_by", username);
 
-      if (deletedError) {
-        console.error("⚠️ Error fetching deleted messages:", deletedError);
-      }
+      if (deletedError) console.error("⚠️ Error fetching deleted messages:", deletedError);
 
       const deletedIds = new Set(deletedByUser?.map((d) => d.message_id) || []);
 
-      console.log(`🗑️ User has ${deletedIds.size} deleted messages`);
-
-      // Filter messages
       filteredMessages = filteredMessages.filter((msg) => {
-        // Hide if deleted for everyone
-        if (msg.is_deleted && msg.deleted_for === "everyone") {
-          return false;
-        }
-
-        // Hide if deleted by this user "for me"
-        if (deletedIds.has(msg.id)) {
-          return false;
-        }
-
+        if (msg.is_deleted && msg.deleted_for === "everyone") return false;
+        if (deletedIds.has(msg.id)) return false;
         return true;
       });
     } else {
-      // No username - just filter messages deleted for everyone
       filteredMessages = filteredMessages.filter(
         (msg) => !(msg.is_deleted && msg.deleted_for === "everyone")
       );
     }
 
-    console.log(`✅ Returning ${filteredMessages.length} messages (from ${messages?.length || 0} total)`);
+    // Reverse the array so older messages are at the top and newer at the bottom
+    filteredMessages.reverse();
+
+    const hasMore = (messages?.length || 0) === 50;
+
+    console.log(`✅ Returning ${filteredMessages.length} messages. HasMore: ${hasMore}`);
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    res.json(filteredMessages);
+    res.json({
+      messages: filteredMessages,
+      hasMore,
+    });
   } catch (error: any) {
     console.error("❌ getChatHistory error:", error);
     res.status(500).json({ error: error.message });
@@ -282,6 +283,41 @@ export async function createRoom(req: Request, res: Response) {
       return res.json({ room: existing, created: false });
     }
 
+    if (isGroup) {
+      // 1. Check if the individual user has permission to completely bypass the global setting
+      const { data: userConfig } = await supabase
+        .from("chat_users")
+        .select("can_create_group")
+        .eq("username", participant1)
+        .single();
+        
+      // If they are explicitly allowed, they bypass the system check
+      if (!userConfig?.can_create_group) {
+        // 2. Check if group creation is allowed globally
+        const { data: config } = await supabase
+          .from("api_clients")
+          .select("allow_group_creation, max_group_size")
+          .limit(1)
+          .single();
+          
+        if (config && config.allow_group_creation === false) {
+            return res.status(403).json({ error: "Group creation is currently disabled by the administrator." });
+        }
+        
+        const maxGroupSize = config?.max_group_size || 50;
+        if (memberCount > maxGroupSize) {
+           return res.status(400).json({ error: `Maximum group size is currently limited to ${maxGroupSize} members.` });
+        }
+      } else {
+         // Individually allowed, but we still enforce max_group_size from config
+         const { data: config } = await supabase.from("api_clients").select("max_group_size").limit(1).single();
+         const maxGroupSize = config?.max_group_size || 50;
+         if (memberCount > maxGroupSize) {
+           return res.status(400).json({ error: `Maximum group size is currently limited to ${maxGroupSize} members.` });
+         }
+      }
+    }
+
     // Create new room (works for both 1-1 and group)
     const { data, error } = await supabase
       .from("chat_rooms")
@@ -364,6 +400,11 @@ export async function updateGroup(req: Request, res: Response) {
     }
 
     if (memberCount !== undefined) {
+      const { data: config } = await supabase.from("api_clients").select("max_group_size").limit(1).single();
+      const maxGroupSize = config?.max_group_size || 50;
+      if (memberCount > maxGroupSize) {
+         return res.status(400).json({ error: `Group size exceeds current limit of ${maxGroupSize}.` });
+      }
       updates.member_count = memberCount;
     }
 
@@ -461,6 +502,14 @@ export async function uploadFile(req: Request, res: Response) {
       if (!roomId || !sender || !receiver) {
         return res.status(400).json({ error: "Missing required fields" });
       }
+      
+      const { data: config } = await supabase.from("api_clients").select("allow_media_sharing").limit(1).single();
+      if (config && config.allow_media_sharing === false) {
+         if (req.file) {
+           fs.unlink(req.file.path, () => {});
+         }
+         return res.status(403).json({ error: "Media sharing is currently disabled." });
+      }
 
       const fileUrl = `http://localhost:4000/uploads/${req.file.filename}`;
       
@@ -504,6 +553,78 @@ export async function uploadFile(req: Request, res: Response) {
   });
 }
 
+/* ================= CLEAR CHAT ================= */
+export async function clearChat(req: Request, res: Response) {
+  try {
+    const { roomId } = req.params;
+    const { username } = req.query;
+    
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("🗑️ CLEAR CHAT (ONE-SIDED/GLOBAL)");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("Room ID:", roomId);
+    if (username) console.log("Requested By:", username);
+
+    if (!roomId) return res.status(400).json({ error: "Room ID is required" });
+
+    // Step 1: Find all messages in this room
+    const { data: messages, error: fetchError } = await supabase
+      .from("zatchat")
+      .select("id")
+      .eq("room_id", roomId);
+
+    if (fetchError) throw fetchError;
+    
+    const messageIds = messages?.map(m => m.id) || [];
+    
+    if (username && typeof username === 'string') {
+      console.log(`Executing localized clear for user: ${username}`);
+      if (messageIds.length > 0) {
+        // Step 2a: Diff against already deleted instances
+        const { data: existing } = await supabase
+          .from("deleted_messages")
+          .select("message_id")
+          .eq("deleted_by", username)
+          .in("message_id", messageIds);
+          
+        const existingSet = new Set(existing?.map(e => e.message_id) || []);
+        const newIds = messageIds.filter(id => !existingSet.has(id));
+        
+        // Step 2b: Inject new phantom bindings
+        if (newIds.length > 0) {
+          const insertPayload = newIds.map(id => ({
+            message_id: id,
+            deleted_by: username,
+            deleted_at: new Date().toISOString()
+          }));
+          const { error: cascadeError } = await supabase
+            .from("deleted_messages")
+            .insert(insertPayload);
+            
+          if (cascadeError) throw cascadeError;
+        }
+      }
+      console.log(`✅ Successfully wiped local view of ${messageIds.length} messages.`);
+    } else {
+      console.log("Executing global physical table wipe.");
+      // Legacy Route: Global Cascade
+      if (messageIds.length > 0) {
+        await supabase.from("deleted_messages").delete().in("message_id", messageIds);
+      }
+      const { error: deleteError } = await supabase.from("zatchat").delete().eq("room_id", roomId);
+      if (deleteError) throw deleteError;
+      console.log(`✅ Successfully wiped ${messageIds.length} messages and cascaded dependencies globally.`);
+    }
+
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+
+    res.json({ success: true, message: "Chat cleared successfully" });
+  } catch (error: any) {
+    console.error("❌ clearChat error:", error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
 /* ================= EXPORT ALL ================= */
 export const chatController = {
   getChatHistory,
@@ -512,4 +633,5 @@ export const chatController = {
   uploadFile,
   createRoom,
   updateGroup,
+  clearChat,
 };

@@ -32,6 +32,8 @@ interface ChatRoom {
   is_archived?: boolean;
   is_muted?: boolean;
   is_group?: boolean;
+  is_verified?: boolean;
+  is_public?: boolean;
   group_name?: string;
   group_icon?: string;
   member_count?: number;
@@ -252,12 +254,23 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setOnlineUsers((prev) => new Set(prev).add(username));
     };
 
-    const handleUserOffline = ({ username }: any) => {
+    const handleUserOffline = ({ username, last_seen }: any) => {
       setOnlineUsers((prev) => {
         const newSet = new Set(prev);
         newSet.delete(username);
         return newSet;
       });
+      if (last_seen) {
+        setUserProfiles((prev) => {
+          const profile = prev.get(username);
+          if (profile) {
+            const newMap = new Map(prev);
+            newMap.set(username, { ...profile, last_seen });
+            return newMap;
+          }
+          return prev;
+        });
+      }
     };
 
     const handleNewGroupCreated = () => refreshRooms();
@@ -304,6 +317,14 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     };
 
+    const handleGlobalReceiveMessage = (msg: any) => {
+      if (currentUser && msg.receiver_name === currentUser.username) {
+        if (selectedRoom !== msg.room_id) {
+          socket.emit("message_delivered", { roomId: msg.room_id, messageId: msg.id });
+        }
+      }
+    };
+
     socket.on("room_updated", handleRoomUpdated);
     socket.on("user_online", handleUserOnline);
     socket.on("user_offline", handleUserOffline);
@@ -313,6 +334,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     socket.on("user_warned", handleUserWarned);
     socket.on("typing", handleGlobalTyping);
     socket.on("stop_typing", handleGlobalStopTyping);
+    socket.on("receive_message", handleGlobalReceiveMessage);
 
     return () => {
       socket.off("room_updated", handleRoomUpdated);
@@ -324,6 +346,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       socket.off("user_warned", handleUserWarned);
       socket.off("typing", handleGlobalTyping);
       socket.off("stop_typing", handleGlobalStopTyping);
+      socket.off("receive_message", handleGlobalReceiveMessage);
     };
   }, [currentUser, selectedRoom]);
 

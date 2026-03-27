@@ -16,7 +16,7 @@ export interface Message {
   sender_name: string;
   receiver_name: string;
   message?: string;
-  message_type: "text" | "image" | "file";
+  message_type: "text" | "image" | "file" | "video" | "audio";
   file_url?: string;
   file_name?: string;
   file_size?: number;
@@ -50,6 +50,10 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const [showMedia, setShowMedia] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [forwardingMessage, setForwardingMessage] = useState<Message | null>(null);
+  const [forwardSelectedRooms, setForwardSelectedRooms] = useState<string[]>([]);
 
   const room = chatRooms.find((r) => r.id === selectedRoom);
   const hasJoinedRoom = useRef(false);
@@ -179,7 +183,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
       );
       setMessages(sortedMessages);
       setHasMore(newHasMore);
-      if (sortedMessages.length > 0) markAsRead();
+      if (sortedMessages.length > 0) markAsRead(sortedMessages);
     } catch (err: any) {
       console.error("❌ Failed to load messages:", err);
       setError("Failed to load messages. Please try again.");
@@ -228,8 +232,28 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
     }
   };
 
-  const markAsRead = async () => {
+  const markAsRead = async (msgsToMark: Message[] = messages) => {
     if (!selectedRoom || !currentUser) return;
+    
+    // Immediately compute explicit IDs instead of relying on the backend, 
+    // to prevent the HTTP update from clearing the dirty rows before the Socket fires.
+    const unseenIds = msgsToMark
+      .filter(m => m.sender_name !== currentUser.username && !m.is_seen)
+      .map(m => m.id);
+
+    // Update locally instantly to feel real-time
+    if (unseenIds.length > 0) {
+      setMessages(prev => prev.map(m => 
+        unseenIds.includes(m.id) ? { ...m, is_seen: true, is_delivered: true } : m
+      ));
+      
+      socket.emit("message_seen", {
+        roomId: selectedRoom,
+        viewer: currentUser.username,
+        messageIds: unseenIds,
+      });
+    }
+
     try {
       await fetch(`${API_URL}/api/v1/chats/mark-read/${selectedRoom}/${currentUser.username}`, {
         method: "POST",
@@ -247,15 +271,63 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const handleMediaClose = () => setShowMedia(false);
 
   const handleClearChatSubmit = async () => {
+    if (!currentUser) return;
     if (!window.confirm("Are you sure you want to completely clear this chat? This action cannot be undone.")) return;
     try {
-      const res = await fetch(`${API_URL}/api/v1/chats/clear/${selectedRoom}`, {
+      const res = await fetch(`${API_URL}/api/v1/chats/clear/${selectedRoom}?username=${encodeURIComponent(currentUser.username)}`, {
         method: 'DELETE',
         headers: { "x-api-key": API_KEY }
       });
       if (res.ok) setMessages([]);
       else alert("Failed to clear chat");
     } catch (err) { console.error(err); }
+  };
+
+  const handleForwardMessage = (msg: Message) => {
+    setForwardingMessage(msg);
+    setForwardSelectedRooms([]);
+  };
+
+  const handleForwardSubmit = () => {
+    if (!forwardingMessage || forwardSelectedRooms.length === 0 || !currentUser) return;
+    
+    forwardSelectedRooms.forEach(fRoomId => {
+      const fRoom = chatRooms.find(r => r.id === fRoomId);
+      if (!fRoom) return;
+      
+      let fReceiver = "";
+      if (fRoom.is_group) {
+        fReceiver = fRoom.id;
+      } else {
+        fReceiver = fRoom.participant_1 === currentUser.username ? fRoom.participant_2 : fRoom.participant_1;
+      }
+      
+      if (forwardingMessage.message_type === "text") {
+        socket.emit("send_message", {
+          roomId: fRoomId,
+          sender: currentUser.username,
+          receiver: fReceiver,
+          message: forwardingMessage.message,
+          reply_to_id: null,
+          is_forwarded: true,
+        });
+      } else {
+        socket.emit("send_file", {
+          roomId: fRoomId,
+          sender: currentUser.username,
+          receiver: fReceiver,
+          message_type: forwardingMessage.message_type,
+          file_url: forwardingMessage.file_url,
+          file_name: forwardingMessage.file_name,
+          file_size: forwardingMessage.file_size,
+          is_forwarded: true,
+        });
+      }
+    });
+
+    playNotificationSound("send");
+    setForwardingMessage(null);
+    setForwardSelectedRooms([]);
   };
 
   if (loading) {
@@ -313,6 +385,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         messages={messages}
         currentUser={currentUser.username}
         onReply={handleReply}
+        onForward={handleForwardMessage}
         onRefresh={handleDeleteRefresh}
         onLoadMore={loadMoreMessages}
         hasMore={hasMore}
@@ -343,6 +416,81 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
       />
 
       {showMedia && <MediaViewer roomId={selectedRoom || ""} onClose={handleMediaClose} />}
+
+      {forwardingMessage && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col max-h-[85vh] animate-scaleUp border border-gray-200 dark:border-gray-700">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700 font-semibold text-lg flex justify-between items-center text-gray-900 dark:text-white bg-gray-50/50 dark:bg-gray-900/50">
+              <span>Forward Message</span>
+              <button 
+                onClick={() => setForwardingMessage(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-white dark:bg-gray-800">
+              {chatRooms.filter(r => r.id !== selectedRoom).map(room => {
+                const isSelected = forwardSelectedRooms.includes(room.id);
+                const roomName = room.is_group 
+                  ? room.group_name 
+                  : (room.participant_1 === currentUser.username ? room.participant_2 : room.participant_1);
+                  
+                return (
+                  <div 
+                    key={room.id}
+                    onClick={() => {
+                      setForwardSelectedRooms(prev => 
+                        isSelected ? prev.filter(r => r !== room.id) : [...prev, room.id]
+                      );
+                    }}
+                    className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border ${
+                      isSelected 
+                        ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-200 dark:border-indigo-700' 
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/50'
+                    }`}
+                  >
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm text-lg flex-shrink-0">
+                      {roomName?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 dark:text-white truncate">{roomName}</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate w-full">
+                        {room.is_group ? `${room.member_count || 3} members` : 'Direct Chat'}
+                      </p>
+                    </div>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                      isSelected 
+                        ? 'border-indigo-500 bg-indigo-500 text-white' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}>
+                      {isSelected && <span className="text-xs font-bold leading-none mb-[1px]">✓</span>}
+                    </div>
+                  </div>
+                );
+              })}
+              {chatRooms.length <= 1 && (
+                <div className="text-center py-10 text-gray-500 dark:text-gray-400 text-sm">
+                  You don't have any other active chats to forward to.
+                </div>
+              )}
+            </div>
+            
+            {forwardSelectedRooms.length > 0 && (
+              <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 animate-slideUp">
+                <button
+                  onClick={handleForwardSubmit}
+                  className="w-full py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 transition hover:scale-[1.02] active:scale-95"
+                >
+                  Forward to {forwardSelectedRooms.length} chat{forwardSelectedRooms.length > 1 ? 's' : ''} 
+                  <span className="text-xl">🚀</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

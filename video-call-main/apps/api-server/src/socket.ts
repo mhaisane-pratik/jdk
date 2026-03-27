@@ -399,6 +399,9 @@ export function initSocket(io: Server) {
       if (!messageId || !username || !deleteFor) return;
 
       try {
+        // Fetch the message content first to see if it matches the room's last_message
+        const { data: msgData } = await supabase.from("zatchat").select("message, message_type").eq("id", messageId).single();
+
         if (deleteFor === "everyone") {
           await supabase
             .from("zatchat")
@@ -410,6 +413,17 @@ export function initSocket(io: Server) {
             .eq("id", messageId);
 
           io.to(roomId).emit("message_deleted", { messageId, deleteFor: "everyone" });
+          
+          // Cross-verify sidebar caching overlap
+          if (msgData) {
+             const displayMatch = msgData.message ? msgData.message.substring(0, 100) : msgData.message_type === "image" ? "📷 Photo" : "📎 File";
+             const { data: roomData } = await supabase.from("chat_rooms").select("last_message").eq("id", roomId).single();
+             
+             if (roomData && roomData.last_message === displayMatch) {
+               await supabase.from("chat_rooms").update({ last_message: "🚫 This message was deleted" }).eq("id", roomId);
+               io.emit("room_updated", { roomId, lastMessage: "🚫 This message was deleted", sender: username, timestamp: new Date().toISOString() });
+             }
+          }
         } else {
           await supabase.from("deleted_messages").insert({
             message_id: messageId,

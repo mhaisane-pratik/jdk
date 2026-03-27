@@ -23,11 +23,13 @@ import ssoAuthRoutes from "./modules/auth/auth.sso";
 let userRoutes: any;
 let chatRoutes: any;
 let messageRoutes: any;
+let adminRoutes: any;
 
 try {
   userRoutes = require("./modules/user/user.module").default;
   chatRoutes = require("./modules/chat/chat.module").default;
   messageRoutes = require("./modules/message/message.module").default;
+  adminRoutes = require("./modules/admin/admin.module").default;
   console.log("✅ Chat modules imported successfully");
 } catch (err: any) {
   console.error("❌ Failed to import chat modules:", err.message);
@@ -129,6 +131,13 @@ if (messageRoutes) {
   console.log("✅ Message routes registered at /api/v1/messages");
 } else {
   console.warn("⚠️  Message routes not available");
+}
+
+if (adminRoutes) {
+  app.use("/api/v1/admin", adminRoutes);
+  console.log("✅ Admin routes registered at /api/v1/admin");
+} else {
+  console.warn("⚠️  Admin routes not available");
 }
 
 // Calendar routes

@@ -12,10 +12,11 @@ import {
   Users,
   MoreVertical,
   Video,
-  Clock,
   Crown,
   Shield,
-  UserCircle2
+  UserCircle2,
+  Search,
+  Clock  // Added Clock import
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL as string;
@@ -26,6 +27,7 @@ interface ChatHeaderProps {
   onMediaClick: () => void;
   onBack?: () => void;
   onClearChat?: () => void;
+  onSearchAction?: () => void;
 }
 
 export default function ChatHeader({
@@ -34,9 +36,10 @@ export default function ChatHeader({
   onMediaClick,
   onBack,
   onClearChat,
+  onSearchAction,
 }: ChatHeaderProps) {
   const navigate = useNavigate();
-  const { onlineUsers, setCurrentUser, setSelectedRoom, chatRooms, currentUser, userProfiles } = useChat();
+  const { onlineUsers, setCurrentUser, setSelectedRoom, chatRooms, currentUser, userProfiles, typingUsers } = useChat();
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [receiverInfo, setReceiverInfo] = useState<any>(null);
   const [showOptions, setShowOptions] = useState(false);
@@ -84,21 +87,6 @@ export default function ChatHeader({
 
   const handleHeaderClick = () => {
     if (isGroup) setShowGroupInfo(true);
-  };
-
-  const formatLastSeen = (lastSeen: string): string => {
-    const now = new Date();
-    const last = new Date(lastSeen);
-    const diffMs = now.getTime() - last.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return last.toLocaleDateString();
   };
 
   const handleClearChat = () => {
@@ -232,16 +220,12 @@ export default function ChatHeader({
                     <span className="font-medium truncate max-w-[60px] xs:max-w-[80px]">Online</span>
                   </div>
                 ) : (
-                  <>
-                    <Clock size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0 md:w-3.5 md:h-3.5" />
-                    <span className="truncate max-w-[80px] xs:max-w-[120px] sm:max-w-[150px]">
-                      {cachedProfile?.last_seen || receiverInfo?.last_seen
-                        ? `Last seen ${formatLastSeen(cachedProfile?.last_seen || receiverInfo?.last_seen)}`
-                        : "Offline"}
-                    </span>
-                  </>
+                  <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 min-w-0">
+                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gray-400 flex-shrink-0" />
+                    <span className="font-medium truncate max-w-[60px] xs:max-w-[80px]">Offline</span>
+                  </div>
                 )}
-                {room?.typingUsers?.includes(receiver) && (
+                {typingUsers[roomId] && typingUsers[roomId].has(receiver) && (
                   <>
                     <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600 mx-1 flex-shrink-0" />
                     <span className="text-blue-500 dark:text-blue-400 font-medium animate-pulse truncate max-w-[60px] xs:max-w-[80px]">
@@ -343,6 +327,13 @@ export default function ChatHeader({
                   >
                     <UserCircle2 size={14} className="md:w-4 md:h-4 flex-shrink-0" />
                     <span className="truncate">View contact</span>
+                  </button>
+                  <button
+                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
+                    onClick={(e) => { e.stopPropagation(); if (onSearchAction) onSearchAction(); setShowOptions(false); }}
+                  >
+                    <Search size={14} className="md:w-4 md:h-4 flex-shrink-0" />
+                    <span className="truncate">Search messages</span>
                   </button>
                   <button
                     className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"

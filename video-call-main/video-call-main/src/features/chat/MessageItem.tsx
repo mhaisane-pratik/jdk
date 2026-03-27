@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Message } from "./ChatWindow";
+import { socket } from "../../api/socket";
 
 interface MessageItemProps {
   message: Message;
@@ -8,6 +9,7 @@ interface MessageItemProps {
   onReply: (message: Message) => void;
   onDelete?: (messageId: string) => void;
   onForward?: (message: Message) => void;
+  searchQuery?: string;
   onRefresh: () => void;
 }
 
@@ -20,15 +22,21 @@ export default function MessageItem({
   onReply, 
   onDelete,
   onForward,
+  searchQuery,
   onRefresh 
 }: MessageItemProps) {
   const [showActions, setShowActions] = useState(false);
-  const [imageFullscreen, setImageFullscreen] = useState(false);
+  const [fullscreenMedia, setFullscreenMedia] = useState<{url: string, type: string} | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
+    let safeString = dateString;
+    if (!safeString.includes('Z') && !safeString.includes('+')) {
+      safeString = safeString.replace(' ', 'T') + 'Z';
+    }
+    const date = new Date(safeString);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
@@ -57,6 +65,21 @@ export default function MessageItem({
     };
   }, [showActions]);
 
+  const renderMessageContent = (text: string | null | undefined) => {
+    if (!text) return null;
+    if (!searchQuery) return text;
+    try {
+      const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
+      return parts.map((part, i) => 
+        part.toLowerCase() === searchQuery.toLowerCase() 
+          ? <mark key={i} className="bg-yellow-300 text-black rounded-sm px-[2px] shadow-sm">{part}</mark> 
+          : part
+      );
+    } catch (e) {
+      return text;
+    }
+  };
+
   const handleMessageClick = () => {
     setShowActions(!showActions);
   };
@@ -77,24 +100,21 @@ export default function MessageItem({
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!currentUser) return;
-    const deleteFor = isSent 
-      ? window.confirm("Delete for everyone?\n\nOK = Everyone | Cancel = Just you")
-        ? "everyone"
-        : "me"
-      : "me";
-    const confirmMessage = deleteFor === "everyone"
-      ? "Delete this message for everyone?"
-      : "Delete this message for you?";
-    if (!window.confirm(confirmMessage)) return;
-    setIsDeleting(true);
     setShowActions(false);
+    setShowDeleteModal(true);
+  };
+
+  const executeDelete = async (e: React.MouseEvent, deleteType: "me" | "everyone") => {
+    e.stopPropagation();
+    setShowDeleteModal(false);
+    setIsDeleting(true);
     try {
-      const response = await fetch(`${API_URL}/api/v1/messages/${message.id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: currentUser, deleteFor }),
+      socket.emit("delete_message", {
+        messageId: message.id,
+        username: currentUser,
+        deleteFor: deleteType,
+        roomId: message.room_id
       });
-      if (!response.ok) throw new Error("Failed to delete");
       showNotification(`✓ Message deleted`, "success");
       setTimeout(() => onRefresh(), 500);
     } catch (err) {
@@ -106,7 +126,7 @@ export default function MessageItem({
   const handleForward = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowActions(false);
-    alert("Forward feature coming soon!");
+    if (onForward) onForward(message);
   };
 
   const handleReply = (e: React.MouseEvent) => {
@@ -188,7 +208,7 @@ export default function MessageItem({
               )}
 
               <p className="m-0 pr-12 text-sm leading-relaxed break-words whitespace-pre-wrap select-text">
-                {message.message}
+                {renderMessageContent(message.message)}
               </p>
               
               <div className="absolute bottom-1.5 right-2 flex items-center gap-0.5">
@@ -225,23 +245,73 @@ export default function MessageItem({
               )}
 
               <img
-                src={`${API_URL}/api/v1/proxy-image?url=${encodeURIComponent(message.file_url)}`}
+                src={`${API_URL}/api/v1/proxy-image?url=${encodeURIComponent(message.file_url || '')}`}
                 alt="Shared"
                 className="w-full max-h-[300px] object-cover rounded-xl cursor-pointer transition-transform hover:scale-102"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setImageFullscreen(true);
+                  setFullscreenMedia({ url: message.file_url || '', type: 'image' });
                 }}
                 loading="lazy"
               />
               
               {message.message && (
                 <p className={`m-1 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
-                  {message.message}
+                  {renderMessageContent(message.message)}
                 </p>
               )}
               <div className="absolute bottom-2 right-2 flex items-center gap-0.5">
                 <span className={`text-[10px] ${isSent ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}>
+                  {formatTime(message.created_at)}
+                </span>
+                {getMessageStatus()}
+              </div>
+            </div>
+          )}
+
+          {message.message_type === "video" && message.file_url && (
+            <div
+              className={`relative rounded-2xl p-1 max-w-[280px] shadow-sm ${
+                isSent
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-500"
+                  : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+              }`}
+            >
+              {message.reply_to && (
+                <div className="m-1 mb-2 rounded-lg overflow-hidden cursor-pointer hover:opacity-90">
+                  <div className="flex">
+                    <div className={`w-1 flex-shrink-0 ${isSent ? "bg-white/90" : "bg-indigo-500"}`}></div>
+                    <div className={`flex-1 p-1 ${isSent ? "bg-white/15" : "bg-indigo-50 dark:bg-indigo-900/20"}`}>
+                      <div className={`font-semibold text-[10px] mb-0.5 ${isSent ? "text-white" : "text-indigo-600 dark:text-indigo-400"}`}>
+                        {message.reply_to.sender_name}
+                      </div>
+                      <div className="text-[10px] line-clamp-2 opacity-85 text-gray-700 dark:text-gray-300">
+                        {message.reply_to.message || "📎 Attachment"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <video
+                src={message.file_url}
+                className="w-full max-h-[300px] object-cover rounded-xl cursor-pointer"
+                controls
+                preload="metadata"
+                controlsList="nodownload"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFullscreenMedia({ url: message.file_url || '', type: 'video' });
+                }}
+              />
+              
+              {message.message && (
+                <p className={`m-1 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                  {renderMessageContent(message.message)}
+                </p>
+              )}
+              <div className="absolute bottom-2 right-2 flex items-center gap-0.5 bg-black/40 rounded-full px-1.5 py-0.5 backdrop-blur-sm">
+                <span className={`text-[10px] text-white/90`}>
                   {formatTime(message.created_at)}
                 </span>
                 {getMessageStatus()}
@@ -298,7 +368,7 @@ export default function MessageItem({
               </a>
               {message.message && (
                 <p className={`mt-1.5 mb-0 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
-                  {message.message}
+                  {renderMessageContent(message.message)}
                 </p>
               )}
               <div className="absolute bottom-2 right-2 flex items-center gap-0.5">
@@ -352,35 +422,79 @@ export default function MessageItem({
         </div>
       </div>
 
-      {imageFullscreen && (
+      {fullscreenMedia && (
         <>
           <div
             className="fixed inset-0 bg-black/90 z-[999999] animate-fadeIn"
-            onClick={() => setImageFullscreen(false)}
+            onClick={() => setFullscreenMedia(null)}
           />
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[1000000] max-w-[90vw] max-h-[90vh] animate-zoomIn">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[1000000] max-w-[90vw] max-h-[90vh] flex flex-col items-center animate-zoomIn">
             <button
               className="absolute -top-12 right-0 w-10 h-10 bg-white/90 rounded-full text-3xl cursor-pointer flex items-center justify-center hover:bg-white transition hover:rotate-90"
-              onClick={() => setImageFullscreen(false)}
+              onClick={() => setFullscreenMedia(null)}
             >
               ×
             </button>
-            <img
-              src={`${API_URL}/api/v1/proxy-image?url=${encodeURIComponent(message.file_url)}`}
-              alt="Full size"
-              className="max-w-full max-h-[90vh] rounded-lg"
-            />
+            {fullscreenMedia.type === 'image' ? (
+              <img
+                src={`${API_URL}/api/v1/proxy-image?url=${encodeURIComponent(fullscreenMedia.url)}`}
+                alt="Full size"
+                className="max-w-full max-h-[80vh] rounded-lg shadow-2xl"
+              />
+            ) : (
+              <video
+                src={fullscreenMedia.url}
+                controls
+                autoPlay
+                className="max-w-full max-h-[80vh] rounded-lg shadow-2xl"
+              />
+            )}
             <a
-              href={message.file_url}
+              href={fullscreenMedia.url}
               download
-              className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-white/90 px-5 py-2.5 rounded-lg no-underline text-gray-900 font-semibold text-sm hover:bg-white transition"
+              className="mt-6 bg-white/90 px-6 py-2.5 rounded-xl no-underline text-gray-900 font-bold text-sm hover:bg-white transition hover:-translate-y-1 shadow-lg"
               target="_blank"
               rel="noopener noreferrer"
             >
-              ⬇️ Download
+              ⬇️ Download Media
             </a>
           </div>
         </>
+      )}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={() => setShowDeleteModal(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-xs overflow-hidden flex flex-col animate-scaleUp border border-gray-200 dark:border-gray-700" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white text-center m-0">Delete message?</h3>
+            </div>
+            <div className="flex flex-col p-2 space-y-1">
+              {isSent && (
+                <button
+                  onClick={(e) => executeDelete(e, "everyone")}
+                  className="w-full py-3 px-4 text-red-500 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition text-sm disabled:opacity-50"
+                  disabled={isDeleting}
+                >
+                  Delete for everyone
+                </button>
+              )}
+              <button
+                onClick={(e) => executeDelete(e, "me")}
+                className="w-full py-3 px-4 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition text-sm disabled:opacity-50"
+                disabled={isDeleting}
+              >
+                Delete for me
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowDeleteModal(false); }}
+                className="w-full py-3 px-4 text-indigo-500 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition mt-1 text-sm disabled:opacity-50"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

@@ -17,21 +17,21 @@ router.post("/sso-login", async (req, res) => {
       process.env.SSO_JWT_SECRET!
     );
 
-    const { username, email, display_name, profile_picture } = decoded;
+    // Grab the data we actually need from the token
+    const { username, display_name } = decoded;
 
     if (!username) {
       return res.status(400).json({ error: "Username missing in token" });
     }
 
-    // ✅ UPSERT USER IN SUPABASE
+    // ✅ UPSERT USER IN SUPABASE 
+    // 🔥 FIXED: Removed email and profile_picture because your table doesn't have those columns!
     const { data: user, error } = await supabase
       .from("chat_users")
       .upsert(
         {
           username,
           display_name: display_name || username,
-          email: email || null,
-          profile_picture: profile_picture || null,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "username" }
