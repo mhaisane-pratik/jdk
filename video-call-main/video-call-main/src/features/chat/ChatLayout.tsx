@@ -28,9 +28,8 @@ export default function ChatLayout() {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
 
-      // IMPORTANT FIX: reset room on desktop
-      if (!mobile) {
-        setSelectedRoom((prev: any) => prev); // keep state stable
+      if (!mobile && selectedRoom) {
+        setSelectedRoom(selectedRoom); // keep state stable
       }
     };
 
@@ -79,7 +78,7 @@ export default function ChatLayout() {
   /* ================= MAIN UI ================= */
   return (
     <div
-      className={`flex w-screen h-screen overflow-hidden fixed inset-0 ${
+      className={`flex w-screen h-[100dvh] overflow-hidden fixed inset-0 ${
         theme === "dark" ? "dark bg-gray-900" : "bg-white"
       }`}
       data-wallpaper={wallpaper}
