@@ -8,7 +8,8 @@ import InputArea from "./InputArea";
 import MediaViewer from "./MediaViewer";
 import { ArrowLeft, ChevronUp, ChevronDown } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_API_URL as string;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const API_URL = (import.meta as any).env.VITE_API_URL as string;
 const API_KEY = "ZATCHAT_PRATEEK9373";
 
 export interface Message {
@@ -368,7 +369,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
 
   if (loading) {
     return (
-      <div className="flex flex-col h-screen bg-cover" style={getWallpaperStyle(wallpaper)}>
+      <div className="flex flex-col h-[100dvh] bg-cover" style={getWallpaperStyle(wallpaper)}>
         <div className="flex-1 flex items-center justify-center">
           <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
           <p className="ml-3 text-gray-600 dark:text-gray-300 text-base">Loading messages...</p>
@@ -379,7 +380,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
 
   if (error) {
     return (
-      <div className="flex flex-col h-screen bg-cover" style={getWallpaperStyle(wallpaper)}>
+      <div className="flex flex-col h-[100dvh] bg-cover" style={getWallpaperStyle(wallpaper)}>
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="text-5xl mb-4">❌</div>
           <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Error Loading Chat</h3>
@@ -397,7 +398,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
 
   if (!receiver || !currentUser) {
     return (
-      <div className="flex flex-col h-screen bg-cover" style={getWallpaperStyle(wallpaper)}>
+      <div className="flex flex-col h-[100dvh] bg-cover" style={getWallpaperStyle(wallpaper)}>
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="text-5xl mb-4">⚠️</div>
           <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Invalid Chat</h3>
@@ -408,7 +409,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-cover relative overflow-hidden" style={getWallpaperStyle(wallpaper)}>
+    <div className="flex flex-col h-[100dvh] bg-cover relative overflow-hidden" style={getWallpaperStyle(wallpaper)}>
       <ChatHeader
         receiver={receiver}
         roomId={selectedRoom || ""}
@@ -475,7 +476,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
       />
 
       {selectedRoom && typingUsers[selectedRoom] && typingUsers[selectedRoom].size > 0 && (
-        <div className="px-4 py-2 flex gap-2.5 absolute bottom-[72px] left-0 right-0 pointer-events-none z-10">
+        <div className="px-4 py-2 flex gap-2.5 absolute bottom-[80px] md:bottom-[90px] left-0 right-0 pointer-events-none z-[80]">
           <div className="bg-white dark:bg-gray-700 p-3 rounded-2xl shadow-md">
             <div className="flex gap-1">
               <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>

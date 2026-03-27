@@ -19,7 +19,8 @@ import {
   Clock  // Added Clock import
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL as string;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const API_URL = (import.meta as any).env.VITE_API_URL as string;
 
 interface ChatHeaderProps {
   receiver: string;
@@ -100,16 +101,14 @@ export default function ChatHeader({
     <>
       <div
         className={`
-          fixed flex justify-between items-center z-[100]
+          flex justify-between items-center z-[100]
           bg-white dark:bg-gray-800
           border-b border-gray-200 dark:border-gray-700
-          px-4 md:px-6 py-2 md:py-3 h-[60px] md:h-[72px] box-border
+          px-3 md:px-6 py-2 md:py-3 h-[60px] md:h-[72px] box-border
           transition-all duration-300
           shadow-sm
-          w-full
+          w-full flex-shrink-0
           ${isGroup ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" : ""}
-          left-0 right-0 top-0
-          md:left-[420px] md:w-auto
         `}
         onClick={handleHeaderClick}
       >

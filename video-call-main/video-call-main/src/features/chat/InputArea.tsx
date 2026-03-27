@@ -4,7 +4,8 @@ import { socket } from "../../api/socket";
 import { Message } from "./ChatWindow";
 import { useChat } from "../../contexts/ChatContext";
 
-const API_URL = import.meta.env.VITE_API_URL as string;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const API_URL = (import.meta as any).env.VITE_API_URL as string;
 
 import {
   Smile,
@@ -55,7 +56,7 @@ export default function InputArea({
 
   const { playNotificationSound } = useChat();
 
-  const typingTimeout = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -307,9 +308,8 @@ export default function InputArea({
   };
 
   return (
-    <div
-      className="fixed z-[90] bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 left-0 right-0 bottom-3 mx-3 sm:mx-4 md:mx-6 backdrop-blur-sm bg-opacity-95 transition-all duration-300 hover:shadow-xl md:left-[420px] md:w-auto"
-    >
+    <div className="w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 z-[90]">
+      <div className="px-2 sm:px-4 py-2 sm:py-3 w-full bg-transparent">
       {showSuggestions && suggestions.length > 0 && (
         <div className="absolute bottom-full left-0 right-0 mb-2 mx-3 sm:mx-4 md:mx-0 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-slideUp">
           <div className="p-2 max-h-[200px] overflow-y-auto">
@@ -553,6 +553,7 @@ export default function InputArea({
 
    
       </div>
+    </div>
     </div>
   );
 }
