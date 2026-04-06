@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { socket } from "../../api/socket";
 import { useChat } from "../../contexts/ChatContext";
 import ChatList from "./ChatList";
 import NewChatModal from "./NewChatModal";
@@ -25,7 +27,8 @@ interface SidebarProps {
 type FilterType = "all" | "unread" | "groups";
 
 export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
-  const { chatRooms, selectedRoom, allowGroupCreation, currentUser, appName, appLogo } = useChat();
+  const navigate = useNavigate();
+  const { chatRooms, selectedRoom, allowGroupCreation, currentUser, setCurrentUser, setSelectedRoom, appName, appLogo } = useChat();
   const [showMenu, setShowMenu] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -238,9 +241,13 @@ export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
             <button
               className="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors"
               onClick={() => {
-                // Handle logout
-                alert("Logout");
-                setShowMenu(false);
+                localStorage.removeItem("chatUser");
+                localStorage.removeItem("selectedRoom");
+                if (selectedRoom) socket.emit("leave_room", selectedRoom);
+                socket.disconnect();
+                setCurrentUser(null);
+                setSelectedRoom(null);
+                navigate("/chat-login");
               }}
             >
               <LogOut size={18} />
