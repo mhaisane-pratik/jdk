@@ -4,6 +4,45 @@ import { supabase } from "../../config/supabase";
 
 const router = express.Router();
 
+type SsoUserPayload = {
+  username: string;
+  display_name?: string;
+  profile_picture?: string;
+  app_id?: string;
+};
+
+function signSsoToken(payload: SsoUserPayload) {
+  return jwt.sign(payload, process.env.SSO_JWT_SECRET!, {
+    expiresIn: "10m",
+    issuer: "zatchat-sso",
+  });
+}
+
+router.post("/sso-token", async (req, res) => {
+  const masterKey = req.headers["x-sso-master-key"];
+  if (!process.env.SSO_MASTER_KEY) {
+    return res.status(500).json({ error: "SSO_MASTER_KEY is not configured" });
+  }
+
+  if (!masterKey || masterKey !== process.env.SSO_MASTER_KEY) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { username, display_name, profile_picture, app_id } = req.body || {};
+  if (!username) {
+    return res.status(400).json({ error: "username is required" });
+  }
+
+  const ssoToken = signSsoToken({
+    username,
+    display_name,
+    profile_picture,
+    app_id,
+  });
+
+  return res.json({ success: true, ssoToken });
+});
+
 router.post("/sso-login", async (req, res) => {
   const { token } = req.body;
 
@@ -12,13 +51,18 @@ router.post("/sso-login", async (req, res) => {
   }
 
   try {
-    const decoded: any = jwt.verify(
-      token,
-      process.env.SSO_JWT_SECRET!
-    );
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, process.env.SSO_JWT_SECRET!, {
+        issuer: "zatchat-sso",
+      });
+    } catch {
+      // Backward compatibility for legacy tokens without issuer claim.
+      decoded = jwt.verify(token, process.env.SSO_JWT_SECRET!);
+    }
 
     // Grab the data we actually need from the token
-    const { username, display_name } = decoded;
+    const { username, display_name, profile_picture } = decoded;
 
     if (!username) {
       return res.status(400).json({ error: "Username missing in token" });
@@ -32,6 +76,7 @@ router.post("/sso-login", async (req, res) => {
         {
           username,
           display_name: display_name || username,
+          profile_picture: profile_picture || null,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "username" }

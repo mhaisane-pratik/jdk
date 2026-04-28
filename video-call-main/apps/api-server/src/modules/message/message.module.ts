@@ -17,12 +17,14 @@ router.get("/test", (req, res) => {
 });
 
 // Message routes
+router.get("/:messageId/seen-by", messageController.getMessageSeenByUsers);
 router.get("/:messageId", messageController.getMessageById);
 router.delete("/:messageId", messageController.deleteMessage);
 router.post("/forward", messageController.forwardMessages);
 
 console.log("✅ Message routes configured:");
 console.log("   GET    /api/v1/messages/test");
+console.log("   GET    /api/v1/messages/:messageId/seen-by");
 console.log("   GET    /api/v1/messages/:messageId");
 console.log("   DELETE /api/v1/messages/:messageId");
 console.log("   POST   /api/v1/messages/forward");

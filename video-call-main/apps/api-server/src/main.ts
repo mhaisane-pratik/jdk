@@ -17,6 +17,12 @@ import { pool } from "./db";
 
 import proxyRoutes from "./modules/chat/proxy.route";
 import ssoAuthRoutes from "./modules/auth/auth.sso";
+import apiKeyRoutes from "./modules/api-key/api-key.module";
+import {
+  apiKeyAuthMiddleware,
+} from "./middleware/api-key.middleware";
+import { ensureApiKeyTable } from "./modules/api-key/api-key.service";
+import { ensureMessageReceiptsTable } from "./modules/message/message-receipts.service";
 // Import calendar route
 
 // Import chat routes (with error handling)
@@ -77,6 +83,8 @@ app.get("/", (_req, res) => {
     endpoints: {
       health: "/health",
       dbTest: "/db-test",
+      apiKeys: "/api/v1/integrations/api-keys",
+      onboarding: "/api/v1/integrations/api-keys/onboard",
       calendar: "/api/v1/calendar",
       users: "/api/v1/users",
       chats: "/api/v1/chats",
@@ -113,28 +121,28 @@ app.get("/db-test", async (_req, res) => {
 /* ================= CHAT API ROUTES ================= */
 // Register chat routes BEFORE other routes
 if (userRoutes) {
-  app.use("/api/v1/users", userRoutes);
+  app.use("/api/v1/users", apiKeyAuthMiddleware, userRoutes);
   console.log("✅ User routes registered at /api/v1/users");
 } else {
   console.warn("⚠️  User routes not available");
 }
 
 if (chatRoutes) {
-  app.use("/api/v1/chats", chatRoutes);
+  app.use("/api/v1/chats", apiKeyAuthMiddleware, chatRoutes);
   console.log("✅ Chat routes registered at /api/v1/chats");
 } else {
   console.warn("⚠️  Chat routes not available");
 }
 
 if (messageRoutes) {
-  app.use("/api/v1/messages", messageRoutes);
+  app.use("/api/v1/messages", apiKeyAuthMiddleware, messageRoutes);
   console.log("✅ Message routes registered at /api/v1/messages");
 } else {
   console.warn("⚠️  Message routes not available");
 }
 
 if (adminRoutes) {
-  app.use("/api/v1/admin", adminRoutes);
+  app.use("/api/v1/admin", apiKeyAuthMiddleware, adminRoutes);
   console.log("✅ Admin routes registered at /api/v1/admin");
 } else {
   console.warn("⚠️  Admin routes not available");
@@ -143,6 +151,7 @@ if (adminRoutes) {
 // Calendar routes
 console.log("✅ Calendar routes registered at /api/v1/calendar");
 app.use("/api/v1/auth", ssoAuthRoutes);
+app.use("/api/v1/integrations/api-keys", apiKeyRoutes);
 
 /* ================= 404 HANDLER ================= */
 app.use((req, res) => {
@@ -194,19 +203,24 @@ server.listen(PORT, () => {
   console.log(`👤 Users API      : http://localhost:${PORT}/api/v1/users`);
   console.log(`💬 Chats API      : http://localhost:${PORT}/api/v1/chats`);
   console.log(`📨 Messages API   : http://localhost:${PORT}/api/v1/messages`);
+  console.log(
+    `🔑 API Key Onboard: http://localhost:${PORT}/api/v1/integrations/api-keys/onboard`
+  );
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
   // Initialize TypeORM after server starts
-  AppDataSource.initialize()
+  Promise.all([AppDataSource.initialize(), ensureApiKeyTable(), ensureMessageReceiptsTable()])
     .then(() => {
       console.log("✅ TypeORM connected");
       console.log(
         "📦 Entities:",
         AppDataSource.entityMetadatas.map((e) => e.name)
       );
+      console.log("🔐 API key table ready");
+      console.log("👀 Message receipts table ready");
     })
     .catch((err) => {
-      console.error("⚠️  TypeORM connection failed (non-critical):", err.message);
+      console.error("⚠️  Database initialization warning (non-critical):", err.message);
       console.log("📝 Chat features will still work with Supabase client");
     });
 });

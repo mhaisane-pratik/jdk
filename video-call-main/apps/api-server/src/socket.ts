@@ -1,5 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { supabase } from "./config/supabase";
+import { recordMessageSeen } from "./modules/message/message-receipts.service";
 
 interface UserSocket {
   socketId: string;
@@ -355,23 +356,31 @@ export function initSocket(io: Server) {
       if (!roomId || !viewer) return;
 
       try {
-        let query = supabase
+        let targetQuery = supabase
           .from("zatchat")
-          .update({ is_seen: true, is_delivered: true })
+          .select("id")
           .eq("room_id", roomId)
-          .neq("sender_name", viewer)
-          .eq("is_seen", false);
+          .neq("sender_name", viewer);
 
         if (messageIds && messageIds.length > 0) {
-          query = query.in("id", messageIds);
+          targetQuery = targetQuery.in("id", messageIds);
         }
 
-        const { data } = await query.select("id");
+        const { data: targetMessages, error: targetError } = await targetQuery;
 
-        if (data?.length) {
-          const seenIds = data.map((m) => m.id);
-          io.to(roomId).emit("message_seen", { messageIds: seenIds });
-          console.log(`✓✓ ${viewer} saw ${seenIds.length} messages in ${roomId}`);
+        if (targetError) throw targetError;
+
+        if (targetMessages?.length) {
+          const targetIds = targetMessages.map((message) => message.id);
+
+          await supabase
+            .from("zatchat")
+            .update({ is_seen: true, is_delivered: true })
+            .in("id", targetIds);
+
+          await recordMessageSeen(targetIds, viewer);
+          io.to(roomId).emit("message_seen", { messageIds: targetIds });
+          console.log(`✓✓ ${viewer} saw ${targetIds.length} messages in ${roomId}`);
         }
       } catch (err) {
         console.error("❌ message_seen error:", err);
@@ -491,6 +500,28 @@ export function initSocket(io: Server) {
   });
 
   // Helper functions
+  async function ensureUserExists(username: string) {
+    const { error } = await supabase
+      .from("chat_users")
+      .upsert(
+        {
+          username: username,
+          display_name: username,
+          is_online: true,
+          last_seen: new Date().toISOString(),
+        },
+        {
+          onConflict: "username",
+          ignoreDuplicates: true,
+        }
+      );
+
+    if (error) {
+      console.error("❌ Error ensuring user in chat_users:", error);
+      throw error;
+    }
+  }
+
   async function ensureRoomExists(roomId: string, sender: string, receiver: string) {
     const { data: existing } = await supabase
       .from("chat_rooms")
@@ -499,8 +530,17 @@ export function initSocket(io: Server) {
       .single();
 
     if (!existing) {
+      // ✅ IMPORTANT: Ensure both participants exist in chat_users before creating room
+      try {
+        await ensureUserExists(sender);
+        await ensureUserExists(receiver);
+      } catch (err) {
+        console.error("❌ Failed to ensure users exist:", err);
+        throw err;
+      }
+
       const participants = [sender, receiver].sort();
-      await supabase.from("chat_rooms").insert({
+      const { data, error } = await supabase.from("chat_rooms").insert({
         id: roomId,
         participant_1: participants[0],
         participant_2: participants[1],
@@ -509,7 +549,13 @@ export function initSocket(io: Server) {
         last_message_sender: sender,
         unread_count_user1: 0,
         unread_count_user2: 0,
-      });
+      }).select();
+
+      if (error) {
+        console.error("❌ Error creating room:", error);
+        throw error;
+      }
+
       console.log("✅ Room created:", roomId);
     }
   }

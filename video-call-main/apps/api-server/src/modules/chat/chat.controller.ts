@@ -3,6 +3,7 @@ import { supabase } from "../../config/supabase";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { recordMessageSeen } from "../message/message-receipts.service";
 
 /* ================= GET CHAT HISTORY ================= */
 export async function getChatHistory(req: Request, res: Response) {
@@ -182,7 +183,7 @@ export async function markAsRead(req: Request, res: Response) {
     }
 
     // Update messages - NO updated_at field in zatchat table
-    const { error: msgError } = await supabase
+    const { data: seenMessages, error: msgError } = await supabase
       .from("zatchat")
       .update({ 
         is_seen: true, 
@@ -190,11 +191,19 @@ export async function markAsRead(req: Request, res: Response) {
       })
       .eq("room_id", roomId)
       .eq("receiver_name", username)
-      .eq("is_seen", false);
+      .eq("is_seen", false)
+      .select("id");
 
     if (msgError) {
       console.error("❌ Error updating messages:", msgError);
       throw msgError;
+    }
+
+    if (seenMessages?.length) {
+      await recordMessageSeen(
+        seenMessages.map((message) => message.id),
+        username
+      );
     }
 
     // Update room unread count
@@ -281,6 +290,47 @@ export async function createRoom(req: Request, res: Response) {
     if (existing) {
       console.log("✅ Room already exists");
       return res.json({ room: existing, created: false });
+    }
+
+    // ✅ IMPORTANT: Ensure all participants exist in chat_users to satisfy foreign key constraints
+    const ensureUserExists = async (username: string) => {
+      const { error: createError } = await supabase
+        .from("chat_users")
+        .upsert(
+          {
+            username: username,
+            display_name: username,
+            is_online: true,
+            last_seen: new Date().toISOString(),
+          },
+          {
+            onConflict: "username",
+            ignoreDuplicates: true,
+          }
+        );
+
+      if (createError) {
+        console.error(`❌ Error ensuring user ${username}:`, createError);
+        throw createError;
+      }
+    };
+
+    try {
+      await ensureUserExists(participant1);
+      
+      if (isGroup) {
+        // For groups, participant2 is comma-separated
+        const members = participant2.split(",").map((m: string) => m.trim());
+        for (const member of members) {
+          await ensureUserExists(member);
+        }
+      } else {
+        // For 1-1 chat, participant2 is a single username
+        await ensureUserExists(participant2);
+      }
+    } catch (err) {
+      console.error("❌ Failed to ensure users exist:", err);
+      return res.status(500).json({ error: "Failed to create users for chat room" });
     }
 
     if (isGroup) {

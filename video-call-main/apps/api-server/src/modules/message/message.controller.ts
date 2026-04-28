@@ -2,6 +2,7 @@
 
 import { Request, Response } from "express";
 import { supabase } from "../../config/supabase";
+import { getMessageSeenBy } from "./message-receipts.service";
 
 export async function deleteMessage(req: Request, res: Response) {
   try {
@@ -210,8 +211,81 @@ export async function getMessageById(req: Request, res: Response) {
   }
 }
 
+export async function getMessageSeenByUsers(req: Request, res: Response) {
+  try {
+    const { messageId } = req.params;
+    const { username } = req.query;
+
+    if (!messageId) {
+      return res.status(400).json({ error: "Message ID is required" });
+    }
+
+    if (!username || typeof username !== "string") {
+      return res.status(400).json({ error: "Username is required" });
+    }
+
+    const { data: message, error: messageError } = await supabase
+      .from("zatchat")
+      .select("id, room_id, sender_name")
+      .eq("id", messageId)
+      .single();
+
+    if (messageError || !message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    const { data: room, error: roomError } = await supabase
+      .from("chat_rooms")
+      .select("participant_1, participant_2, is_group, member_count")
+      .eq("id", message.room_id)
+      .single();
+
+    if (roomError || !room) {
+      return res.status(404).json({ error: "Chat room not found" });
+    }
+
+    const participants = [
+      room.participant_1,
+      ...(room.participant_2
+        ? String(room.participant_2)
+            .split(",")
+            .map((participant) => participant.trim())
+            .filter(Boolean)
+        : []),
+    ];
+
+    if (!participants.includes(username)) {
+      return res.status(403).json({ error: "You are not allowed to view these receipts" });
+    }
+
+    const receipts = await getMessageSeenBy(messageId);
+    const filteredReceipts = receipts.filter(
+      (receipt) => receipt.viewer_username !== message.sender_name
+    );
+
+    res.json({
+      messageId,
+      roomId: message.room_id,
+      isGroup: Boolean(room.is_group),
+      sender: message.sender_name,
+      totalParticipants: Math.max(participants.length - 1, 0),
+      seenCount: filteredReceipts.length,
+      seenBy: filteredReceipts.map((receipt) => ({
+        username: receipt.viewer_username,
+        display_name: receipt.display_name || receipt.viewer_username,
+        profile_picture: receipt.profile_picture,
+        seen_at: receipt.seen_at,
+      })),
+    });
+  } catch (error: any) {
+    console.error("❌ Get message seen-by error:", error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
 export const messageController = {
   deleteMessage,
   forwardMessages,
   getMessageById,
+  getMessageSeenByUsers,
 };
