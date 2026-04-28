@@ -223,27 +223,33 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/70 z-[10000]" onClick={onClose} />
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-[90%] max-w-md max-h-[85vh] flex flex-col z-[10001] overflow-hidden">
-        <div className="flex items-center gap-3 p-5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+      <div
+        className="fixed inset-0 z-[10000] bg-slate-950/70 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+      <div className="fixed left-1/2 top-1/2 z-[10001] flex max-h-[86vh] w-[92%] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-3xl border border-white/45 bg-white/90 shadow-[0_30px_90px_rgba(2,6,23,0.35)] backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/90">
+        <div className="relative flex items-center gap-3 border-b border-slate-200/80 bg-gradient-to-r from-cyan-50 via-white to-emerald-50 p-5 dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(45,212,191,0.18),transparent_40%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(6,182,212,0.16),transparent_45%)]" />
           <button
-            className="text-2xl cursor-pointer text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 w-9 h-9 rounded flex items-center justify-center"
+            className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-2xl text-slate-600 transition hover:bg-white/70 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             onClick={onClose}
           >
             ←
           </button>
-          <h2 className="flex-1 m-0 text-xl font-semibold text-gray-800 dark:text-white">Group Info</h2>
+          <h2 className="relative m-0 flex-1 text-xl font-semibold tracking-tight text-slate-800 dark:text-white">
+            Group Info
+          </h2>
           <button
-            className="text-2xl cursor-pointer text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 w-9 h-9 rounded flex items-center justify-center"
+            className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-2xl text-slate-600 transition hover:bg-white/70 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
             onClick={onClose}
           >
             ×
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 bg-white dark:bg-gray-800">
-          <div className="text-center py-5 border-b border-gray-200 dark:border-gray-700 mb-5">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-5xl mx-auto mb-4 shadow-lg">
+        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-white to-slate-50/60 p-5 dark:from-slate-900 dark:to-slate-900">
+          <div className="mb-6 rounded-2xl border border-slate-200/70 bg-white/80 p-5 text-center shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
+            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-white/70 bg-gradient-to-br from-cyan-500 via-teal-500 to-emerald-500 text-5xl shadow-[0_10px_30px_rgba(16,185,129,0.35)]">
               {room.group_icon || "👥"}
             </div>
 
@@ -254,19 +260,19 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   maxLength={50}
-                  className="w-full max-w-xs mx-auto px-3.5 py-2.5 border-2 border-blue-500 rounded-lg text-lg text-center outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="mx-auto w-full max-w-xs rounded-xl border-2 border-cyan-500 bg-white px-4 py-2.5 text-center text-lg text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-600 focus:ring-4 focus:ring-cyan-100 dark:bg-slate-700 dark:text-white dark:focus:ring-cyan-900/40"
                   autoFocus
                 />
                 <div className="flex gap-2 justify-center">
                   <button
                     onClick={() => setEditingName(false)}
-                    className="px-5 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg text-sm font-semibold hover:bg-gray-300 dark:hover:bg-gray-600"
+                    className="rounded-xl border border-slate-200 bg-slate-100 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleUpdateGroupName}
-                    className="px-5 py-2 bg-blue-500 text-white rounded-lg text-sm font-semibold hover:bg-blue-600"
+                    className="rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-cyan-600 hover:to-emerald-600"
                   >
                     Save
                   </button>
@@ -274,11 +280,11 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
-                <h3 className="m-0 text-2xl text-gray-900 dark:text-white">{room.group_name}</h3>
+                <h3 className="m-0 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">{room.group_name}</h3>
                 {isAdmin && (
                   <button
                     onClick={() => setEditingName(true)}
-                    className="text-lg cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 p-1.5 rounded"
+                    className="cursor-pointer rounded-lg p-1.5 text-lg transition hover:bg-slate-100 dark:hover:bg-slate-700"
                   >
                     ✏️
                   </button>
@@ -286,24 +292,24 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
               </div>
             )}
 
-            <p className="mt-3 mb-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mb-1 mt-3 text-sm text-slate-500 dark:text-slate-400">
               Group · {members.length} member{members.length !== 1 ? "s" : ""}
             </p>
-            <p className="m-0 text-xs text-gray-400 dark:text-gray-500">
+            <p className="m-0 text-xs text-slate-400 dark:text-slate-500">
               Created by {room.created_by === currentUser?.username ? "you" : room.created_by}
             </p>
           </div>
 
-          <div className="mb-5">
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="m-0 text-base font-semibold text-gray-800 dark:text-white">{members.length} Members</h4>
+          <div className="mb-5 rounded-2xl border border-slate-200/70 bg-white/80 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
+            <div className="mb-4 flex items-center justify-between">
+              <h4 className="m-0 text-base font-semibold text-slate-800 dark:text-white">{members.length} Members</h4>
               {isAdmin && (
                 <button
                   onClick={() => {
                     loadAvailableUsers();
                     setShowAddMembers(true);
                   }}
-                  className="px-3.5 py-1.5 bg-blue-500 text-white rounded-md text-sm font-semibold hover:bg-blue-600"
+                  className="rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-cyan-600 hover:to-emerald-600"
                 >
                   + Add
                 </button>
@@ -311,14 +317,17 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
             </div>
 
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-10 text-gray-500">
-                <div className="w-8 h-8 border-3 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+              <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-300">
+                <div className="mb-3 h-8 w-8 animate-spin rounded-full border-[3px] border-slate-200 border-t-cyan-500 dark:border-slate-600 dark:border-t-cyan-400" />
                 <p className="text-sm">Loading members...</p>
               </div>
             ) : (
               <div className="flex flex-col gap-2">
                 {members.map((member) => (
-                  <div key={member.username} className="flex items-center gap-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                  <div
+                    key={member.username}
+                    className="flex items-center gap-3 rounded-xl border border-transparent bg-slate-100/80 p-3 transition hover:border-cyan-200 hover:bg-slate-100 dark:bg-slate-700/70 dark:hover:border-cyan-800 dark:hover:bg-slate-700"
+                  >
                     <img
                       src={
                         member.profile_picture ||
@@ -328,20 +337,22 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
                       className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 dark:text-white truncate">
+                      <div className="truncate font-medium text-slate-900 dark:text-white">
                         {member.display_name}
                         {member.username === currentUser?.username && " (You)"}
                         {member.username === room.created_by && " 👑"}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate">@{member.username}</div>
+                      <div className="truncate text-xs text-slate-500 dark:text-slate-400">@{member.username}</div>
                     </div>
-                    {member.is_online && <span className="w-2.5 h-2.5 bg-green-500 rounded-full flex-shrink-0"></span>}
+                    {member.is_online && (
+                      <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.7)]" />
+                    )}
                     {isAdmin &&
                       member.username !== currentUser?.username &&
                       member.username !== room.created_by && (
                         <button
                           onClick={() => handleRemoveMember(member.username)}
-                          className="px-3 py-1.5 bg-blue-500 text-white rounded-md text-xs font-semibold hover:bg-blue-600 flex-shrink-0"
+                          className="flex-shrink-0 rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-600"
                         >
                           Remove
                         </button>
@@ -353,12 +364,12 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
           </div>
 
           {showAddMembers && (
-            <div className="bg-gray-100 dark:bg-gray-700 rounded-xl p-4 mb-5 border-2 border-gray-200 dark:border-gray-600">
-              <div className="flex justify-between items-center mb-4">
-                <h4 className="m-0 text-base font-semibold text-gray-800 dark:text-white">Add Members</h4>
+            <div className="mb-5 rounded-2xl border-2 border-cyan-100 bg-cyan-50/60 p-4 dark:border-cyan-900/60 dark:bg-cyan-950/20">
+              <div className="mb-4 flex items-center justify-between">
+                <h4 className="m-0 text-base font-semibold text-slate-800 dark:text-white">Add Members</h4>
                 <button
                   onClick={() => setShowAddMembers(false)}
-                  className="text-2xl cursor-pointer text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 w-8 h-8 rounded flex items-center justify-center"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-2xl text-slate-600 transition hover:bg-white/70 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
                   ×
                 </button>
@@ -366,15 +377,15 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
 
               <div className="max-h-48 overflow-y-auto mb-3">
                 {availableUsers.length === 0 ? (
-                  <p className="text-center text-gray-500 dark:text-gray-400 py-5">No more users available to add</p>
+                  <p className="py-5 text-center text-slate-500 dark:text-slate-400">No more users available to add</p>
                 ) : (
                   availableUsers.map((user) => (
                     <div
                       key={user.username}
-                      className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer mb-1 ${
+                      className={`mb-1 flex cursor-pointer items-center gap-3 rounded-xl p-2.5 transition ${
                         selectedNewMembers.has(user.username)
-                          ? "bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-500"
-                          : "hover:bg-gray-200 dark:hover:bg-gray-600"
+                          ? "border-2 border-cyan-500 bg-white dark:bg-cyan-900/25"
+                          : "hover:bg-white/70 dark:hover:bg-slate-700/70"
                       }`}
                       onClick={() => {
                         setSelectedNewMembers((prev) => {
@@ -397,11 +408,11 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
                         className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-gray-900 dark:text-white truncate">{user.display_name}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">@{user.username}</div>
+                        <div className="truncate text-sm font-medium text-slate-900 dark:text-white">{user.display_name}</div>
+                        <div className="truncate text-xs text-slate-500 dark:text-slate-400">@{user.username}</div>
                       </div>
                       {selectedNewMembers.has(user.username) && (
-                        <span className="text-blue-500 text-xl font-bold flex-shrink-0">✓</span>
+                        <span className="flex-shrink-0 text-xl font-bold text-cyan-500">✓</span>
                       )}
                     </div>
                   ))
@@ -411,7 +422,7 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
               {selectedNewMembers.size > 0 && (
                 <button
                   onClick={handleAddMembers}
-                  className="w-full py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition"
+                  className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 py-3 font-semibold text-white shadow-sm transition hover:from-cyan-600 hover:to-emerald-600"
                 >
                   Add {selectedNewMembers.size} Member{selectedNewMembers.size !== 1 ? "s" : ""}
                 </button>
@@ -419,10 +430,10 @@ export default function GroupInfoModal({ groupId, onClose }: GroupInfoModalProps
             </div>
           )}
 
-          <div className="pt-5 border-t border-gray-200 dark:border-gray-700">
+          <div className="border-t border-slate-200 pt-5 dark:border-slate-700">
             <button
               onClick={handleLeaveGroup}
-              className="w-full py-3.5 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition"
+              className="w-full rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 py-3.5 font-semibold text-white shadow-sm transition hover:from-rose-600 hover:to-orange-600"
             >
               🚪 Leave Group
             </button>

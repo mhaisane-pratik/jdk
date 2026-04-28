@@ -180,7 +180,7 @@ export default function ChatLogin() {
             </div>
             <h1>Chat</h1>
             {ssoReadyToken ? (
-              <p className="text-green-500 font-bold mt-2"> Chat APP Connection Secure 🔒</p>
+              <p className="text-zatchat-blue font-bold mt-2"> Chat APP Connection Secure 🔒</p>
             ) : (
               <p>Connect with anyone, anywhere</p>
             )}

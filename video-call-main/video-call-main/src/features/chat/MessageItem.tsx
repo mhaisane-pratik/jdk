@@ -5,6 +5,7 @@ import { socket } from "../../api/socket";
 interface MessageItemProps {
   message: Message;
   isSent: boolean;
+  isGroup?: boolean;
   currentUser: string;
   onReply: (message: Message) => void;
   onDelete?: (messageId: string) => void;
@@ -19,6 +20,7 @@ const API_URL = import.meta.env.VITE_API_URL as string;
 export default function MessageItem({ 
   message, 
   isSent, 
+  isGroup = false,
   currentUser,
   onReply, 
   onDelete,
@@ -31,7 +33,18 @@ export default function MessageItem({
   const [fullscreenMedia, setFullscreenMedia] = useState<{url: string, type: string} | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showSeenByModal, setShowSeenByModal] = useState(false);
+  const [seenByUsers, setSeenByUsers] = useState<Array<{
+    username: string;
+    display_name: string;
+    profile_picture?: string;
+    seen_at: string;
+  }>>([]);
+  const [seenByLoading, setSeenByLoading] = useState(false);
+  const [seenByError, setSeenByError] = useState<string | null>(null);
+  const [seenByTotalParticipants, setSeenByTotalParticipants] = useState(0);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const API_KEY = "ZATCHAT_PRATEEK9373";
 
   const formatTime = (dateString: string) => {
     let safeString = dateString;
@@ -149,6 +162,45 @@ export default function MessageItem({
     e.stopPropagation();
     setShowActions(false);
     onReply(message);
+  };
+
+  const handleSeenBy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowActions(false);
+    setShowSeenByModal(true);
+    setSeenByLoading(true);
+    setSeenByError(null);
+
+    try {
+      const res = await fetch(
+        `${API_URL}/api/v1/messages/${message.id}/seen-by?username=${encodeURIComponent(currentUser)}`,
+        {
+          headers: { "x-api-key": API_KEY },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      setSeenByUsers(data.seenBy || []);
+      setSeenByTotalParticipants(data.totalParticipants || 0);
+    } catch (err) {
+      setSeenByError("Could not load seen users.");
+    } finally {
+      setSeenByLoading(false);
+    }
+  };
+
+  const formatSeenAt = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString([], {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const showNotification = (text: string, type: "success" | "error") => {
@@ -426,6 +478,16 @@ export default function MessageItem({
                 <span>Forward</span>
               </button>
 
+              {isGroup && isSent && (
+                <button
+                  onClick={handleSeenBy}
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-[10px] font-semibold text-gray-600 dark:text-gray-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 hover:text-cyan-600 dark:hover:text-cyan-400 transition"
+                >
+                  <span>👀</span>
+                  <span>Seen by</span>
+                </button>
+              )}
+
               <button
                 onClick={handleDelete}
                 className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-[10px] font-semibold text-gray-600 dark:text-gray-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition"
@@ -507,6 +569,88 @@ export default function MessageItem({
                 disabled={isDeleting}
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSeenByModal && (
+        <div
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
+          onClick={() => setShowSeenByModal(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-scaleUp border border-gray-200 dark:border-gray-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white m-0">Seen by</h3>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {seenByUsers.length} of {seenByTotalParticipants} members have seen this message
+              </p>
+            </div>
+
+            <div className="max-h-[360px] overflow-y-auto p-3">
+              {seenByLoading && (
+                <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                  Loading viewers...
+                </div>
+              )}
+
+              {!seenByLoading && seenByError && (
+                <div className="py-8 text-center text-sm text-red-500 dark:text-red-400">
+                  {seenByError}
+                </div>
+              )}
+
+              {!seenByLoading && !seenByError && seenByUsers.length === 0 && (
+                <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                  Nobody has seen this message yet.
+                </div>
+              )}
+
+              {!seenByLoading && !seenByError && seenByUsers.length > 0 && (
+                <div className="space-y-2">
+                  {seenByUsers.map((user) => (
+                    <div
+                      key={`${message.id}-${user.username}`}
+                      className="flex items-center gap-3 rounded-xl bg-gray-50 dark:bg-gray-700/40 px-3 py-2.5"
+                    >
+                      {user.profile_picture ? (
+                        <img
+                          src={user.profile_picture}
+                          alt={user.display_name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 text-white flex items-center justify-center font-bold text-sm">
+                          {(user.display_name || user.username).charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                          {user.display_name}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          @{user.username}
+                        </div>
+                      </div>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 text-right">
+                        {formatSeenAt(user.seen_at)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-3 border-t border-gray-100 dark:border-gray-700">
+              <button
+                onClick={() => setShowSeenByModal(false)}
+                className="w-full py-2.5 rounded-xl bg-indigo-500 text-white font-semibold hover:bg-indigo-600 transition"
+              >
+                Close
               </button>
             </div>
           </div>

@@ -78,17 +78,17 @@ export default function ChatLayout() {
   /* ================= MAIN UI ================= */
   return (
     <div
-      className={`flex w-screen h-[100dvh] overflow-hidden fixed inset-0 ${
-        theme === "dark" ? "dark bg-gray-900" : "bg-white"
+      className={`fixed inset-0 flex h-[100dvh] w-screen overflow-hidden ${
+        theme === "dark" ? "dark bg-slate-950" : "bg-slate-100"
       }`}
       data-wallpaper={wallpaper}
     >
       {/* ================= SIDEBAR ================= */}
       <div
         className={`
-          ${isMobile ? "absolute z-20 bg-white dark:bg-gray-900" : "relative"}
+          ${isMobile ? "absolute inset-y-0 left-0 z-30" : "relative"}
           ${isMobile && selectedRoom ? "hidden" : "block"}
-          w-full md:w-[380px] lg:w-[420px] h-full border-r border-gray-200 dark:border-gray-700
+          h-full w-full max-w-full border-r border-slate-200/80 bg-white/90 shadow-xl backdrop-blur md:w-[360px] lg:w-[390px] xl:w-[420px] dark:border-slate-700 dark:bg-slate-900/90
         `}
       >
         <Sidebar
@@ -98,7 +98,7 @@ export default function ChatLayout() {
       </div>
 
       {/* ================= CHAT AREA ================= */}
-      <div className="flex-1 h-full min-w-0 relative">
+      <div className="relative h-full min-w-0 flex-1 bg-gradient-to-b from-slate-100 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         {selectedRoom ? (
           <ChatWindow onBack={handleBack} />
         ) : (

@@ -6,6 +6,7 @@ import { groupMessagesByDate } from "../../utils/dateHelper";
 interface MessageListProps {
   messages: Message[];
   currentUser: string;
+  isGroup?: boolean;
   onReply: (message: Message) => void;
   onRefresh: () => void;
   onForward?: (message: Message) => void;
@@ -19,6 +20,7 @@ interface MessageListProps {
 export default function MessageList({
   messages,
   currentUser,
+  isGroup,
   onReply,
   onRefresh,
   onForward,
@@ -97,6 +99,7 @@ export default function MessageList({
                   key={message.id}
                   message={message}
                   isSent={message.sender_name === currentUser}
+                  isGroup={isGroup}
                   currentUser={currentUser}
                   onReply={onReply}
                   onRefresh={onRefresh}

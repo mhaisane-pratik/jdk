@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useChat } from "../../contexts/ChatContext";
 import { socket } from "../../api/socket";
 import GroupInfoModal from "./GroupInfoModal";
+import UserInfoModal from "./UserInfoModal";
 
 import {
   LogOut,
@@ -16,7 +17,8 @@ import {
   Shield,
   UserCircle2,
   Search,
-  Clock  // Added Clock import
+  Clock,
+  Home
 } from 'lucide-react';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,6 +44,7 @@ export default function ChatHeader({
   const navigate = useNavigate();
   const { onlineUsers, setCurrentUser, setSelectedRoom, chatRooms, currentUser, userProfiles, typingUsers } = useChat();
   const [showGroupInfo, setShowGroupInfo] = useState(false);
+  const [showUserInfo, setShowUserInfo] = useState(false);
   const [receiverInfo, setReceiverInfo] = useState<any>(null);
   const [showOptions, setShowOptions] = useState(false);
 
@@ -87,7 +90,11 @@ export default function ChatHeader({
   };
 
   const handleHeaderClick = () => {
-    if (isGroup) setShowGroupInfo(true);
+    if (isGroup) {
+      setShowGroupInfo(true);
+    } else {
+      setShowUserInfo(true);
+    }
   };
 
   const handleClearChat = () => {
@@ -101,14 +108,14 @@ export default function ChatHeader({
     <>
       <div
         className={`
-          flex justify-between items-center z-[100]
-          bg-white dark:bg-gray-800
-          border-b border-gray-200 dark:border-gray-700
-          px-3 md:px-6 py-2 md:py-3 h-[60px] md:h-[72px] box-border
+          flex h-[62px] items-center justify-between border-b px-3 py-2 md:h-[74px] md:px-6
+          border-slate-200/80 dark:border-slate-700
+          bg-gradient-to-r from-slate-50/95 via-white to-blue-50/80 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800
+          backdrop-blur
           transition-all duration-300
           shadow-sm
           w-full flex-shrink-0
-          ${isGroup ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" : ""}
+          ${isGroup ? "cursor-pointer hover:from-slate-100/80 hover:to-blue-100/70 dark:hover:from-slate-900 dark:hover:to-slate-800" : ""}
         `}
         onClick={handleHeaderClick}
       >
@@ -120,9 +127,9 @@ export default function ChatHeader({
               className={`
                 flex md:hidden items-center justify-center
                 w-8 h-8 rounded-lg
-                bg-gray-100 dark:bg-gray-700
-                text-gray-600 dark:text-gray-300
-                hover:bg-gray-200 dark:hover:bg-gray-600
+                bg-white/80 dark:bg-slate-700
+                text-slate-600 dark:text-slate-300
+                hover:bg-white dark:hover:bg-slate-600
                 active:scale-95
                 transition-all duration-200
                 flex-shrink-0
@@ -140,11 +147,11 @@ export default function ChatHeader({
               <div
                 className={`
                   w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl
-                  bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500
+                  bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-500
                   flex items-center justify-center text-white
-                  shadow-md
+                  shadow-[0_8px_20px_rgba(59,130,246,0.35)]
                   text-base md:text-xl
-                  ring-2 ring-white dark:ring-gray-800
+                  ring-2 ring-white dark:ring-slate-800
                 `}
               >
                 {groupIcon || <Users size={20} className="md:w-6 md:h-6" />}
@@ -160,7 +167,7 @@ export default function ChatHeader({
                   alt={receiver}
                   className={`
                     w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl object-cover
-                    ring-2 ring-white dark:ring-gray-800
+                    ring-2 ring-white dark:ring-slate-800
                     shadow-md
                   `}
                 />
@@ -170,8 +177,8 @@ export default function ChatHeader({
                       absolute -bottom-0.5 -right-0.5
                       w-3 h-3 md:w-3.5 md:h-3.5 rounded-full
                       ${isOnline
-                        ? "bg-green-500 ring-2 ring-white dark:ring-gray-800"
-                        : "bg-gray-400 ring-2 ring-white dark:ring-gray-800"
+                        ? "bg-emerald-500 ring-2 ring-white dark:ring-slate-800"
+                        : "bg-slate-400 ring-2 ring-white dark:ring-slate-800"
                       }
                     `}
                   />
@@ -185,9 +192,9 @@ export default function ChatHeader({
             <div className="flex items-center gap-1.5 md:gap-2">
               <h3
                 className={`
-                  font-semibold truncate text-gray-900 dark:text-white
+                  font-semibold truncate text-slate-900 dark:text-white
                   text-sm md:text-base lg:text-lg
-                  max-w-[150px] xs:max-w-[200px] sm:max-w-[250px] md:max-w-[300px]
+                  max-w-[130px] xs:max-w-[180px] sm:max-w-[260px] md:max-w-[340px]
                 `}
               >
                 {displayName}
@@ -201,33 +208,33 @@ export default function ChatHeader({
             </div>
             
             {isGroup ? (
-              <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs md:text-sm">
+              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 md:text-sm">
                 <Users size={12} className="flex-shrink-0 md:w-3.5 md:h-3.5" />
                 <span className="truncate max-w-[80px] xs:max-w-[120px] sm:max-w-[150px]">
                   {memberCount || 0} member{memberCount !== 1 ? "s" : ""}
                 </span>
-                <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600 mx-1 hidden xs:inline" />
+                <span className="mx-1 hidden h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600 xs:inline" />
                 <span className="hidden xs:inline truncate max-w-[60px]">
                   {room?.is_public ? 'Public' : 'Private'}
                 </span>
               </div>
             ) : (
-              <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs md:text-sm">
+              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 md:text-sm">
                 {isOnline ? (
-                  <div className="flex items-center gap-1 text-green-600 dark:text-green-400 min-w-0">
-                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500 flex-shrink-0" />
+                  <div className="flex min-w-0 items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                    <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500 md:h-2 md:w-2" />
                     <span className="font-medium truncate max-w-[60px] xs:max-w-[80px]">Online</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 min-w-0">
-                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gray-400 flex-shrink-0" />
+                  <div className="flex min-w-0 items-center gap-1 text-slate-500 dark:text-slate-400">
+                    <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-slate-400 md:h-2 md:w-2" />
                     <span className="font-medium truncate max-w-[60px] xs:max-w-[80px]">Offline</span>
                   </div>
                 )}
                 {typingUsers[roomId] && typingUsers[roomId].has(receiver) && (
                   <>
-                    <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600 mx-1 flex-shrink-0" />
-                    <span className="text-blue-500 dark:text-blue-400 font-medium animate-pulse truncate max-w-[60px] xs:max-w-[80px]">
+                    <span className="mx-1 h-1 w-1 flex-shrink-0 rounded-full bg-slate-300 dark:bg-slate-600" />
+                    <span className="max-w-[60px] truncate font-medium text-blue-600 dark:text-blue-400 animate-pulse xs:max-w-[80px]">
                       typing...
                     </span>
                   </>
@@ -241,12 +248,30 @@ export default function ChatHeader({
         <div className="flex items-center gap-0.5 md:gap-1 flex-shrink-0">
           <button
             className={`
+              flex items-center justify-center
+              w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl
+              bg-white/80 dark:bg-slate-700
+              text-slate-600 dark:text-slate-300
+              hover:bg-white dark:hover:bg-slate-600
+              hover:text-indigo-600 dark:hover:text-indigo-400
+              active:scale-95
+              transition-all duration-200
+              flex-shrink-0
+            `}
+            onClick={(e) => { e.stopPropagation(); window.location.href = "http://localhost:5174/dashboard"; }}
+            title="Go to Dashboard"
+          >
+            <Home size={16} className="md:w-[18px] md:h-[18px]" />
+          </button>
+
+          <button
+            className={`
               hidden sm:flex items-center justify-center
               w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl
-              bg-gray-100 dark:bg-gray-700
-              text-gray-600 dark:text-gray-300
-              hover:bg-gray-200 dark:hover:bg-gray-600
-              hover:text-indigo-600 dark:hover:text-indigo-400
+              bg-white/80 dark:bg-slate-700
+              text-slate-600 dark:text-slate-300
+              hover:bg-white dark:hover:bg-slate-600
+              hover:text-blue-600 dark:hover:text-blue-400
               active:scale-95
               transition-all duration-200
               flex-shrink-0
@@ -262,10 +287,10 @@ export default function ChatHeader({
               className={`
                 flex items-center justify-center
                 w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl
-                bg-gray-100 dark:bg-gray-700
-                text-gray-600 dark:text-gray-300
-                hover:bg-gray-200 dark:hover:bg-gray-600
-                hover:text-indigo-600 dark:hover:text-indigo-400
+                bg-white/80 dark:bg-slate-700
+                text-slate-600 dark:text-slate-300
+                hover:bg-white dark:hover:bg-slate-600
+                hover:text-blue-600 dark:hover:text-blue-400
                 active:scale-95
                 transition-all duration-200
                 flex-shrink-0
@@ -281,10 +306,10 @@ export default function ChatHeader({
             className={`
               flex items-center justify-center
               w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl
-              bg-gray-100 dark:bg-gray-700
-              text-gray-600 dark:text-gray-300
-              hover:bg-gray-200 dark:hover:bg-gray-600
-              hover:text-emerald-600 dark:hover:text-emerald-400
+              bg-white/80 dark:bg-slate-700
+              text-slate-600 dark:text-slate-300
+              hover:bg-white dark:hover:bg-slate-600
+              hover:text-blue-600 dark:hover:text-blue-400
               active:scale-95
               transition-all duration-200
               flex-shrink-0
@@ -300,9 +325,9 @@ export default function ChatHeader({
               className={`
                 flex items-center justify-center
                 w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl
-                bg-gray-100 dark:bg-gray-700
-                text-gray-600 dark:text-gray-300
-                hover:bg-gray-200 dark:hover:bg-gray-600
+                bg-white/80 dark:bg-slate-700
+                text-slate-600 dark:text-slate-300
+                hover:bg-white dark:hover:bg-slate-600
                 active:scale-95
                 transition-all duration-200
                 flex-shrink-0
@@ -319,35 +344,32 @@ export default function ChatHeader({
                   className="fixed inset-0 z-[999]" 
                   onClick={() => setShowOptions(false)} 
                 />
-                <div className="absolute right-0 top-10 md:top-12 z-[1000] bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[160px] md:min-w-[180px] animate-fadeIn">
+                <div className="absolute right-0 top-10 z-[1000] min-w-[170px] rounded-2xl border border-slate-200 bg-white py-1 shadow-xl animate-fadeIn md:top-12 md:min-w-[190px] dark:border-slate-700 dark:bg-slate-800">
                   <button
-                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
-                    onClick={(e) => { e.stopPropagation(); setShowGroupInfo(true); setShowOptions(false); }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-700 transition-colors hover:bg-slate-100 md:px-4 md:py-2.5 md:text-sm dark:text-slate-200 dark:hover:bg-slate-700"
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      if (isGroup) setShowGroupInfo(true);
+                      else setShowUserInfo(true);
+                      setShowOptions(false); 
+                    }}
                   >
                     <UserCircle2 size={14} className="md:w-4 md:h-4 flex-shrink-0" />
                     <span className="truncate">View contact</span>
                   </button>
                   <button
-                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-700 transition-colors hover:bg-slate-100 md:px-4 md:py-2.5 md:text-sm dark:text-slate-200 dark:hover:bg-slate-700"
                     onClick={(e) => { e.stopPropagation(); if (onSearchAction) onSearchAction(); setShowOptions(false); }}
                   >
                     <Search size={14} className="md:w-4 md:h-4 flex-shrink-0" />
                     <span className="truncate">Search messages</span>
                   </button>
                   <button
-                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-700 transition-colors hover:bg-slate-100 md:px-4 md:py-2.5 md:text-sm dark:text-slate-200 dark:hover:bg-slate-700"
                     onClick={(e) => { e.stopPropagation(); handleClearChat(); }}
                   >
                     <Clock size={14} className="md:w-4 md:h-4 flex-shrink-0" />
                     <span className="truncate">Clear chat</span>
-                  </button>
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
-                  <button
-                    className="w-full px-3 md:px-4 py-2 md:py-2.5 text-left text-xs md:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center gap-2 transition-colors"
-                    onClick={(e) => { e.stopPropagation(); handleLogout(); setShowOptions(false); }}
-                  >
-                    <LogOut size={14} className="md:w-4 md:h-4 flex-shrink-0" />
-                    <span className="truncate">Logout</span>
                   </button>
                 </div>
               </>
@@ -358,6 +380,10 @@ export default function ChatHeader({
 
       {showGroupInfo && isGroup && (
         <GroupInfoModal groupId={roomId} onClose={() => setShowGroupInfo(false)} />
+      )}
+
+      {showUserInfo && !isGroup && (
+        <UserInfoModal username={receiver} onClose={() => setShowUserInfo(false)} />
       )}
     </>
   );

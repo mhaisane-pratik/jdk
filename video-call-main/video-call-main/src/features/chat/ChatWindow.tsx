@@ -34,11 +34,31 @@ export interface Message {
   created_at: string;
 }
 
-const getWallpaperStyle = (wallpaperId: string): React.CSSProperties => {
-  const wallpaperConfig = getWallpaperById(wallpaperId);
+const getWallpaperStyle = (wallpaper: string): React.CSSProperties => {
+  if (!wallpaper) return { background: "#efeae2" };
+
+  // If it's a known ID from wallpapers.ts
+  const wallpaperConfig = getWallpaperById(wallpaper);
   if (wallpaperConfig) {
     return { background: wallpaperConfig.css };
   }
+  
+  // If it's basic DataURL (from gallery upload)
+  if (wallpaper.startsWith('data:image')) {
+    return { 
+      backgroundImage: `url(${wallpaper})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    };
+  }
+
+  // If it's already a full CSS value (gradient, or hex color)
+  if (wallpaper.includes('gradient') || wallpaper.startsWith('#')) {
+    return { background: wallpaper };
+  }
+  
+  // Fallback
   return { background: "#efeae2" };
 };
 
@@ -272,22 +292,22 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const markAsRead = async (msgsToMark: Message[] = messages) => {
     if (!selectedRoom || !currentUser) return;
     
-    // Immediately compute explicit IDs instead of relying on the backend, 
-    // to prevent the HTTP update from clearing the dirty rows before the Socket fires.
-    const unseenIds = msgsToMark
-      .filter(m => m.sender_name !== currentUser.username && !m.is_seen)
+    // Group chats need per-user read receipts, so we notify for every received message
+    // even if another member already marked the shared message row as seen.
+    const seenCandidateIds = msgsToMark
+      .filter(m => m.sender_name !== currentUser.username && (room?.is_group || !m.is_seen))
       .map(m => m.id);
 
     // Update locally instantly to feel real-time
-    if (unseenIds.length > 0) {
+    if (seenCandidateIds.length > 0) {
       setMessages(prev => prev.map(m => 
-        unseenIds.includes(m.id) ? { ...m, is_seen: true, is_delivered: true } : m
+        seenCandidateIds.includes(m.id) ? { ...m, is_seen: true, is_delivered: true } : m
       ));
       
       socket.emit("message_seen", {
         roomId: selectedRoom,
         viewer: currentUser.username,
-        messageIds: unseenIds,
+        messageIds: seenCandidateIds,
       });
     }
 
@@ -465,6 +485,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
       <MessageList
         messages={messages}
         currentUser={currentUser.username}
+        isGroup={room?.is_group}
         onReply={handleReply}
         onForward={handleForwardMessage}
         onRefresh={handleDeleteRefresh}

@@ -57,24 +57,25 @@
   margin-bottom: 36px;
 }
 
+
 .logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
   width: 70px;
   height: 70px;
   border-radius: 50%;
   margin-bottom: 20px;
   color: white;
-  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.2);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
 }
 
 .brand h1 {
   font-size: 32px;
   font-weight: 700;
   margin: 0 0 10px 0;
-  background: linear-gradient(135deg, #128C7E 0%, #25D366 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -88,8 +89,8 @@
   font-weight: 500;
 }
 
-.text-green-500 {
-  color: #25D366 !important;
+.text-zatchat-blue {
+  color: #2563eb !important;
   font-weight: 600 !important;
   margin-top: 8px !important;
 }
@@ -126,8 +127,8 @@
 }
 
 .input-group:focus-within {
-  border-color: #25D366;
-  box-shadow: 0 0 0 4px rgba(37, 211, 102, 0.1);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
   transform: translateY(-1px);
 }
 
@@ -139,7 +140,7 @@
 }
 
 .input-group:focus-within .input-icon {
-  color: #25D366;
+  color: #2563eb;
 }
 
 .input-group input {
@@ -159,7 +160,7 @@
 }
 
 .login-button {
-  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
   color: white;
   border: none;
   padding: 16px 28px;
@@ -177,7 +178,7 @@
 
 .login-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 12px 25px rgba(37, 211, 102, 0.35);
+  box-shadow: 0 12px 25px rgba(37, 99, 235, 0.22);
 }
 
 .login-button:active:not(:disabled) {

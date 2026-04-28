@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useChat } from "../../contexts/ChatContext";
-import { Camera, Image as ImageIcon, Trash2, X } from "lucide-react";
+import { Camera, Image as ImageIcon, Trash2, X, Maximize, Minimize, LogOut, Plus } from "lucide-react";
+import { socket } from "../../api/socket";
+import { useNavigate } from "react-router-dom";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const API_URL = (import.meta as any).env.VITE_API_URL as string;
@@ -20,11 +22,14 @@ const wallpapers = [
   { id: "solid-light", name: "Light Gray", category: "solid", css: "#f0f2f5" },
   { id: "solid-dark", name: "Dark", category: "solid", css: "#111b21" },
   { id: "chat-bg", name: "Chat BG", category: "pattern", css: "#efeae2" },
-  // Add more as needed
+  { id: "grad-blue", name: "Blue Glow", category: "gradient", css: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+  { id: "grad-emerald", name: "Emerald", category: "gradient", css: "linear-gradient(135deg, #10b981 0%, #059669 100%)" },
 ];
 
 export default function SettingsPanel({ onClose }: SettingsPanelProps) {
-  const { currentUser, theme, setTheme, wallpaper, setWallpaper, soundEnabled, setSoundEnabled } = useChat();
+  const navigate = useNavigate();
+  const { currentUser, theme, setTheme, wallpaper, setWallpaper, soundEnabled, setSoundEnabled, setCurrentUser, setSelectedRoom } = useChat();
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
   const [activeTab, setActiveTab] = useState<"profile" | "theme" | "wallpaper" | "notifications">("profile");
   const [editing, setEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -33,6 +38,40 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const wallpaperInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("chatUser");
+    localStorage.removeItem("selectedRoom");
+    socket.disconnect();
+    setCurrentUser(null);
+    setSelectedRoom(null);
+    navigate("/chat-login");
+  };
+
+  const handleWallpaperUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        setWallpaper(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -260,31 +299,85 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
                   </div>
                 ))}
               </div>
+
+              <div className="mt-8">
+                <button
+                  onClick={toggleFullscreen}
+                  className="w-full flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-indigo-500 flex items-center justify-center text-white">
+                      {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Full Screen</h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Toggle immersive view</p>
+                    </div>
+                  </div>
+                  <div className={`w-10 h-5 rounded-full relative transition-colors ${isFullscreen ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform ${isFullscreen ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+                </button>
+              </div>
             </div>
           )}
 
           {activeTab === "wallpaper" && (
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Choose your wallpaper</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                <div
+                  className={`cursor-pointer rounded-xl overflow-hidden border-3 transition hover:-translate-y-1 hover:shadow-lg flex flex-col items-center justify-center gap-1 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50`}
+                  onClick={() => wallpaperInputRef.current?.click()}
+                >
+                  <div className="h-20 w-full flex items-center justify-center text-gray-400">
+                    <Plus size={24} />
+                  </div>
+                  <div className="p-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">
+                    Custom
+                  </div>
+                  <input 
+                    type="file" 
+                    ref={wallpaperInputRef} 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleWallpaperUpload}
+                  />
+                </div>
+
                 {wallpapers.map((w) => (
                   <div
                     key={w.id}
                     className={`cursor-pointer rounded-xl overflow-hidden border-3 transition hover:-translate-y-1 hover:shadow-lg ${
-                      wallpaper === w.id ? "border-indigo-500 shadow-indigo-200" : "border-transparent"
+                      wallpaper === w.id || wallpaper === w.css ? "border-green-500 shadow-green-100 dark:shadow-none" : "border-transparent"
                     }`}
-                    onClick={() => setWallpaper(w.id)}
+                    onClick={() => setWallpaper(w.css)}
                   >
                     <div
                       className="h-20 w-full"
                       style={{ background: w.css }}
                     ></div>
-                    <div className="p-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-300">
+                    <div className="p-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-200">
                       {w.name}
                     </div>
                   </div>
                 ))}
               </div>
+
+              {wallpaper && !wallpapers.some(w => w.css === wallpaper) && !wallpapers.some(w => w.id === wallpaper) && (
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/50">
+                   <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-3 uppercase tracking-wider">Currently active custom wallpaper</p>
+                   <div className="h-32 w-full rounded-lg shadow-inner object-cover overflow-hidden">
+                      <img src={wallpaper} alt="Custom Wallpaper" className="w-full h-full object-cover" />
+                   </div>
+                   <button 
+                     onClick={() => setWallpaper("#ffffff")}
+                     className="mt-3 w-full py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950 transition"
+                   >
+                     Reset to Default
+                   </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -325,14 +418,27 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
                   </label>
                 </div>
 
-                <button className="w-full py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition">
-                  Request Permission
-                </button>
+                  <button className="w-full py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition">
+                    Request Permission
+                  </button>
+                </div>
+
+                <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2 py-4 bg-rose-50 dark:bg-rose-900/10 text-rose-600 dark:text-rose-400 rounded-xl font-bold hover:bg-rose-100 dark:hover:bg-rose-900/20 transition group"
+                  >
+                    <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
+                    <span>Logout Account</span>
+                  </button>
+                  <p className="mt-4 text-center text-[11px] text-gray-400 dark:text-gray-600 font-medium">
+                    ZatChat v2.0.4 · Secure SSO Session
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
 
       {showPhotoOptions && (
         <>

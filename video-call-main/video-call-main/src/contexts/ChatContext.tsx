@@ -147,6 +147,18 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [selectedRoom]);
 
   useEffect(() => {
+    if (!selectedRoom) return;
+
+    setChatRooms((prev) =>
+      prev.map((room) =>
+        room.id === selectedRoom && room.unread_count !== 0
+          ? { ...room, unread_count: 0 }
+          : room
+      )
+    );
+  }, [selectedRoom]);
+
+  useEffect(() => {
     localStorage.setItem("chatTheme", theme);
     // For Tailwind dark mode: add/remove dark class on html element
     if (theme === "dark") {
@@ -237,8 +249,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   last_message_sender: sender,
                   last_message_time: timestamp,
                   unread_count:
-                    sender !== currentUser?.username && selectedRoom !== roomId
-                      ? room.unread_count + 1
+                    sender !== currentUser?.username
+                      ? selectedRoom === roomId
+                        ? 0
+                        : room.unread_count + 1
                       : room.unread_count,
                 }
               : room
