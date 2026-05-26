@@ -13,7 +13,7 @@ dotenv.config();
 
 import { initSocket } from "./socket";
 import { AppDataSource } from "./config/data-source";
-import { pool } from "./db";
+import { directDbReason, isDirectDbEnabled, pool } from "./db";
 
 import proxyRoutes from "./modules/chat/proxy.route";
 import ssoAuthRoutes from "./modules/auth/auth.sso";
@@ -102,6 +102,14 @@ app.get("/health", (_req, res) => {
 });
 
 app.get("/db-test", async (_req, res) => {
+  if (!isDirectDbEnabled) {
+    return res.status(503).json({
+      status: "skipped",
+      error: "Direct database connection disabled",
+      reason: directDbReason,
+    });
+  }
+
   try {
     const result = await pool.query("SELECT NOW()");
     res.json({
@@ -208,21 +216,37 @@ server.listen(PORT, () => {
   );
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-  // Initialize TypeORM after server starts
-  Promise.all([AppDataSource.initialize(), ensureApiKeyTable(), ensureMessageReceiptsTable()])
-    .then(() => {
+  if (!isDirectDbEnabled) {
+    console.warn(
+      `⚠️  Skipping direct Postgres initialization${directDbReason ? `: ${directDbReason}` : ""}`
+    );
+    console.log("📝 Chat features will continue using the Supabase client");
+    return;
+  }
+
+  // Initialize optional direct Postgres features after server starts
+  (async () => {
+    try {
+      await AppDataSource.initialize();
       console.log("✅ TypeORM connected");
       console.log(
         "📦 Entities:",
         AppDataSource.entityMetadatas.map((e) => e.name)
       );
-      console.log("🔐 API key table ready");
-      console.log("👀 Message receipts table ready");
-    })
-    .catch((err) => {
-      console.error("⚠️  Database initialization warning (non-critical):", err.message);
+    } catch (err: any) {
+      console.error("⚠️  TypeORM initialization warning (non-critical):", err.message);
       console.log("📝 Chat features will still work with Supabase client");
-    });
+    }
+
+    try {
+      await ensureApiKeyTable();
+      console.log("🔐 API key table ready");
+    } catch (err: any) {
+      console.error("⚠️  API key table warning (non-critical):", err.message);
+    }
+
+    await ensureMessageReceiptsTable();
+  })();
 });
 
 // Graceful shutdown
@@ -230,7 +254,11 @@ process.on("SIGTERM", () => {
   console.log("⚠️  SIGTERM signal received: closing HTTP server");
   server.close(() => {
     console.log("✅ HTTP server closed");
-    AppDataSource.destroy()
+    const destroyPromise = AppDataSource.isInitialized
+      ? AppDataSource.destroy()
+      : Promise.resolve();
+
+    destroyPromise
       .then(() => {
         console.log("✅ Database connection closed");
         process.exit(0);
@@ -243,7 +271,11 @@ process.on("SIGINT", () => {
   console.log("⚠️  SIGINT signal received: closing HTTP server");
   server.close(() => {
     console.log("✅ HTTP server closed");
-    AppDataSource.destroy()
+    const destroyPromise = AppDataSource.isInitialized
+      ? AppDataSource.destroy()
+      : Promise.resolve();
+
+    destroyPromise
       .then(() => {
         console.log("✅ Database connection closed");
         process.exit(0);

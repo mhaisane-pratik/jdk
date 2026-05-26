@@ -77,6 +77,13 @@ app.get("/health", (_req, res) => {
     });
 });
 app.get("/db-test", async (_req, res) => {
+    if (!db_1.isDirectDbEnabled) {
+        return res.status(503).json({
+            status: "skipped",
+            error: "Direct database connection disabled",
+            reason: db_1.directDbReason,
+        });
+    }
     try {
         const result = await db_1.pool.query("SELECT NOW()");
         res.json({
@@ -162,23 +169,39 @@ server.listen(PORT, () => {
     console.log(`📨 Messages API   : http://localhost:${PORT}/api/v1/messages`);
     console.log(`🔑 API Key Onboard: http://localhost:${PORT}/api/v1/integrations/api-keys/onboard`);
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    Promise.all([data_source_1.AppDataSource.initialize(), (0, api_key_service_1.ensureApiKeyTable)(), (0, message_receipts_service_1.ensureMessageReceiptsTable)()])
-        .then(() => {
-        console.log("✅ TypeORM connected");
-        console.log("📦 Entities:", data_source_1.AppDataSource.entityMetadatas.map((e) => e.name));
-        console.log("🔐 API key table ready");
-        console.log("👀 Message receipts table ready");
-    })
-        .catch((err) => {
-        console.error("⚠️  Database initialization warning (non-critical):", err.message);
-        console.log("📝 Chat features will still work with Supabase client");
-    });
+    if (!db_1.isDirectDbEnabled) {
+        console.warn(`⚠️  Skipping direct Postgres initialization${db_1.directDbReason ? `: ${db_1.directDbReason}` : ""}`);
+        console.log("📝 Chat features will continue using the Supabase client");
+        return;
+    }
+    (async () => {
+        try {
+            await data_source_1.AppDataSource.initialize();
+            console.log("✅ TypeORM connected");
+            console.log("📦 Entities:", data_source_1.AppDataSource.entityMetadatas.map((e) => e.name));
+        }
+        catch (err) {
+            console.error("⚠️  TypeORM initialization warning (non-critical):", err.message);
+            console.log("📝 Chat features will still work with Supabase client");
+        }
+        try {
+            await (0, api_key_service_1.ensureApiKeyTable)();
+            console.log("🔐 API key table ready");
+        }
+        catch (err) {
+            console.error("⚠️  API key table warning (non-critical):", err.message);
+        }
+        await (0, message_receipts_service_1.ensureMessageReceiptsTable)();
+    })();
 });
 process.on("SIGTERM", () => {
     console.log("⚠️  SIGTERM signal received: closing HTTP server");
     server.close(() => {
         console.log("✅ HTTP server closed");
-        data_source_1.AppDataSource.destroy()
+        const destroyPromise = data_source_1.AppDataSource.isInitialized
+            ? data_source_1.AppDataSource.destroy()
+            : Promise.resolve();
+        destroyPromise
             .then(() => {
             console.log("✅ Database connection closed");
             process.exit(0);
@@ -190,7 +213,10 @@ process.on("SIGINT", () => {
     console.log("⚠️  SIGINT signal received: closing HTTP server");
     server.close(() => {
         console.log("✅ HTTP server closed");
-        data_source_1.AppDataSource.destroy()
+        const destroyPromise = data_source_1.AppDataSource.isInitialized
+            ? data_source_1.AppDataSource.destroy()
+            : Promise.resolve();
+        destroyPromise
             .then(() => {
             console.log("✅ Database connection closed");
             process.exit(0);

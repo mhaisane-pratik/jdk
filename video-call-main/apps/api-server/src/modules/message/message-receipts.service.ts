@@ -1,4 +1,4 @@
-import { pool } from "../../db";
+import { directDbReason, isDirectDbEnabled, pool } from "../../db";
 
 export interface MessageReceiptRow {
   viewer_username: string;
@@ -12,6 +12,13 @@ let receiptsUnavailable = false;
 
 export const ensureMessageReceiptsTable = async () => {
   if (ensuredReceiptsTable || receiptsUnavailable) return;
+  if (!isDirectDbEnabled) {
+    receiptsUnavailable = true;
+    console.warn(
+      `Message receipts disabled: direct database connection is unavailable${directDbReason ? ` (${directDbReason})` : ""}`
+    );
+    return;
+  }
 
   try {
     await pool.query(`

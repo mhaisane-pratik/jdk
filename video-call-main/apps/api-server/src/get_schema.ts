@@ -20,10 +20,10 @@ async function dump() {
                 ORDER BY ordinal_position;
             `, [table]);
             
-            sql += \`CREATE TABLE IF NOT EXISTS public.\${table} (\\n\`;
-            const colDefs = cols.rows.map(c => \`  \${c.column_name} \${c.data_type}\${c.character_maximum_length ? '('+c.character_maximum_length+')' : ''} \${c.column_default ? 'DEFAULT ' + c.column_default : ''} \${c.is_nullable === 'NO' ? 'NOT NULL' : ''}\`);
-            sql += colDefs.join(',\\n');
-            sql += \`\\n);\\n\\n\`;
+            sql += `CREATE TABLE IF NOT EXISTS public.${table} (\n`;
+            const colDefs = cols.rows.map(c => `  ${c.column_name} ${c.data_type}${c.character_maximum_length ? '('+c.character_maximum_length+')' : ''} ${c.column_default ? 'DEFAULT ' + c.column_default : ''} ${c.is_nullable === 'NO' ? 'NOT NULL' : ''}`);
+            sql += colDefs.join(',\n');
+            sql += `\n);\n\n`;
         }
         
         fs.writeFileSync('schema_dump.sql', sql);
