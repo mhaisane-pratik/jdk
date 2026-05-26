@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useChat } from "../contexts/ChatContext";
+import { API_URL, buildApiUrl } from "../api/config";
 import { socket } from "../api/socket";
 import { Home, User, MessageSquare } from "lucide-react";
 import "./Login.css";
 
-const API_URL = import.meta.env.VITE_API_URL as string;
 const API_KEY = "ZATCHAT_PRATEEK9373";
 
 export default function ChatLogin() {
@@ -48,13 +48,45 @@ export default function ChatLogin() {
     setError("");
     
     try {
-      const response = await fetch(`${API_URL}/api/v1/auth/sso-login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: ssoReadyToken })
-      });
-      
-      const data = await response.json();
+      const payload = JSON.stringify({ token: ssoReadyToken });
+      const authPaths = [
+        "/api/v1/auth/sso-login",
+        "/api/auth/sso-login",
+        "/auth/sso-login",
+      ];
+
+      let response: Response | null = null;
+      let data: any = null;
+      let notFoundCount = 0;
+
+      for (const path of authPaths) {
+        response = await fetch(buildApiUrl(path), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        data = contentType.includes("application/json")
+          ? await response.json()
+          : { error: await response.text() };
+
+        if (response.status !== 404) {
+          break;
+        }
+
+        notFoundCount += 1;
+      }
+
+      if (!response) {
+        throw new Error("SSO login request could not be started");
+      }
+
+      if (notFoundCount === authPaths.length) {
+        throw new Error(
+          `SSO login endpoint was not found on ${API_URL}. Check the deployed backend routes or VITE_API_URL.`
+        );
+      }
       
       if (response.ok && data.success) {
         // ✅ Connection Successful!  

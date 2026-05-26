@@ -1,0 +1,28 @@
+{
+  "name": "@zatchat/frontend-sdk",
+  "version": "0.1.0",
+  "description": "Frontend SSO SDK for integrating external apps with ZatChat",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --watch --format cjs,esm --dts",
+    "check": "tsc --noEmit"
+  },
+  "keywords": [
+    "chat",
+    "sso",
+    "sdk",
+    "zatchat"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.8.3"
+  }
+}
