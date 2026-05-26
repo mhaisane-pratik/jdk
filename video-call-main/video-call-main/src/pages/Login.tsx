@@ -20,6 +20,7 @@ export default function ChatLogin() {
   const [ssoReadyToken, setSsoReadyToken] = useState("");
 
   const usernameInputRef = useRef<HTMLInputElement>(null);
+  const hasAttemptedSsoRef = useRef(false);
 
   useEffect(() => {
     // Check if the Stock App sent a ticket in the URL
@@ -27,7 +28,6 @@ export default function ChatLogin() {
     const token = urlParams.get("ssoToken");
 
     if (token) {
-      // Save token to state and wait for click
       setSsoReadyToken(token);
     } else {
       // Normal Standalone Behavior
@@ -39,6 +39,12 @@ export default function ChatLogin() {
     }
   }, [navigate, currentUser]);
 
+  useEffect(() => {
+    if (!ssoReadyToken || hasAttemptedSsoRef.current) return;
+    hasAttemptedSsoRef.current = true;
+    void processSsoLogin();
+  }, [ssoReadyToken]);
+
   // 🔥 PROCESS SSO LOGIN: Now configured to show the EXACT Backend Error!
   const processSsoLogin = async () => {
     if (!ssoReadyToken) return;
@@ -49,42 +55,21 @@ export default function ChatLogin() {
     
     try {
       const payload = JSON.stringify({ token: ssoReadyToken });
-      const authPaths = [
-        "/api/v1/auth/sso-login",
-        "/api/auth/sso-login",
-        "/auth/sso-login",
-      ];
+      const ssoLoginUrl = buildApiUrl("/api/v1/auth/sso-login");
+      const response = await fetch(ssoLoginUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      });
 
-      let response: Response | null = null;
-      let data: any = null;
-      let notFoundCount = 0;
+      const contentType = response.headers.get("content-type") || "";
+      const data: any = contentType.includes("application/json")
+        ? await response.json()
+        : { error: await response.text() };
 
-      for (const path of authPaths) {
-        response = await fetch(buildApiUrl(path), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: payload
-        });
-
-        const contentType = response.headers.get("content-type") || "";
-        data = contentType.includes("application/json")
-          ? await response.json()
-          : { error: await response.text() };
-
-        if (response.status !== 404) {
-          break;
-        }
-
-        notFoundCount += 1;
-      }
-
-      if (!response) {
-        throw new Error("SSO login request could not be started");
-      }
-
-      if (notFoundCount === authPaths.length) {
+      if (response.status === 404) {
         throw new Error(
-          `SSO login endpoint was not found on ${API_URL}. Check the deployed backend routes or VITE_API_URL.`
+          `SSO login endpoint was not found on ${API_URL}. Expected POST ${ssoLoginUrl}.`
         );
       }
       
@@ -109,6 +94,7 @@ export default function ChatLogin() {
       }
     } catch (err: any) {
       // 🚨 Displays the EXACT error on screen!
+      hasAttemptedSsoRef.current = false;
       setError(`Auth Error: ${err.message}`);
       setShowWhatsAppLoading(false);
       setIsLoading(false);
