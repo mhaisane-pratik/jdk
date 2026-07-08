@@ -144,21 +144,22 @@ if (chatRoutes) {
 
 if (messageRoutes) {
   app.use("/api/v1/messages", apiKeyAuthMiddleware, messageRoutes);
-  console.log("✅ Message routes registered at /api/v1/messages");
+  console.log(`✅ Message routes registered at /api/v1/messages`);
 } else {
-  console.warn("⚠️  Message routes not available");
+  console.warn(`⚠️  Message routes not available`);
 }
 
 if (adminRoutes) {
   app.use("/api/v1/admin", apiKeyAuthMiddleware, adminRoutes);
-  console.log("✅ Admin routes registered at /api/v1/admin");
+  console.log(`✅ Admin routes registered at /api/v1/admin`);
 } else {
-  console.warn("⚠️  Admin routes not available");
+  console.warn(`⚠️  Admin routes not available`);
 }
 
 // Calendar routes
-console.log("✅ Calendar routes registered at /api/v1/calendar");
+console.log(`✅ Calendar routes registered at /api/v1/calendar`);
 app.use("/api/v1/auth", ssoAuthRoutes);
+console.log("✅ SSO routes mounted at /api/v1/auth");
 app.use("/api/v1/integrations/api-keys", apiKeyRoutes);
 
 /* ================= 404 HANDLER ================= */
@@ -170,6 +171,8 @@ app.use((req, res) => {
       "GET /",
       "GET /health",
       "GET /db-test",
+      "POST /api/v1/auth/sso-token",
+      "POST /api/v1/auth/sso-login",
       "POST /api/v1/users",
       "GET /api/v1/users/:username",
       "GET /api/v1/chats/rooms/:username",
@@ -194,6 +197,8 @@ app.use(
     });
   }
 );
+
+
 
 /* ================= START SERVER ================= */
 const PORT = process.env.PORT || 4000;

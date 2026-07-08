@@ -18,10 +18,25 @@ function signSsoToken(payload: SsoUserPayload) {
   });
 }
 
+function getMissingEnvResponse(envName: string) {
+  return { error: `${envName} is not configured` };
+}
+
+router.get("/sso-token", (_req, res) => {
+  return res.status(405).json({
+    error: "Method Not Allowed",
+    message: "Use POST /api/v1/auth/sso-token with JSON body and x-sso-master-key header.",
+  });
+});
+
 router.post("/sso-token", async (req, res) => {
   const masterKey = req.headers["x-sso-master-key"];
   if (!process.env.SSO_MASTER_KEY) {
-    return res.status(500).json({ error: "SSO_MASTER_KEY is not configured" });
+    return res.status(500).json(getMissingEnvResponse("SSO_MASTER_KEY"));
+  }
+
+  if (!process.env.SSO_JWT_SECRET) {
+    return res.status(500).json(getMissingEnvResponse("SSO_JWT_SECRET"));
   }
 
   if (!masterKey || masterKey !== process.env.SSO_MASTER_KEY) {
@@ -43,11 +58,22 @@ router.post("/sso-token", async (req, res) => {
   return res.json({ success: true, ssoToken });
 });
 
+router.get("/sso-login", (_req, res) => {
+  return res.status(405).json({
+    error: "Method Not Allowed",
+    message: "Use POST /api/v1/auth/sso-login with a JSON body like {\"token\":\"<sso-jwt>\"}.",
+  });
+});
+
 router.post("/sso-login", async (req, res) => {
   const { token } = req.body;
 
   if (!token) {
     return res.status(400).json({ error: "Missing SSO token" });
+  }
+
+  if (!process.env.SSO_JWT_SECRET) {
+    return res.status(500).json(getMissingEnvResponse("SSO_JWT_SECRET"));
   }
 
   try {

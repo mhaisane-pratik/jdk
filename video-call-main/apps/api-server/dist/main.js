@@ -116,20 +116,21 @@ else {
 }
 if (messageRoutes) {
     app.use("/api/v1/messages", api_key_middleware_1.apiKeyAuthMiddleware, messageRoutes);
-    console.log("✅ Message routes registered at /api/v1/messages");
+    console.log(`✅ Message routes registered at /api/v1/messages`);
 }
 else {
-    console.warn("⚠️  Message routes not available");
+    console.warn(`⚠️  Message routes not available`);
 }
 if (adminRoutes) {
     app.use("/api/v1/admin", api_key_middleware_1.apiKeyAuthMiddleware, adminRoutes);
-    console.log("✅ Admin routes registered at /api/v1/admin");
+    console.log(`✅ Admin routes registered at /api/v1/admin`);
 }
 else {
-    console.warn("⚠️  Admin routes not available");
+    console.warn(`⚠️  Admin routes not available`);
 }
-console.log("✅ Calendar routes registered at /api/v1/calendar");
+console.log(`✅ Calendar routes registered at /api/v1/calendar`);
 app.use("/api/v1/auth", auth_sso_1.default);
+console.log("✅ SSO routes mounted at /api/v1/auth");
 app.use("/api/v1/integrations/api-keys", api_key_module_1.default);
 app.use((req, res) => {
     res.status(404).json({
@@ -139,6 +140,8 @@ app.use((req, res) => {
             "GET /",
             "GET /health",
             "GET /db-test",
+            "POST /api/v1/auth/sso-token",
+            "POST /api/v1/auth/sso-login",
             "POST /api/v1/users",
             "GET /api/v1/users/:username",
             "GET /api/v1/chats/rooms/:username",
