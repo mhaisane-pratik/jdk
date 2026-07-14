@@ -351,10 +351,10 @@ export default function MessageItem({
 
           {message.message_type === "image" && message.file_url && (
             <div
-              className={`relative rounded-2xl p-1 max-w-[280px] shadow-sm ${
+              className={`relative rounded-2xl p-[3px] max-w-[280px] shadow-sm ${
                 isSent
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500"
-                  : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-br-sm"
+                  : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-bl-sm"
               }`}
             >
               {message.reply_to && (
@@ -376,7 +376,11 @@ export default function MessageItem({
               <img
                 src={`${API_URL}/api/v1/proxy-image?url=${encodeURIComponent(message.file_url || '')}`}
                 alt="Shared"
-                className="w-full max-h-[300px] object-cover rounded-xl cursor-pointer transition-transform hover:scale-102"
+                className={`w-full max-h-[300px] object-cover cursor-pointer transition-transform hover:scale-102 ${
+                  isSent
+                    ? "rounded-xl rounded-br-sm"
+                    : "rounded-xl rounded-bl-sm"
+                }`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setFullscreenMedia({ url: message.file_url || '', type: 'image' });
@@ -385,7 +389,7 @@ export default function MessageItem({
               />
               
               {plainText && (
-                <p className={`m-1 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                <p className={`mt-2 px-2 pb-5 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
                   {renderMessageContent(plainText)}
                 </p>
               )}
@@ -400,10 +404,10 @@ export default function MessageItem({
 
           {message.message_type === "video" && message.file_url && (
             <div
-              className={`relative rounded-2xl p-1 max-w-[280px] shadow-sm ${
+              className={`relative rounded-2xl p-[3px] max-w-[280px] shadow-sm ${
                 isSent
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500"
-                  : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-br-sm"
+                  : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-bl-sm"
               }`}
             >
               {message.reply_to && (
@@ -424,7 +428,11 @@ export default function MessageItem({
 
               <video
                 src={message.file_url}
-                className="w-full max-h-[300px] object-cover rounded-xl cursor-pointer"
+                className={`w-full max-h-[300px] object-cover cursor-pointer ${
+                  isSent
+                    ? "rounded-xl rounded-br-sm"
+                    : "rounded-xl rounded-bl-sm"
+                }`}
                 controls
                 preload="metadata"
                 controlsList="nodownload"
@@ -435,7 +443,7 @@ export default function MessageItem({
               />
               
               {plainText && (
-                <p className={`m-1 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                <p className={`mt-2 px-2 pb-5 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
                   {renderMessageContent(plainText)}
                 </p>
               )}
