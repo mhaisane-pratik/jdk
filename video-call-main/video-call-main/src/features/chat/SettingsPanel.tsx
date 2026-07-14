@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useChat } from "../../contexts/ChatContext";
 import { Camera, Image as ImageIcon, Trash2, X, Maximize, Minimize, LogOut, Plus } from "lucide-react";
 import { socket } from "../../api/socket";
@@ -39,6 +39,14 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wallpaperInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync profile details when currentUser is loaded/updated
+  useEffect(() => {
+    if (currentUser && !editing) {
+      setDisplayName(currentUser.display_name || "");
+      setBio(currentUser.bio || "");
+    }
+  }, [currentUser, editing]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -216,19 +224,25 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
                   <input
                     type="text"
                     value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    disabled={!editing}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-green-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                    onChange={(e) => {
+                      setDisplayName(e.target.value);
+                      if (!editing) setEditing(true);
+                    }}
+                    placeholder="Enter your display name"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-green-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Bio</label>
                   <textarea
                     value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    disabled={!editing}
+                    onChange={(e) => {
+                      setBio(e.target.value);
+                      if (!editing) setEditing(true);
+                    }}
+                    placeholder="Tell us about yourself"
                     rows={3}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-green-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-700 resize-none"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-green-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
                   />
                 </div>
               </div>
