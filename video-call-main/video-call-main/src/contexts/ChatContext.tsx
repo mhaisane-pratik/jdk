@@ -87,6 +87,51 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [typingUsers, setTypingUsers] = useState<Record<string, Set<string>>>({});
   const [soundEnabled, setSoundEnabled] = useState(true);
 
+  // --- Save settings to backend ---
+  const updateUserSettings = async (updates: {
+    theme?: string;
+    wallpaper?: string;
+    sound_enabled?: boolean;
+  }) => {
+    if (!currentUser?.username) return;
+    try {
+      const res = await fetch(`${API_URL}/api/v1/users/${currentUser.username}/settings`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": API_KEY,
+        },
+        body: JSON.stringify({
+          theme: updates.theme !== undefined ? updates.theme : theme,
+          wallpaper: updates.wallpaper !== undefined ? updates.wallpaper : wallpaper,
+          sound_enabled: updates.sound_enabled !== undefined ? updates.sound_enabled : soundEnabled,
+          notification_enabled: true,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        console.log("✅ Settings updated on backend:", data);
+      }
+    } catch (err) {
+      console.error("❌ Failed to update settings on backend:", err);
+    }
+  };
+
+  const changeTheme = (newTheme: string) => {
+    setTheme(newTheme);
+    updateUserSettings({ theme: newTheme });
+  };
+
+  const changeWallpaper = (newWallpaper: string) => {
+    setWallpaper(newWallpaper);
+    updateUserSettings({ wallpaper: newWallpaper });
+  };
+
+  const changeSoundEnabled = (newSound: boolean) => {
+    setSoundEnabled(newSound);
+    updateUserSettings({ sound_enabled: newSound });
+  };
+
   const hasInitialized = useRef(false);
 
   // --- Fast initialization from localStorage ---
@@ -505,9 +550,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         selectedRoom,
         setSelectedRoom,
         theme,
-        setTheme,
+        setTheme: changeTheme,
         wallpaper,
-        setWallpaper,
+        setWallpaper: changeWallpaper,
         refreshRooms,
         onlineUsers,
         isSocketConnected,
@@ -519,7 +564,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         appLogo,
         typingUsers,
         soundEnabled,
-        setSoundEnabled,
+        setSoundEnabled: changeSoundEnabled,
         playNotificationSound,
       }}
     >

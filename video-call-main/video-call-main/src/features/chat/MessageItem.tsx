@@ -46,6 +46,37 @@ export default function MessageItem({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const API_KEY = "ZATCHAT_PRATEEK9373";
 
+  // Parse reactions and text
+  const parseMessageReactions = (rawText: string | null | undefined) => {
+    if (!rawText) return { text: "", reactions: {} as Record<string, string[]> };
+    const reactionRegex = /\n\[reactions:({.*?})\]$/s;
+    const match = rawText.match(reactionRegex);
+    if (match) {
+      try {
+        const reactions = JSON.parse(match[1]);
+        const text = rawText.replace(reactionRegex, "");
+        return { text, reactions };
+      } catch (e) {}
+    }
+    return { text: rawText, reactions: {} as Record<string, string[]> };
+  };
+
+  const { text: plainText, reactions } = parseMessageReactions(message.message);
+  
+  const repliedMessageText = message.reply_to 
+    ? parseMessageReactions(message.reply_to.message).text 
+    : "";
+
+  const handleReact = (emoji: string) => {
+    socket.emit("message_reaction", {
+      messageId: message.id,
+      roomId: message.room_id,
+      emoji,
+      username: currentUser,
+    });
+    setShowActions(false);
+  };
+
   const formatTime = (dateString: string) => {
     let safeString = dateString;
     if (!safeString.includes('Z') && !safeString.includes('+')) {
@@ -146,8 +177,8 @@ export default function MessageItem({
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      if (message.message) {
-        await navigator.clipboard.writeText(message.message);
+      if (plainText) {
+        await navigator.clipboard.writeText(plainText);
         showNotification("✓ Message copied", "success");
         setShowActions(false);
       }
@@ -271,7 +302,7 @@ export default function MessageItem({
     <>
       <div
         ref={wrapperRef}
-        className={`flex mb-2 px-4 relative transition-all duration-500 ${isSent ? "justify-end" : "justify-start"} ${isHighlighted ? "bg-black/5 dark:bg-white/5 py-1 rounded-lg" : ""}`}
+        className={`flex ${Object.keys(reactions).length > 0 ? "mb-4" : "mb-2"} px-4 relative transition-all duration-500 ${isSent ? "justify-end" : "justify-start"} ${isHighlighted ? "bg-black/5 dark:bg-white/5 py-1 rounded-lg" : ""}`}
       >
         <div className={`relative max-w-[70%] ${isSent ? "order-2" : "order-1"}`} onClick={handleMessageClick}>
           {message.message_type === "text" && (
@@ -291,7 +322,7 @@ export default function MessageItem({
                         {message.reply_to.sender_name}
                       </div>
                       <div className="text-[10px] line-clamp-2 opacity-85 text-gray-700 dark:text-gray-300">
-                        {message.reply_to.message || "📎 Attachment"}
+                        {repliedMessageText || "📎 Attachment"}
                       </div>
                     </div>
                   </div>
@@ -306,7 +337,7 @@ export default function MessageItem({
               )}
 
               <p className="m-0 pr-12 text-sm leading-relaxed break-words whitespace-pre-wrap select-text">
-                {renderMessageContent(message.message)}
+                {renderMessageContent(plainText)}
               </p>
               
               <div className="absolute bottom-1.5 right-2 flex items-center gap-0.5">
@@ -335,7 +366,7 @@ export default function MessageItem({
                         {message.reply_to.sender_name}
                       </div>
                       <div className="text-[10px] line-clamp-2 opacity-85 text-gray-700 dark:text-gray-300">
-                        {message.reply_to.message || "📎 Attachment"}
+                        {repliedMessageText || "📎 Attachment"}
                       </div>
                     </div>
                   </div>
@@ -353,9 +384,9 @@ export default function MessageItem({
                 loading="lazy"
               />
               
-              {message.message && (
+              {plainText && (
                 <p className={`m-1 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
-                  {renderMessageContent(message.message)}
+                  {renderMessageContent(plainText)}
                 </p>
               )}
               <div className="absolute bottom-2 right-2 flex items-center gap-0.5">
@@ -384,7 +415,7 @@ export default function MessageItem({
                         {message.reply_to.sender_name}
                       </div>
                       <div className="text-[10px] line-clamp-2 opacity-85 text-gray-700 dark:text-gray-300">
-                        {message.reply_to.message || "📎 Attachment"}
+                        {repliedMessageText || "📎 Attachment"}
                       </div>
                     </div>
                   </div>
@@ -403,9 +434,9 @@ export default function MessageItem({
                 }}
               />
               
-              {message.message && (
+              {plainText && (
                 <p className={`m-1 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
-                  {renderMessageContent(message.message)}
+                  {renderMessageContent(plainText)}
                 </p>
               )}
               <div className="absolute bottom-2 right-2 flex items-center gap-0.5 bg-black/40 rounded-full px-1.5 py-0.5 backdrop-blur-sm">
@@ -434,7 +465,7 @@ export default function MessageItem({
                         {message.reply_to.sender_name}
                       </div>
                       <div className="text-[10px] line-clamp-2 opacity-85 text-gray-700 dark:text-gray-300">
-                        {message.reply_to.message || "📎 Attachment"}
+                        {repliedMessageText || "📎 Attachment"}
                       </div>
                     </div>
                   </div>
@@ -464,9 +495,9 @@ export default function MessageItem({
                   )}
                 </div>
               </a>
-              {message.message && (
+              {plainText && (
                 <p className={`mt-1.5 mb-0 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
-                  {renderMessageContent(message.message)}
+                  {renderMessageContent(plainText)}
                 </p>
               )}
               <div className="absolute bottom-2 right-2 flex items-center gap-0.5">
@@ -478,10 +509,59 @@ export default function MessageItem({
             </div>
           )}
 
+          {/* Reaction badges */}
+          {Object.keys(reactions).length > 0 && (
+            <div 
+              className={`absolute bottom-[-12px] flex items-center gap-1 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full shadow-md border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition z-[10] ${
+                isSent ? "right-3" : "left-3"
+              }`}
+              title={Object.entries(reactions)
+                .map(([emoji, users]) => `${emoji} by ${users.join(", ")}`)
+                .join("\n")}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowActions(true);
+              }}
+            >
+              <div className="flex -space-x-1">
+                {Object.keys(reactions).map((emoji) => (
+                  <span key={emoji} className="text-xs">{emoji}</span>
+                ))}
+              </div>
+              {Object.values(reactions).flat().length > 1 && (
+                <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                  {Object.values(reactions).flat().length}
+                </span>
+              )}
+            </div>
+          )}
+
           {showActions && (
-            <div className={`absolute flex gap-1 p-1.5 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-[100000] animate-slideInActions ${
+            <div className={`absolute flex flex-col gap-2 p-1.5 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-[100000] animate-slideInActions ${
               isSent ? "bottom-full right-0" : "bottom-full left-0"
             }`}>
+              {/* WhatsApp reaction row */}
+              <div className="flex justify-between items-center gap-1.5 pb-1.5 border-b border-gray-100 dark:border-gray-700 px-1">
+                {["👍", "❤️", "😂", "😮", "😢", "🙏"].map((emoji) => {
+                  const hasReacted = reactions[emoji]?.includes(currentUser);
+                  return (
+                    <button
+                      key={emoji}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReact(emoji);
+                      }}
+                      className={`text-xl hover:scale-130 active:scale-95 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-transform ${
+                        hasReacted ? "bg-green-100 dark:bg-green-950/50 scale-110" : ""
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex gap-1">
               <button
                 onClick={handleReply}
                 className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-[10px] font-semibold text-gray-600 dark:text-gray-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
@@ -526,7 +606,8 @@ export default function MessageItem({
                 <span>Delete</span>
               </button>
             </div>
-          )}
+          </div>
+        )}
         </div>
       </div>
 

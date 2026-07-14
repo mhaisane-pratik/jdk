@@ -447,6 +447,88 @@ export function initSocket(io: Server) {
       }
     });
 
+    /* ================= MESSAGE REACTION ================= */
+    socket.on("message_reaction", async ({ messageId, roomId, emoji, username }) => {
+      if (!messageId || !roomId || !emoji || !username) return;
+
+      try {
+        // Fetch message from DB
+        const { data: msg, error: fetchError } = await supabase
+          .from("zatchat")
+          .select("*")
+          .eq("id", messageId)
+          .single();
+
+        if (fetchError || !msg) {
+          console.error("❌ Message not found for reaction:", fetchError);
+          return;
+        }
+
+        // Parse reactions
+        const currentMessage = msg.message || "";
+        const reactionRegex = /\n\[reactions:({.*?})\]$/s;
+        const match = currentMessage.match(reactionRegex);
+        
+        let reactions: Record<string, string[]> = {};
+        let plainText = currentMessage;
+        
+        if (match) {
+          try {
+            reactions = JSON.parse(match[1]);
+            plainText = currentMessage.replace(reactionRegex, "");
+          } catch (e) {}
+        }
+
+        // Toggle user's reaction
+        if (!reactions[emoji]) {
+          reactions[emoji] = [];
+        }
+
+        const userIndex = reactions[emoji].indexOf(username);
+        if (userIndex > -1) {
+          // User already reacted with this emoji, remove it
+          reactions[emoji].splice(userIndex, 1);
+        } else {
+          // Add user's reaction
+          reactions[emoji].push(username);
+        }
+
+        // Clean empty emoji lists
+        const updatedReactions: Record<string, string[]> = {};
+        for (const key in reactions) {
+          if (reactions[key] && reactions[key].length > 0) {
+            updatedReactions[key] = reactions[key];
+          }
+        }
+
+        // Serialize new message
+        let newMessage = plainText;
+        if (Object.keys(updatedReactions).length > 0) {
+          newMessage = `${plainText}\n[reactions:${JSON.stringify(updatedReactions)}]`;
+        }
+
+        // Update in DB
+        const { error: updateError } = await supabase
+          .from("zatchat")
+          .update({ message: newMessage })
+          .eq("id", messageId);
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        // Broadcast reaction update to room
+        io.to(roomId).emit("message_reaction_updated", {
+          messageId,
+          reactions: updatedReactions
+        });
+
+        console.log(`👍 Reaction ${emoji} updated on message ${messageId} by ${username}`);
+      } catch (err) {
+        console.error("❌ message_reaction error:", err);
+      }
+    });
+
     /* ================= FORWARD MESSAGE ================= */
     socket.on("forward_message", async ({ messages, toRooms }) => {
       try {

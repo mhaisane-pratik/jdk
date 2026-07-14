@@ -199,15 +199,31 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         setMessages((prev) => prev.filter((m) => m.id !== messageId));
       }
     };
+    const handleReactionUpdated = ({ messageId, reactions }: { messageId: string; reactions: Record<string, string[]> }) => {
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== messageId) return m;
+          const reactionRegex = /\n\[reactions:({.*?})\]$/s;
+          const plainText = (m.message || "").replace(reactionRegex, "");
+          let newMessage = plainText;
+          if (Object.keys(reactions).length > 0) {
+            newMessage = `${plainText}\n[reactions:${JSON.stringify(reactions)}]`;
+          }
+          return { ...m, message: newMessage };
+        })
+      );
+    };
     socket.on("receive_message", handleReceiveMessage);
     socket.on("message_delivered", handleMessageDelivered);
     socket.on("message_seen", handleMessageSeen);
     socket.on("message_deleted", handleMessageDeleted);
+    socket.on("message_reaction_updated", handleReactionUpdated);
     return () => {
       socket.off("receive_message", handleReceiveMessage);
       socket.off("message_delivered", handleMessageDelivered);
       socket.off("message_seen", handleMessageSeen);
       socket.off("message_deleted", handleMessageDeleted);
+      socket.off("message_reaction_updated", handleReactionUpdated);
     };
   }, [selectedRoom, currentUser]);
 
