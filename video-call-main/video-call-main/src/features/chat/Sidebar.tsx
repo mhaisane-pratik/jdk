@@ -91,10 +91,7 @@ export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
                   {appName ? appName.charAt(0).toUpperCase() : "Z"}
                 </div>
              )}
-             <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-xl font-extrabold tracking-tight text-transparent">
-               {appName || "ZatChat"}
-             </span>
-           </div>
+            </div>
            
            <div className="flex items-center gap-1.5">
              <button

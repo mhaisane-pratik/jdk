@@ -264,24 +264,6 @@ export default function ChatHeader({
             <Home size={16} className="md:w-[18px] md:h-[18px]" />
           </button>
 
-          <button
-            className={`
-              hidden sm:flex items-center justify-center
-              w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl
-              bg-white/80 dark:bg-slate-700
-              text-slate-600 dark:text-slate-300
-              hover:bg-white dark:hover:bg-slate-600
-              hover:text-blue-600 dark:hover:text-blue-400
-              active:scale-95
-              transition-all duration-200
-              flex-shrink-0
-            `}
-            onClick={(e) => { e.stopPropagation(); }}
-            title="Video call"
-          >
-            <Video size={16} className="md:w-[18px] md:h-[18px]" />
-          </button>
-
           {isGroup && (
             <button
               className={`
