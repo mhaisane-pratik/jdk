@@ -88,25 +88,55 @@ export default function MessageItem({
 
   const renderMessageContent = (text: string | null | undefined) => {
     if (!text) return null;
-    if (!searchQuery) return text;
-    try {
-      const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
-      return parts.map((part, i) => {
-        if (part.toLowerCase() === searchQuery.toLowerCase()) {
-          return (
-            <mark 
-              key={i} 
-              className={`${isHighlighted ? 'bg-orange-500 text-white animate-pulse' : 'bg-yellow-300 text-black'} rounded-sm px-[2px] shadow-sm transition-colors duration-300`}
-            >
-              {part}
-            </mark>
-          );
-        }
+    
+    // Split text by URL pattern (capturing URLs in the split result)
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, index) => {
+      // Check if this part is a URL
+      if (/^https?:\/\/[^\s]+$/.test(part)) {
+        return (
+          <a
+            key={`url-${index}`}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`underline break-all ${
+              isSent 
+                ? "text-cyan-200 hover:text-cyan-100" 
+                : "text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+            }`}
+            onClick={(e) => e.stopPropagation()} // Prevent opening actions panel on link click
+          >
+            {part}
+          </a>
+        );
+      }
+
+      // If there is no search query, return this plain text part
+      if (!searchQuery) return part;
+
+      // Otherwise, highlight the searchQuery within this text part
+      try {
+        const subParts = part.split(new RegExp(`(${searchQuery})`, 'gi'));
+        return subParts.map((subPart, i) => {
+          if (subPart.toLowerCase() === searchQuery.toLowerCase()) {
+            return (
+              <mark 
+                key={`mark-${index}-${i}`} 
+                className={`${isHighlighted ? 'bg-orange-500 text-white animate-pulse' : 'bg-yellow-300 text-black'} rounded-sm px-[2px] shadow-sm transition-colors duration-300`}
+              >
+                {subPart}
+              </mark>
+            );
+          }
+          return subPart;
+        });
+      } catch (e) {
         return part;
-      });
-    } catch (e) {
-      return text;
-    }
+      }
+    });
   };
 
   const handleMessageClick = () => {
