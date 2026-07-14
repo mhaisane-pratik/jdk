@@ -130,8 +130,8 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
       });
 
       if (res.ok) {
-        // We'll trust the Socket or Context to eventually re-fetch if needed, 
-        // or just clear the preview state so it continues normally.
+        const updatedUser = await res.json();
+        setCurrentUser(updatedUser);
         if (fileInputRef.current) fileInputRef.current.value = "";
         setPreviewUrl(null);
         setEditing(false);
@@ -146,7 +146,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   return (
     <>
       <div className="fixed inset-0 bg-black/50 z-[1000] animate-fadeIn" onClick={onClose} />
-      <div className="fixed top-0 right-0 w-full md:w-[450px] h-screen bg-white dark:bg-gray-900 shadow-2xl z-[1001] flex flex-col animate-slideInRight">
+      <div className="fixed inset-0 w-full h-screen bg-white dark:bg-gray-900 shadow-2xl z-[1001] flex flex-col animate-fadeIn">
         <div className="flex items-center gap-4 p-5 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <button
             className="w-10 h-10 flex items-center justify-center text-2xl text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition"
