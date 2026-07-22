@@ -98,70 +98,69 @@ export default function ChatItem({
     return lastMessage;
   };
 
+  const hasUnread = unreadCount > 0;
+
   return (
     <div
-      className={`flex items-center px-3 py-1.5 cursor-pointer transition-colors duration-150 border-b border-gray-200 dark:border-gray-700 min-h-[60px] hover:bg-gray-100 dark:hover:bg-white/5 ${
-        isSelected ? "bg-gray-100 dark:bg-white/10 border-l-4 border-l-green-500 pl-2.5" : ""
-      } ${isPinned ? "" : ""} ${isMuted ? "opacity-60" : ""}`}
+      className={`group mx-1 flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-[5px] transition-colors ${
+        isSelected
+          ? "bg-[#1164A3] text-white"
+          : hasUnread
+          ? "text-white hover:bg-white/10"
+          : "text-[#CFC3CF] hover:bg-white/10"
+      } ${isMuted ? "opacity-60" : ""}`}
       onClick={onClick}
+      title={displayName}
     >
-      <div className="relative mr-2.5 flex-shrink-0">
-        {isGroup ? (
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg font-semibold uppercase">
-            {displayName?.charAt(0)?.toUpperCase()}
-          </div>
-        ) : (
-          <>
-            <img
-              src={
-                avatarUrl ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  displayName
-                )}&background=random`
-              }
-              alt={displayName}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-            {isOnline && (
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
-            )}
-          </>
-        )}
-      </div>
+      {/* Leading glyph: # for channels, presence-dot avatar for DMs */}
+      {isGroup ? (
+        <span
+          className={`flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center text-[17px] leading-none ${
+            isSelected ? "text-white" : "text-[#CFC3CF] group-hover:text-white"
+          }`}
+        >
+          #
+        </span>
+      ) : (
+        <span className="relative flex-shrink-0">
+          <img
+            src={
+              avatarUrl ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                displayName
+              )}&background=random`
+            }
+            alt={displayName}
+            className="h-[20px] w-[20px] rounded-[4px] object-cover"
+          />
+          <span
+            className={`absolute -bottom-[3px] -right-[3px] h-[10px] w-[10px] rounded-full border-2 ${
+              isSelected ? "border-[#1164A3]" : "border-[#3F0E40]"
+            } ${isOnline ? "bg-[#2BAC76]" : "bg-transparent ring-1 ring-[#CFC3CF]"}`}
+          />
+        </span>
+      )}
 
-      <div className="flex-1 min-w-0 flex flex-col">
-        <div className="flex justify-between items-center gap-1.5 mb-0.5">
-          <div className="flex items-center gap-1 flex-1 min-w-0 max-w-[70%]">
-            <h4
-              className={`m-0 text-sm font-semibold text-gray-900 dark:text-gray-200 overflow-hidden text-ellipsis whitespace-nowrap w-full ${
-                unreadCount > 0 ? "font-bold" : ""
-              }`}
-            >
-              {displayName}
-            </h4>
-            {isPinned && <span className="text-xs text-gray-500 opacity-70">📌</span>}
-            {isMuted && <span className="text-xs text-gray-500 opacity-70">🔇</span>}
-          </div>
-          <span className="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">
-            {formatTime(lastMessageTime)}
-          </span>
-        </div>
+      {/* Name */}
+      <span
+        className={`flex-1 truncate text-[15px] ${
+          hasUnread ? "font-bold text-white" : "font-normal"
+        }`}
+      >
+        {displayName}
+      </span>
 
-        <div className="flex justify-between items-center gap-1.5">
-          <p
-            className={`m-0 text-sm text-gray-500 dark:text-gray-400 overflow-hidden text-ellipsis whitespace-nowrap flex-1 ${
-              unreadCount > 0 ? "font-semibold text-gray-900 dark:text-gray-200" : ""
-            }`}
-          >
-            {renderPreviewText()}
-          </p>
-          {unreadCount > 0 && (
-            <span className="min-w-[18px] h-[18px] px-1 bg-green-500 dark:bg-green-600 text-white rounded-full text-xs font-semibold flex items-center justify-center flex-shrink-0">
-              {unreadCount}
-            </span>
-          )}
-        </div>
-      </div>
+      {/* Trailing: typing / pin / unread pill */}
+      {typingUsers && typingUsers.length > 0 && (
+        <span className="flex-shrink-0 text-[11px] italic text-[#2BAC76]">typing…</span>
+      )}
+      {isPinned && <span className="flex-shrink-0 text-[11px] opacity-70">📌</span>}
+      {isMuted && <span className="flex-shrink-0 text-[11px] opacity-70">🔇</span>}
+      {hasUnread && (
+        <span className="flex h-[18px] min-w-[18px] flex-shrink-0 items-center justify-center rounded-full bg-[#CD2553] px-1 text-[11px] font-bold text-white">
+          {unreadCount}
+        </span>
+      )}
     </div>
   );
 }

@@ -86,49 +86,42 @@ export default function ChatSelect() {
   };
 
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-blue-50 to-indigo-100 p-5">
-        <div className="max-w-md w-full">
-          <div className="text-center mb-8">
-            <div className="bg-white p-8 rounded-2xl shadow-xl">
-              <img
-                src={
-                  currentUser?.profile_picture ||
-                  `https://ui-avatars.com/api/?name=${currentUser?.username}&background=2563eb&color=fff&size=80&font-size=0.4&bold=true`
-                }
-                alt="Profile"
-                className="w-20 h-20 rounded-full border-4 border-blue-500 mx-auto mb-4"
-              />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Hello, {currentUser?.display_name || currentUser?.username}!
-              </h2>
-              <p className="text-base text-gray-600">Who would you like to chat with today?</p>
+      <div className="flex h-full items-center justify-center bg-white p-5 dark:bg-[#1A1D21]">
+        <div className="w-full max-w-md">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#4A154B] text-2xl font-black text-white shadow-md">
+              {(currentUser?.display_name || currentUser?.username || "?").charAt(0).toUpperCase()}
             </div>
+            <h2 className="mb-1 text-2xl font-black text-[#1D1C1D] dark:text-white">
+              Welcome back, {currentUser?.display_name || currentUser?.username}
+            </h2>
+            <p className="text-[15px] text-[#616061] dark:text-slate-400">
+              Send a direct message to get started.
+            </p>
           </div>
 
-          <div className="bg-white p-8 rounded-2xl shadow-xl mb-5">
-            <div className="mb-4">
-              <label htmlFor="receiver" className="block text-sm font-medium text-gray-700 mb-2">
-                <span className="mr-1">💬</span> Enter username to start chatting
-              </label>
-              <input
-                ref={inputRef}
-                id="receiver"
-                type="text"
-                value={receiverName}
-                onChange={(e) => {
-                  setReceiverName(e.target.value);
-                  if (error) setError("");
-                }}
-                onKeyPress={handleKeyPress}
-                placeholder="e.g., john_doe"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition"
-                autoFocus
-                disabled={isLoading}
-              />
-            </div>
+          <div className="rounded-lg border border-[#E2E2E2] bg-white p-6 shadow-sm dark:border-[#2C2D30] dark:bg-[#222529]">
+            <label htmlFor="receiver" className="mb-2 block text-[13px] font-bold text-[#1D1C1D] dark:text-slate-200">
+              To:
+            </label>
+            <input
+              ref={inputRef}
+              id="receiver"
+              type="text"
+              value={receiverName}
+              onChange={(e) => {
+                setReceiverName(e.target.value);
+                if (error) setError("");
+              }}
+              onKeyPress={handleKeyPress}
+              placeholder="Enter a username…"
+              className="w-full rounded-md border border-[#8D8D8D]/60 px-3 py-2.5 text-[15px] outline-none transition focus:border-[#1264A3] focus:ring-1 focus:ring-[#1264A3] dark:bg-[#1A1D21] dark:text-white"
+              autoFocus
+              disabled={isLoading}
+            />
 
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-lg mb-4 text-sm">
+              <div className="mt-3 flex items-center gap-2 rounded-md bg-red-50 p-2.5 text-sm text-red-600">
                 <span>⚠️</span> {error}
               </div>
             )}
@@ -136,31 +129,24 @@ export default function ChatSelect() {
             <button
               onClick={handleStartChat}
               disabled={!receiverName.trim() || isLoading}
-              className={`w-full py-4 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg ${
+              className={`mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-[#007a5a] py-2.5 font-bold text-white transition hover:bg-[#148567] disabled:cursor-not-allowed disabled:opacity-50 ${
                 isLoading ? "opacity-60" : ""
               }`}
             >
               {isLoading ? (
                 <>
-                  <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  <span>Starting chat...</span>
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                  <span>Starting…</span>
                 </>
               ) : (
-                <>
-                  <span>✨</span>
-                  <span>Start Chatting</span>
-                </>
+                <span>Start conversation</span>
               )}
             </button>
-          </div>
-
-          <div className="text-center">
-         
           </div>
         </div>
       </div>
     );
-}    
+}
 
 
 

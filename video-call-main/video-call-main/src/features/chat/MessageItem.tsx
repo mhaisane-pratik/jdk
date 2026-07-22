@@ -135,8 +135,8 @@ export default function MessageItem({
             rel="noopener noreferrer"
             className={`underline break-all ${
               isSent 
-                ? "text-cyan-200 hover:text-cyan-100" 
-                : "text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                ? "text-cyan-200 hover:text-cyan-100"
+                : "text-[#1264A3] hover:underline dark:text-[#1D9BD1] dark:hover:text-[#1D9BD1]"
             }`}
             onClick={(e) => e.stopPropagation()} // Prevent opening actions panel on link click
           >
@@ -302,17 +302,29 @@ export default function MessageItem({
     <>
       <div
         ref={wrapperRef}
-        className={`flex ${Object.keys(reactions).length > 0 ? "mb-4" : "mb-2"} px-4 relative transition-all duration-500 ${isSent ? "justify-end" : "justify-start"} ${isHighlighted ? "bg-black/5 dark:bg-white/5 py-1 rounded-lg" : ""}`}
+        className={`flex ${Object.keys(reactions).length > 0 ? "mb-4" : "mb-2"} px-3 md:px-4 relative transition-all duration-300 ${isSent ? "justify-end" : "justify-start"} ${isHighlighted ? "bg-black/5 dark:bg-white/5 py-1 rounded-lg" : ""}`}
       >
-        <div className={`relative max-w-[70%] ${isSent ? "order-2" : "order-1"}`} onClick={handleMessageClick}>
+        {!isSent && isGroup && (
+          <img
+            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(message.sender_name || "?")}&background=4A154B&color=fff&bold=true`}
+            alt={message.sender_name}
+            className="mr-2 mt-auto h-8 w-8 flex-shrink-0 self-end rounded-full object-cover"
+          />
+        )}
+        <div className={`relative max-w-[78%] ${isSent ? "order-2" : "order-1"}`} onClick={handleMessageClick}>
           {message.message_type === "text" && (
             <div
               className={`relative rounded-2xl px-3 py-2 pb-6 shadow-sm ${
                 isSent
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-br-sm"
-                  : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-bl-sm"
+                  ? "bg-[#1264A3] text-white rounded-br-sm"
+                  : "bg-white dark:bg-gray-800 text-[#1D1C1D] dark:text-[#D1D2D3] border border-gray-200 dark:border-gray-700 rounded-bl-sm"
               }`}
             >
+              {!isSent && isGroup && (
+                <div className="mb-0.5 text-[11px] font-bold text-indigo-500 dark:text-indigo-300">
+                  {message.sender_name}
+                </div>
+              )}
               {message.reply_to && (
                 <div className="mb-1.5 rounded-lg overflow-hidden cursor-pointer hover:opacity-90">
                   <div className="flex">
@@ -336,10 +348,10 @@ export default function MessageItem({
                 </div>
               )}
 
-              <p className="m-0 pr-12 text-sm leading-relaxed break-words whitespace-pre-wrap select-text">
+              <p className="m-0 pr-12 text-[15px] leading-relaxed break-words whitespace-pre-wrap select-text">
                 {renderMessageContent(plainText)}
               </p>
-              
+
               <div className="absolute bottom-1.5 right-2 flex items-center gap-0.5">
                 <span className={`text-[10px] ${isSent ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}>
                   {formatTime(message.created_at)}
@@ -353,8 +365,8 @@ export default function MessageItem({
             <div
               className={`relative rounded-2xl p-[3px] max-w-[280px] shadow-sm ${
                 isSent
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-br-sm"
-                  : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-bl-sm"
+                  ? "bg-[#1264A3] text-white rounded-br-sm"
+                  : "bg-white dark:bg-gray-800 text-[#1D1C1D] dark:text-[#D1D2D3] border border-gray-200 dark:border-gray-700 rounded-bl-sm"
               }`}
             >
               {message.reply_to && (
@@ -389,7 +401,7 @@ export default function MessageItem({
               />
               
               {plainText && (
-                <p className={`mt-2 px-2 pb-5 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                <p className={`mt-2 px-2 pb-5 text-sm break-words select-text ${isSent ? "text-white" : "text-[#1D1C1D] dark:text-[#D1D2D3]"}`}>
                   {renderMessageContent(plainText)}
                 </p>
               )}
@@ -406,8 +418,8 @@ export default function MessageItem({
             <div
               className={`relative rounded-2xl p-[3px] max-w-[280px] shadow-sm ${
                 isSent
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-br-sm"
-                  : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-bl-sm"
+                  ? "bg-[#1264A3] text-white rounded-br-sm"
+                  : "bg-white dark:bg-gray-800 text-[#1D1C1D] dark:text-[#D1D2D3] border border-gray-200 dark:border-gray-700 rounded-bl-sm"
               }`}
             >
               {message.reply_to && (
@@ -443,7 +455,7 @@ export default function MessageItem({
               />
               
               {plainText && (
-                <p className={`mt-2 px-2 pb-5 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                <p className={`mt-2 px-2 pb-5 text-sm break-words select-text ${isSent ? "text-white" : "text-[#1D1C1D] dark:text-[#D1D2D3]"}`}>
                   {renderMessageContent(plainText)}
                 </p>
               )}
@@ -460,7 +472,7 @@ export default function MessageItem({
             <div
               className={`relative rounded-2xl p-2 min-w-[240px] max-w-[320px] shadow-sm ${
                 isSent
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500"
+                  ? "bg-[#1264A3]"
                   : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
               }`}
             >
@@ -493,7 +505,7 @@ export default function MessageItem({
                   📎
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className={`text-xs font-semibold truncate ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                  <div className={`text-xs font-semibold truncate ${isSent ? "text-white" : "text-[#1D1C1D] dark:text-[#D1D2D3]"}`}>
                     {message.file_name || "Download File"}
                   </div>
                   {message.file_size && (
@@ -504,7 +516,7 @@ export default function MessageItem({
                 </div>
               </a>
               {plainText && (
-                <p className={`mt-1.5 mb-0 text-sm break-words select-text ${isSent ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                <p className={`mt-1.5 mb-0 text-sm break-words select-text ${isSent ? "text-white" : "text-[#1D1C1D] dark:text-[#D1D2D3]"}`}>
                   {renderMessageContent(plainText)}
                 </p>
               )}
@@ -663,7 +675,7 @@ export default function MessageItem({
         <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={() => setShowDeleteModal(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-xs overflow-hidden flex flex-col animate-scaleUp border border-gray-200 dark:border-gray-700" onClick={(e) => e.stopPropagation()}>
             <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white text-center m-0">Delete message?</h3>
+              <h3 className="text-base font-bold text-[#1D1C1D] dark:text-[#D1D2D3] text-center m-0">Delete message?</h3>
             </div>
             <div className="flex flex-col p-2 space-y-1">
               {isSent && (
@@ -704,7 +716,7 @@ export default function MessageItem({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white m-0">Seen by</h3>
+              <h3 className="text-base font-bold text-[#1D1C1D] dark:text-[#D1D2D3] m-0">Seen by</h3>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 {seenByUsers.length} of {seenByTotalParticipants} members have seen this message
               </p>
@@ -748,7 +760,7 @@ export default function MessageItem({
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                        <div className="text-sm font-semibold text-[#1D1C1D] dark:text-[#D1D2D3] truncate">
                           {user.display_name}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 truncate">

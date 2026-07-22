@@ -2,17 +2,14 @@
 
 .login-page {
   min-height: 100vh;
-  background-image: url('https://images.unsplash.com/photo-1577563908411-5077b6dc7624?q=80&w=2070&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: #4A154B;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Light overlay for better text readability */
+/* Aubergine brand overlay */
 .login-page::before {
   content: '';
   position: absolute;
@@ -20,8 +17,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(2px);
+  background: radial-gradient(circle at 30% 20%, #611f69 0%, #4A154B 55%, #350d36 100%);
   z-index: 0;
 }
 
@@ -34,12 +30,11 @@
 }
 
 .login-card {
-  background: rgba(255, 255, 255, 0.98);
-  border-radius: 28px;
-  box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.15);
-  padding: 48px 36px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35);
+  padding: 44px 36px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   transition: transform 0.2s ease;
 }
 
@@ -62,23 +57,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  margin-bottom: 20px;
+  background: #4A154B;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  margin-bottom: 18px;
   color: white;
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
+  box-shadow: 0 8px 20px rgba(74, 21, 75, 0.25);
 }
 
 .brand h1 {
-  font-size: 32px;
-  font-weight: 700;
-  margin: 0 0 10px 0;
-  background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 30px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  color: #1D1C1D;
   letter-spacing: -0.5px;
 }
 
@@ -126,10 +118,13 @@
   background: white;
 }
 
+.input-group {
+  border-radius: 8px;
+}
+
 .input-group:focus-within {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
-  transform: translateY(-1px);
+  border-color: #1264A3;
+  box-shadow: 0 0 0 4px rgba(18, 100, 163, 0.12);
 }
 
 .input-icon {
@@ -140,7 +135,7 @@
 }
 
 .input-group:focus-within .input-icon {
-  color: #2563eb;
+  color: #1264A3;
 }
 
 .input-group input {
@@ -160,25 +155,25 @@
 }
 
 .login-button {
-  background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
+  background: #007a5a;
   color: white;
   border: none;
-  padding: 16px 28px;
-  border-radius: 18px;
+  padding: 15px 28px;
+  border-radius: 8px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 
 .login-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 25px rgba(37, 99, 235, 0.22);
+  background: #148567;
+  box-shadow: 0 8px 18px rgba(0, 122, 90, 0.25);
 }
 
 .login-button:active:not(:disabled) {
@@ -241,7 +236,7 @@
 }
 
 .whatsapp-logo {
-  color: #2563eb;
+  color: #4A154B;
   margin-bottom: 28px;
   animation: pulse 1.4s ease-in-out infinite;
 }

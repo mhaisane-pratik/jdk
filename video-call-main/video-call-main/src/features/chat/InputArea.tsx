@@ -308,8 +308,8 @@ export default function InputArea({
   };
 
   return (
-    <div className="z-[90] w-full flex-shrink-0 bg-transparent px-2 pb-2 pt-1 sm:p-4 md:px-6 lg:pb-6">
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col rounded-[30px] border border-slate-200/80 bg-white/95 shadow-[0_16px_45px_rgba(15,23,42,0.12)] transition-colors dark:border-slate-700 dark:bg-slate-800/95">
+    <div className="z-[90] w-full flex-shrink-0 bg-white px-3 pb-5 pt-1 dark:bg-[#1A1D21] sm:px-5">
+      <div className="relative mx-auto flex w-full max-w-full flex-col rounded-lg border border-[#8D8D8D]/60 bg-white shadow-sm transition-colors focus-within:border-[#1D1C1D]/70 dark:border-[#565856] dark:bg-[#222529]">
         
       {showSuggestions && suggestions.length > 0 && (
         <div className="absolute bottom-full left-0 right-0 mb-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl animate-slideUp dark:border-slate-700 dark:bg-slate-800">
@@ -321,9 +321,9 @@ export default function InputArea({
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 {text.startsWith('/') ? (
-                  <Sparkles size={16} className="text-indigo-500 flex-shrink-0" />
+                  <Sparkles size={16} className="text-[#007a5a] flex-shrink-0" />
                 ) : (
-                    <CornerUpRight size={16} className="text-slate-400 transition-colors group-hover:text-blue-500 flex-shrink-0" />
+                    <CornerUpRight size={16} className="text-slate-400 transition-colors group-hover:text-[#007a5a] flex-shrink-0" />
                 )}
                 <span className="flex-1 truncate text-sm text-slate-700 sm:text-base dark:text-slate-300">{suggestion}</span>
                 <ChevronRight size={16} className="text-slate-400 opacity-0 transition-all group-hover:opacity-100 flex-shrink-0" />
@@ -485,16 +485,16 @@ export default function InputArea({
 
       <div className="flex items-end gap-1.5 px-3 py-2 sm:gap-2 sm:px-4 sm:py-3">
         <button
-          className={`group flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-500 transition-all duration-200 hover:scale-105 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 disabled:opacity-40 sm:h-10 sm:w-10 ${showEmoji ? 'bg-blue-50 text-blue-500 dark:bg-slate-700' : ''}`}
+          className={`group flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-500 transition-all duration-200 hover:scale-105 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 disabled:opacity-40 sm:h-10 sm:w-10 ${showEmoji ? 'bg-[#007a5a]/10 text-[#007a5a] dark:bg-slate-700' : ''}`}
           onClick={() => { setShowEmoji(!showEmoji); setShowGiphy(false); }}
           title="Emoji"
           disabled={uploading}
         >
-          <Smile size={22} className="transition-colors group-hover:text-blue-500" />
+          <Smile size={22} className="transition-colors group-hover:text-[#007a5a]" />
         </button>
 
         <button
-          className={`group flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-slate-500 transition-all duration-200 hover:scale-105 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 disabled:opacity-40 sm:h-10 sm:w-10 sm:text-xs ${showGiphy ? 'bg-blue-50 text-blue-500 dark:bg-slate-700' : ''}`}
+          className={`group flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-slate-500 transition-all duration-200 hover:scale-105 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 disabled:opacity-40 sm:h-10 sm:w-10 sm:text-xs ${showGiphy ? 'bg-[#007a5a]/10 text-[#007a5a] dark:bg-slate-700' : ''}`}
           onClick={() => { setShowGiphy(!showGiphy); setShowEmoji(false); }}
           title="GIFs"
           disabled={uploading}
@@ -514,16 +514,16 @@ export default function InputArea({
             accept="image/*,.pdf,.doc,.docx,.txt,.zip,audio/*,video/*"
             disabled={uploading}
           />
-          <Paperclip size={22} className="transition-colors group-hover:text-blue-500" />
+          <Paperclip size={22} className="transition-colors group-hover:text-[#007a5a]" />
         </label>
 
-        <div className="group relative flex min-w-0 flex-1 items-center rounded-3xl bg-slate-100 ring-1 ring-transparent transition-all focus-within:ring-blue-500/20 dark:bg-slate-700/60">
+        <div className="group relative flex min-w-0 flex-1 items-center bg-transparent">
           <textarea
             ref={textareaRef}
             value={text}
             onChange={(e) => handleTyping(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
+            placeholder={`Message ${receiver || ""}`.trim()}
             rows={1}
             className="min-h-[44px] max-h-[120px] w-full resize-none overflow-y-auto border-none bg-transparent px-4 py-3 text-[15px] leading-relaxed text-slate-900 placeholder:text-slate-500 outline-none focus:ring-0 dark:text-white dark:placeholder:text-slate-400 sm:text-base"
             disabled={uploading}
@@ -540,7 +540,7 @@ export default function InputArea({
         </div>
 
         <button
-          className={`ml-1 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md transition-all duration-300 hover:from-blue-600 hover:to-indigo-600 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:w-12 ${text.trim() || selectedFile ? 'scale-100' : 'scale-90 opacity-80'}`}
+          className={`ml-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-white shadow-sm transition-all duration-200 disabled:cursor-not-allowed sm:h-10 sm:w-10 ${text.trim() || selectedFile ? 'bg-[#007a5a] hover:bg-[#148567]' : 'bg-transparent text-[#8D8D8D] disabled:opacity-100'}`}
           onClick={sendMessage}
           disabled={(!text.trim() && !selectedFile) || uploading}
           title="Send"

@@ -89,8 +89,9 @@ export default function MessageList({
         ) : (
           Object.keys(groupedMessages).map((dateLabel) => (
             <div key={dateLabel} className="w-full">
-              <div className="flex items-center justify-center my-4 sticky top-2 z-10">
-                <span className="bg-gray-200/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-1.5 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300 shadow-sm">
+              <div className="relative my-4 flex items-center justify-center">
+                <div className="absolute inset-x-4 top-1/2 h-px bg-[#E2E2E2] dark:bg-[#2C2D30]" />
+                <span className="relative rounded-full border border-[#E2E2E2] bg-white px-3 py-1 text-[13px] font-bold text-[#1D1C1D] shadow-sm dark:border-[#2C2D30] dark:bg-[#1A1D21] dark:text-slate-200">
                   {dateLabel}
                 </span>
               </div>

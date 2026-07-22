@@ -14,7 +14,10 @@ export const socket: Socket = io(SOCKET_URL, {
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
   timeout: 20000,
-  transports: ["websocket", "polling"],
+  // Start with HTTP long-polling, then upgrade to WebSocket automatically.
+  // Forcing "websocket" first is fragile and can surface as a 500/handshake
+  // error in dev instead of falling back cleanly.
+  transports: ["polling", "websocket"],
 
   // 🔥 IMPORTANT: Send API Key to backend
   auth: {

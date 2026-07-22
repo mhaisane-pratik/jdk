@@ -76,62 +76,57 @@ export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
   const groupsCount = chatRooms.filter((r) => r.is_group).length;
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-white/95 dark:bg-slate-900/95">
-      
-      {/* Dynamic App Branding & Header */}
-      <div className="sticky top-0 z-20 flex flex-col border-b border-slate-200/80 bg-gradient-to-r from-slate-50 via-white to-blue-50 dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
-        
-        {/* Top Branding Row */}
-        <div className="flex items-center justify-between px-4 pb-2 pt-4 sm:px-5">
-           <div className="flex items-center gap-3">
-             {appLogo ? (
-                <img src={appLogo} alt="App Logo" className="h-9 w-9 rounded-xl border border-slate-200 object-cover shadow-sm bg-slate-50 dark:border-slate-700 dark:bg-slate-800" />
-             ) : (
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-lg font-bold text-white shadow-sm">
-                  {appName ? appName.charAt(0).toUpperCase() : "Z"}
-                </div>
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-[#3F0E40] text-[#CFC3CF]">
+
+      {/* Workspace Header (Slack) */}
+      <div className="sticky top-0 z-20 flex flex-col border-b border-white/10">
+
+        {/* Top Workspace Row */}
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+           <button
+             className="menu-button flex min-w-0 items-center gap-2 rounded-md px-1 py-0.5 text-left transition hover:bg-white/10"
+             onClick={(e) => {
+               e.stopPropagation();
+               setShowMenu(!showMenu);
+             }}
+             title="Menu"
+           >
+             {appLogo && (
+                <img src={appLogo} alt="" className="h-6 w-6 rounded-md object-cover" />
              )}
-            </div>
-           
-           <div className="flex items-center gap-1.5">
-             <button
-               className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition-all hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-               onClick={() => setShowNewChat(true)}
-               title="New chat"
-             >
-               <Plus size={20} />
-             </button>
-             <button
-               className="menu-button flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition-all hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-               onClick={(e) => {
-                 e.stopPropagation();
-                 setShowMenu(!showMenu);
-               }}
-               title="Menu"
-             >
-               <Menu size={20} />
-             </button>
-           </div>
+             <span className="truncate text-[17px] font-bold text-white">
+               {appName || "ZatChat"}
+             </span>
+             <Menu size={16} className="flex-shrink-0 text-white/80" />
+           </button>
+
+           <button
+             className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white text-[#3F0E40] shadow-sm transition hover:bg-white/90"
+             onClick={() => setShowNewChat(true)}
+             title="New message"
+           >
+             <Plus size={18} strokeWidth={2.5} />
+           </button>
         </div>
 
-        {/* Bottom Search Row */}
-        <div className="px-4 pb-3 pt-1 sm:px-5">
+        {/* Search Row */}
+        <div className="px-3 py-2.5">
           <div className="relative w-full">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60" />
             <input
               type="text"
-              placeholder="Search or start new chat"
-              className="w-full rounded-2xl border border-slate-200/80 bg-white/85 py-2.5 pl-10 pr-9 text-sm font-medium text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800/80 dark:text-white dark:placeholder:text-slate-400 dark:focus:ring-blue-900/30"
+              placeholder={`Search ${appName || "ZatChat"}`}
+              className="w-full rounded-md border border-white/20 bg-black/20 py-2 pl-9 pr-8 text-sm font-medium text-white outline-none transition placeholder:text-white/55 focus:border-white/40 focus:bg-black/25"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
               <button
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-white/60 transition hover:bg-white/10 hover:text-white"
                 onClick={() => setSearchTerm("")}
                 title="Clear search"
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             )}
           </div>
@@ -139,53 +134,59 @@ export default function Sidebar({ onSettingsClick, isMobile }: SidebarProps) {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 border-b border-slate-200/80 bg-white/80 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/80">
+      <div className="flex gap-1 px-3 py-2">
         <button
-          className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all ${
+          className={`rounded-full px-3 py-1 text-[13px] font-medium transition-all ${
             activeFilter === "all"
-              ? "bg-blue-100/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-              : "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+              ? "bg-white/20 text-white"
+              : "text-white/70 hover:bg-white/10 hover:text-white"
           }`}
           onClick={() => setActiveFilter("all")}
         >
           All
         </button>
         <button
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium transition-all ${
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-medium transition-all ${
             activeFilter === "unread"
-              ? "bg-blue-100/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-              : "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+              ? "bg-white/20 text-white"
+              : "text-white/70 hover:bg-white/10 hover:text-white"
           }`}
           onClick={() => setActiveFilter("unread")}
         >
-          <CheckCheck size={16} className="stroke-[1.5]" />
           Unread
           {unreadCount > 0 && (
-            <span className="ml-1 rounded-full bg-blue-500 px-1.5 py-0.5 text-xs font-semibold text-white">
+            <span className="rounded-full bg-[#CD2553] px-1.5 py-0.5 text-[11px] font-bold text-white">
               {unreadCount}
             </span>
           )}
         </button>
         <button
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium transition-all ${
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-medium transition-all ${
             activeFilter === "groups"
-              ? "bg-blue-100/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-              : "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+              ? "bg-white/20 text-white"
+              : "text-white/70 hover:bg-white/10 hover:text-white"
           }`}
           onClick={() => setActiveFilter("groups")}
         >
-          <Users size={16} className="stroke-[1.5]" />
-          Groups
+          <Users size={14} className="stroke-[2]" />
+          Channels
           {groupsCount > 0 && (
-            <span className="ml-1 rounded-full bg-slate-500 px-1.5 py-0.5 text-xs font-semibold text-white">
+            <span className="rounded-full bg-white/25 px-1.5 py-0.5 text-[11px] font-bold text-white">
               {groupsCount}
             </span>
           )}
         </button>
       </div>
 
+      {/* Section label */}
+      <div className="flex items-center justify-between px-4 pb-1 pt-2">
+        <span className="text-[13px] font-semibold text-white/60">
+          {activeFilter === "groups" ? "Channels" : "Direct messages"}
+        </span>
+      </div>
+
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-white to-slate-50/70 px-2 pb-2 dark:from-slate-900 dark:to-slate-950">
+      <div className="flex-1 overflow-y-auto px-2 pb-2">
         <ChatList rooms={filteredRooms} searchTerm={searchTerm} activeFilter={activeFilter} />
       </div>
 

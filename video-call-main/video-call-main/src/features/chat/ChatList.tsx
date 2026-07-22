@@ -15,9 +15,9 @@ export default function ChatList({ rooms }: ChatListProps) {
 
   if (!rooms || rooms.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-20 text-center min-h-[400px]">
-        <p className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">No chats yet</p>
-        <span className="text-sm text-gray-500 dark:text-gray-400">Start a new conversation</span>
+      <div className="flex flex-col items-center justify-center p-16 text-center min-h-[300px]">
+        <p className="mb-2 text-base font-semibold text-white/80">No conversations yet</p>
+        <span className="text-sm text-white/50">Start a new message</span>
       </div>
     );
   }

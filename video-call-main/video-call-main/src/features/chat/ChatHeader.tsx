@@ -108,14 +108,12 @@ export default function ChatHeader({
     <>
       <div
         className={`
-          flex h-[62px] items-center justify-between border-b px-3 py-2 md:h-[74px] md:px-6
-          border-slate-200/80 dark:border-slate-700
-          bg-gradient-to-r from-slate-50/95 via-white to-blue-50/80 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800
-          backdrop-blur
-          transition-all duration-300
-          shadow-sm
+          flex h-[49px] items-center justify-between border-b px-4 py-2 md:h-[56px] md:px-5
+          border-[#E2E2E2] dark:border-[#2C2D30]
+          bg-white dark:bg-[#1A1D21]
+          transition-all duration-200
           w-full flex-shrink-0
-          ${isGroup ? "cursor-pointer hover:from-slate-100/80 hover:to-blue-100/70 dark:hover:from-slate-900 dark:hover:to-slate-800" : ""}
+          ${isGroup ? "cursor-pointer hover:bg-[#F8F8F8] dark:hover:bg-[#222529]" : ""}
         `}
         onClick={handleHeaderClick}
       >
@@ -192,11 +190,12 @@ export default function ChatHeader({
             <div className="flex items-center gap-1.5 md:gap-2">
               <h3
                 className={`
-                  font-semibold truncate text-slate-900 dark:text-white
-                  text-sm md:text-base lg:text-lg
+                  font-black truncate text-[#1D1C1D] dark:text-white
+                  text-[15px] md:text-[18px] leading-tight
                   max-w-[130px] xs:max-w-[180px] sm:max-w-[260px] md:max-w-[340px]
                 `}
               >
+                {isGroup && <span className="text-[#616061] dark:text-slate-400">#</span>}
                 {displayName}
               </h3>
               {isGroup && isAdmin && (
@@ -253,7 +252,7 @@ export default function ChatHeader({
               bg-white/80 dark:bg-slate-700
               text-slate-600 dark:text-slate-300
               hover:bg-white dark:hover:bg-slate-600
-              hover:text-indigo-600 dark:hover:text-indigo-400
+              hover:text-[#007a5a] dark:hover:text-[#2BAC76]
               active:scale-95
               transition-all duration-200
               flex-shrink-0
@@ -272,7 +271,7 @@ export default function ChatHeader({
                 bg-white/80 dark:bg-slate-700
                 text-slate-600 dark:text-slate-300
                 hover:bg-white dark:hover:bg-slate-600
-                hover:text-blue-600 dark:hover:text-blue-400
+                hover:text-[#007a5a] dark:hover:text-[#2BAC76]
                 active:scale-95
                 transition-all duration-200
                 flex-shrink-0
@@ -291,7 +290,7 @@ export default function ChatHeader({
               bg-white/80 dark:bg-slate-700
               text-slate-600 dark:text-slate-300
               hover:bg-white dark:hover:bg-slate-600
-              hover:text-blue-600 dark:hover:text-blue-400
+              hover:text-[#007a5a] dark:hover:text-[#2BAC76]
               active:scale-95
               transition-all duration-200
               flex-shrink-0
